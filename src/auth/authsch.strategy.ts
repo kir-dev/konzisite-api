@@ -23,6 +23,8 @@ export class AuthschStrategy extends PassportStrategy(Strategy, 'authsch') {
       callbackURL: '/auth/callback',
       scope: ['basic', 'displayName', 'mail'], // ?? niifEduPersonAttendedCourse = hallgatott tárgyak
       // Hallgató által jelenleg hallgatott kurzusok kódjai. Példa: "BMEVIAUA218;BMEVIIIA316"
+      // helló
+      // helló 2
     });
   }
 
