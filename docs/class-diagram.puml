@@ -1,19 +1,22 @@
 @startuml
 'https://plantuml.com/class-diagram
 
-[Consultation] -d- "1..*" [presenters: User]
+[Consultation] -d- "1..*" [presenters: Presentation]
+[presenters: Presentation] - "1" [User]
+[presenters: Presentation] - "1" [Rating]
 [Consultation] -d- "0..1" [owner: User]
 [Consultation] - "0..*" [target: Group]
 [Consultation] -u- "0..*" [participants: Participation]
 [Consultation] -u- "1"    [subject: Subject]
 
 'Hidden connection for arranging the diagram
-[owner: User] -[hidden]- [presenters: User]
+[owner: User] -[hidden]- [presenters: Presentation]
 [target: Group] -[hidden]- [owner: User]
 [participants: Participation] -[hidden]- [target: Group]
 [subject: Subject] -[hidden]- [participants: Participation]
 
 [participants: Participation] -"1" [User]
+[participants: Participation] -"1" [Rating]
 [target: Group] "0..*"-"0..*" [User]
 
 [ConsultationRequest] -":nullable" [Consultation]
