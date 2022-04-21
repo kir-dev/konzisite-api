@@ -1,0 +1,52 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+[Consultation] -d- "1..*" [presenters: User]
+[Consultation] -d- "0..1" [owner: User]
+[Consultation] - "0..*" [target: Group]
+[Consultation] -u- "0..*" [participants: Participation]
+[Consultation] -u- "1"    [subject: Subject]
+
+'Hidden connection for arranging the diagram
+[owner: User] -[hidden]- [presenters: User]
+[target: Group] -[hidden]- [owner: User]
+[participants: Participation] -[hidden]- [target: Group]
+[subject: Subject] -[hidden]- [participants: Participation]
+
+[participants: Participation] -"1" [User]
+[target: Group] "0..*"-"0..*" [User]
+
+[ConsultationRequest] -":nullable" [Consultation]
+
+[Subject] "1"-u- [ConsultationRequest]
+[initializer: User] "1"- [ConsultationRequest]
+[supporters: User] "0..*"-d- [ConsultationRequest]
+
+'Hidden connection for arranging the diagram
+[initializer: User] -[hidden]- [Subject]
+[supporters: User] -[hidden]- [initializer: User]
+
+
+sprite $Logo [32x14/16]{
+FFF00000000000FFF0FFFFFFFFFF0000
+FFF00000000000FFF0FFFFFFFFFFFF00
+FFF00000000000FFF0000000000FFFFF
+0FFF0000000000FFF000000000000FFF
+0FFFF000000000FFF000000000000FFF
+000FFFF0000000FFF00000000000FFFF
+0000FFFFFFFFF0FFF00FFFFFFFFFFFF0
+00000FFFFFFFFFFFF0FFFFFFFFFF0000
+000FFFFFF00000FFF000000FFFFFF000
+00FFFF00000000FFF000000000FFFF00
+0FFF0000000000FFF00000000000FFF0
+FFF00000000000FFF000000000000FFF
+FFF00000000000FFF000000000000FFF
+FFF00000000000FFF0000000000000FF
+}
+
+rectangle "Kir-Dev" as logo<<$Logo>>
+
+[User] --[hidden]- logo
+
+
+@enduml
