@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-oauth2';
 import { firstValueFrom } from 'rxjs';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UsersService } from 'src/users/users.service';
 import { OAuthUser } from './oauthuser';
 
@@ -41,7 +40,12 @@ export class AuthschStrategy extends PassportStrategy(Strategy, 'authsch') {
     if (user) return user;
     else {
       const newUser = await this.usersService.create(
-        new CreateUserDto(responseUser),
+        {
+          authSchId: responseUser.internal_id,
+          firstName: responseUser.displayName, // TODO mi a pontos neve a fieldnek?
+          lastName: responseUser.displayName,  // TODO mi a pontos neve a fieldnek?
+          email: responseUser.mail
+        }
       );
       return newUser;
     }
