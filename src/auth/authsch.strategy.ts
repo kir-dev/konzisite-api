@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-oauth2';
 import { firstValueFrom } from 'rxjs';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UsersService } from 'src/users/users.service';
 import { OAuthUser } from './oauthuser';
 
@@ -21,7 +20,7 @@ export class AuthschStrategy extends PassportStrategy(Strategy, 'authsch') {
       clientID: process.env.CLIENT_ID,
       clientSecret: process.env.CLIENT_SECRET,
       callbackURL: '/auth/callback',
-      scope: ['basic', 'displayName', 'mail'], // ?? niifEduPersonAttendedCourse = hallgatott tárgyak
+      scope: ['basic', 'sn', 'givenName', 'mail'], // ?? niifEduPersonAttendedCourse = hallgatott tárgyak
       // Hallgató által jelenleg hallgatott kurzusok kódjai. Példa: "BMEVIAUA218;BMEVIIIA316"
     });
   }
@@ -41,7 +40,12 @@ export class AuthschStrategy extends PassportStrategy(Strategy, 'authsch') {
     if (user) return user;
     else {
       const newUser = await this.usersService.create(
-        new CreateUserDto(responseUser),
+        {
+          authSchId: responseUser.internal_id,
+          firstName: responseUser.givenName,
+          lastName: responseUser.sn,
+          email: responseUser.mail
+        }
       );
       return newUser;
     }

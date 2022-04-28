@@ -1,5 +1,6 @@
 export interface OAuthUser {
-	displayName: string;
+	sn: string;
+	givenName: string;
 	internal_id: string;
 	mail: string;
 }
