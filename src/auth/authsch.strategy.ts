@@ -20,7 +20,7 @@ export class AuthschStrategy extends PassportStrategy(Strategy, 'authsch') {
       clientID: process.env.CLIENT_ID,
       clientSecret: process.env.CLIENT_SECRET,
       callbackURL: '/auth/callback',
-      scope: ['basic', 'displayName', 'mail'], // ?? niifEduPersonAttendedCourse = hallgatott tárgyak
+      scope: ['basic', 'sn', 'givenName', 'mail'], // ?? niifEduPersonAttendedCourse = hallgatott tárgyak
       // Hallgató által jelenleg hallgatott kurzusok kódjai. Példa: "BMEVIAUA218;BMEVIIIA316"
     });
   }
@@ -42,8 +42,8 @@ export class AuthschStrategy extends PassportStrategy(Strategy, 'authsch') {
       const newUser = await this.usersService.create(
         {
           authSchId: responseUser.internal_id,
-          firstName: responseUser.displayName, // TODO mi a pontos neve a fieldnek?
-          lastName: responseUser.displayName,  // TODO mi a pontos neve a fieldnek?
+          firstName: responseUser.givenName,
+          lastName: responseUser.sn,
           email: responseUser.mail
         }
       );
