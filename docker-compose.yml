@@ -6,10 +6,8 @@ services:
     restart: always
     env_file:
       - .env
-    environment:
-      POSTGRES_USER: konzisite
     volumes:
-      - database_folder:/var/lib/postgresql/data
+      - konzisite_db_folder:/var/lib/postgresql/data
     networks:
       - konzisite-network
   web:
@@ -24,3 +22,5 @@ services:
     restart: always
 networks:
   konzisite-network:
+volumes:
+  konzisite_db_folder:
