@@ -3,7 +3,7 @@
 
 [Consultation] -d- "1..*" [presenters: Presentation]
 [presenters: Presentation] - "1" [User]
-[presenters: Presentation] - "1" [Rating]
+[presenters: Presentation] "1" - "0..*" [Rating]
 [Consultation] -d- "0..1" [owner: User]
 [Consultation] - "0..*" [target: Group]
 [Consultation] -u- "0..*" [participants: Participation]
@@ -15,8 +15,8 @@
 [participants: Participation] -[hidden]- [target: Group]
 [subject: Subject] -[hidden]- [participants: Participation]
 
-[participants: Participation] -"1" [User]
-[participants: Participation] -"1" [Rating]
+[participants: Participation] "1" -"1" [User]
+[participants: Participation] "1" -"0..*" [Rating]
 [target: Group] "0..*"-"0..*" [User]
 
 [ConsultationRequest] -":nullable" [Consultation]
