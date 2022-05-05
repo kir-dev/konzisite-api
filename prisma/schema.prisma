@@ -39,3 +39,9 @@ model Group {
   members   UserToGroup[]
   ceratedAt DateTime      @default(now())
 }
+
+model Subject {
+  id        Int           @id @default(autoincrement())
+  code      String        @unique
+  name      String
+}
