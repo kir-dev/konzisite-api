@@ -11,9 +11,31 @@ datasource db {
 }
 
 model User {
-  id    Int     @default(autoincrement()) @id
-  authSchId String @unique
-  firstName  String
-  lastName String
-  email String  @unique
+  id          Int           @id @default(autoincrement())
+  authSchId   String        @unique
+  firstName   String
+  lastName    String
+  email       String        @unique
+  ownedGroups Group[]
+  memberships UserToGroup[]
+}
+
+model UserToGroup {
+  user    User  @relation(fields: [userId], references: [id])
+  userId  Int
+  group   Group @relation(fields: [groupId], references: [id])
+  groupId Int
+
+  joinedAt DateTime @default(now())
+
+  @@id([userId, groupId])
+}
+
+model Group {
+  id        Int           @id @default(autoincrement())
+  name      String
+  owner     User          @relation(fields: [ownerId], references: [id])
+  ownerId   Int
+  members   UserToGroup[]
+  ceratedAt DateTime      @default(now())
 }
