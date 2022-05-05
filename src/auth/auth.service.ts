@@ -12,7 +12,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async validateUser(oAuthUser: OAuthUser): Promise<any> {
+  async findOrCreateUser(oAuthUser: OAuthUser): Promise<User> {
     const user = await this.usersService.findByAuthSchId(oAuthUser.internal_id)
     if (user) {
       return user
@@ -29,7 +29,10 @@ export class AuthService {
 
   login(user: User): { jwt: string } {
     return {
-      jwt: this.jwtService.sign(user),
+      jwt: this.jwtService.sign(user, {
+        secret: process.env.JWT_SECRET,
+        expiresIn: '2 days',
+      }),
     }
   }
 }

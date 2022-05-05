@@ -1,18 +1,24 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Logger,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
 } from '@nestjs/common'
-import { UsersService } from './users.service'
 import { Prisma } from '@prisma/client'
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
+import { UsersService } from './users.service'
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  private readonly logger = new Logger(UsersController.name)
 
   @Post()
   create(@Body() createUserDto: Prisma.UserCreateInput) {
@@ -22,6 +28,12 @@ export class UsersController {
   @Get()
   findAll() {
     return this.usersService.findAll()
+  }
+
+  @Get('profile')
+  @UseGuards(JwtAuthGuard)
+  findProfile(@Req() req) {
+    return this.usersService.findOne(req.user.id)
   }
 
   @Get(':id')

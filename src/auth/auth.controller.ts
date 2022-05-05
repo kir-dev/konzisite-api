@@ -1,18 +1,31 @@
-import { Controller, Get, Logger, Request, UseGuards } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Logger,
+  Redirect,
+  Req,
+  UseGuards,
+} from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
+import { AuthService } from './auth.service'
 
 @Controller('auth')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name)
 
-  @Get('login')
+  constructor(private authService: AuthService) {}
+
   @UseGuards(AuthGuard('authsch'))
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async login() {}
+  @Get('login')
+  async login(@Req() req) {
+    return req.user
+  }
 
   @Get('callback')
   @UseGuards(AuthGuard('authsch'))
-  async oauthRedirect(@Request() req) {
-    return req.user
+  @Redirect()
+  async oauthRedirect(@Req() req) {
+    const { jwt } = this.authService.login(req.user)
+    return { url: `${process.env.FRONTEND_AUTHORIZED_URL}?jwt=${jwt}` }
   }
 }

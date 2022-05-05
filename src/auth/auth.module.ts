@@ -7,6 +7,7 @@ import { UsersModule } from 'src/users/users.module'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { AuthschStrategy } from './authsch.strategy'
+import { JwtStrategy } from './jwt.strategy'
 
 @Module({
   imports: [
@@ -15,11 +16,11 @@ import { AuthschStrategy } from './authsch.strategy'
     HttpModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '2d' },
+      signOptions: { expiresIn: '2 days' },
     }),
-    PassportModule.register({ session: true }),
+    PassportModule.register({}),
   ],
   controllers: [AuthController],
-  providers: [AuthschStrategy, AuthService],
+  providers: [AuthschStrategy, JwtStrategy, AuthService],
 })
 export class AuthModule {}
