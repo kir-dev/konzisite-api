@@ -1,18 +1,19 @@
 import { HttpService } from '@nestjs/axios'
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
 import { Strategy } from 'passport-oauth2'
 import { firstValueFrom } from 'rxjs'
-import { UsersService } from 'src/users/users.service'
+import { AuthService } from './auth.service'
 import { OAuthUser } from './oauthuser'
 
 const AUTH_SCH_URL = 'https://auth.sch.bme.hu'
 
 @Injectable()
 export class AuthschStrategy extends PassportStrategy(Strategy, 'authsch') {
+  private readonly logger = new Logger(AuthschStrategy.name)
   constructor(
     private httpService: HttpService,
-    private usersService: UsersService,
+    private authService: AuthService,
   ) {
     super({
       authorizationURL: `${AUTH_SCH_URL}/site/login`,
@@ -25,7 +26,7 @@ export class AuthschStrategy extends PassportStrategy(Strategy, 'authsch') {
     })
   }
 
-  async validate(accessToken: string): Promise<any> {
+  async validate(accessToken: string): Promise<{ jwt: string }> {
     const responseUser: OAuthUser = (
       await firstValueFrom(
         this.httpService.get(
@@ -34,18 +35,9 @@ export class AuthschStrategy extends PassportStrategy(Strategy, 'authsch') {
       )
     ).data
 
-    const user = await this.usersService.findByAuthSchId(
-      responseUser.internal_id,
-    )
-    if (user) return user
-    else {
-      const newUser = await this.usersService.create({
-        authSchId: responseUser.internal_id,
-        firstName: responseUser.givenName,
-        lastName: responseUser.sn,
-        email: responseUser.mail,
-      })
-      return newUser
-    }
+    const dbUser = await this.authService.validateUser(responseUser)
+    this.logger.debug('DbUser in validate' + JSON.stringify(dbUser, null, 2))
+
+    return this.authService.login(dbUser)
   }
 }
