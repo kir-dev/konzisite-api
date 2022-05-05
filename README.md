@@ -29,20 +29,21 @@
 ## Installation
 
 ```bash
-$ npm install
+npm install
+npx prisma generate
 ```
 
 ## Running the app
 
 ```bash
 # development
-$ npm run start
+npm run start
 
 # watch mode
-$ npm run start:dev
+npm run start:dev
 
 # production mode
-$ npm run start:prod
+npm run start:prod
 ```
 
 ## Test
@@ -56,6 +57,14 @@ $ npm run test:e2e
 
 # test coverage
 $ npm run test:cov
+```
+
+## Docker deployment
+
+Edit the .env file accordingly, set the exposed port to your liking.
+
+```bash
+docker-compose up --build [-d]
 ```
 
 ## Support
