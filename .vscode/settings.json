@@ -16,5 +16,8 @@
     "source.organizeImports": true,
     "source.formatDocument": true,
     "source.fixAll.eslint": true
+  },
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
   }
 }

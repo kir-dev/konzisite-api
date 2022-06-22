@@ -11,13 +11,19 @@ datasource db {
 }
 
 model User {
-  id          Int           @id @default(autoincrement())
-  authSchId   String        @unique
-  firstName   String
-  lastName    String
-  email       String        @unique
-  ownedGroups Group[]
-  memberships UserToGroup[]
+  id                     Int                   @id @default(autoincrement())
+  authSchId              String                @unique
+  firstName              String
+  lastName               String
+  email                  String                @unique
+  //subjects    Subject[]
+  ownedGroups            Group[]
+  memberships            UserToGroup[]
+  participations         Participation[]
+  presentations          Presentation[]
+  ownedConsultations     Consultation[]
+  requestedConsultations ConsultationRequest[] @relation(name: "initializer")
+  supportedConsultations ConsultationRequest[] @relation(name: "supporters")
 }
 
 model UserToGroup {
@@ -32,16 +38,93 @@ model UserToGroup {
 }
 
 model Group {
-  id        Int           @id @default(autoincrement())
-  name      String
-  owner     User          @relation(fields: [ownerId], references: [id])
-  ownerId   Int
-  members   UserToGroup[]
-  ceratedAt DateTime      @default(now())
+  id            Int            @id @default(autoincrement())
+  name          String
+  owner         User           @relation(fields: [ownerId], references: [id])
+  ownerId       Int
+  members       UserToGroup[]
+  consultations Consultation[]
+
+  createdAt DateTime @default(now())
+}
+
+enum Major {
+  CE_BSC
+  EE_BSC
+  BPROF
+  CE_MSC
+  EE_MSC
+  BI_MSC
+  HI_MSC
 }
 
 model Subject {
-  id        Int           @id @default(autoincrement())
-  code      String        @unique
-  name      String
+  id            Int                   @id @default(autoincrement())
+  code          String                @unique
+  name          String
+  majors        Major[]
+  consultations Consultation[]
+  requests      ConsultationRequest[]
+}
+
+model Rating {
+  id                Int           @id @default(autoincrement())
+  value             Int
+  text              String
+  ratedBy           Participation @relation(fields: [participationId], references: [id])
+  participationId   Int
+  ratedPresentation Presentation  @relation(fields: [presentationId], references: [id])
+  presentationId    Int
+}
+
+model Participation {
+  id             Int          @id @default(autoincrement())
+  consultation   Consultation @relation(fields: [consultationId], references: [id])
+  consultationId Int
+  user           User         @relation(fields: [userId], references: [id])
+  userId         Int
+  ratings        Rating[]
+}
+
+model Presentation {
+  id             Int          @id @default(autoincrement())
+  consultation   Consultation @relation(fields: [consultationId], references: [id])
+  consultationId Int
+  user           User         @relation(fields: [userId], references: [id])
+  userId         Int
+  ratings        Rating[]
+}
+
+model Consultation {
+  id            Int                  @id @default(autoincrement())
+  presantations Presentation[]
+  participants  Participation[]
+  owner         User                 @relation(fields: [ownerId], references: [id])
+  ownerId       Int
+  targetGroups  Group[]
+  subject       Subject              @relation(fields: [subjectId], references: [id])
+  subjectId     Int
+  request       ConsultationRequest?
+  location      String
+  startDate     DateTime
+  endDate       DateTime
+  descMarkdown  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+}
+
+model ConsultationRequest {
+  id             Int           @id @default(autoincrement())
+  initializer    User          @relation(fields: [initializerId], references: [id], name: "initializer")
+  initializerId  Int
+  subject        Subject       @relation(fields: [subjectId], references: [id])
+  subjectId      Int
+  supporters     User[]        @relation(name: "supporters")
+  consultation   Consultation? @relation(fields: [consultationId], references: [id])
+  consultationId Int           @unique
+  descMarkdown   String
+  expiryDate     DateTime
+
+  createdAt DateTime @default(now())
 }
