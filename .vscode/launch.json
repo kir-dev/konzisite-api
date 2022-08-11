@@ -9,6 +9,7 @@
       "program": "${workspaceFolder}/src/main.ts",
       "request": "launch",
       "skipFiles": ["<node_internals>/**"],
+      "outputCapture": "std",
       "type": "node",
       "preLaunchTask": "npm: build"
     }
