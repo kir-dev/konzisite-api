@@ -7,11 +7,11 @@ import {
   Param,
   Patch,
   Post,
-  Req,
   UseGuards,
 } from '@nestjs/common'
-import { Prisma } from '@prisma/client'
+import { Prisma, User } from '@prisma/client'
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
+import { CurrentUser } from 'src/current-user.decorator'
 import { UsersService } from './users.service'
 
 @Controller('users')
@@ -32,8 +32,8 @@ export class UsersController {
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
-  findProfile(@Req() req) {
-    return this.usersService.findOne(req.user.id)
+  findProfile(@CurrentUser() user: User) {
+    return this.usersService.findOne(user.id)
   }
 
   @Get(':id')
