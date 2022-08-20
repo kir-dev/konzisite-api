@@ -15,10 +15,10 @@ import { ManyUniqueUsersDto } from 'src/users/dto/ManyUniqueUsers.dto'
 import { UniqueUserDto } from 'src/users/dto/UniqueUser.dto'
 import { UserDto } from 'src/users/dto/User.dto'
 import { ApiController } from 'src/utils/apiController.decorator'
-import { AllGroups } from './dto/AllGroups.dto'
 import { CreateGroupDto } from './dto/createGroup.dto'
 import { GroupDetailsDto } from './dto/GroupDetails.dto'
 import { GroupPreviewDto } from './dto/GroupPreview.dto'
+import { GroupSummaryDto } from './dto/GroupSummary.dto'
 import { UpdateGroupDto } from './dto/updateGroup.dto'
 import { GroupsService } from './groups.service'
 
@@ -68,7 +68,7 @@ export class GroupsController {
   }
 
   @Get()
-  @ApiProperty({ type: [AllGroups] })
+  @ApiProperty({ type: [GroupSummaryDto] })
   findAll(@CurrentUser() user: UserDto): Promise<GroupPreviewDto[]> {
     return this.groupsService.findAll(user.id)
   }

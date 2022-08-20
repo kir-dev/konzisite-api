@@ -3,7 +3,7 @@ import { Expose } from 'class-transformer'
 import { UserDto } from '../../users/dto/User.dto'
 
 @Expose()
-export class AllGroups {
+export class GroupSummaryDto {
   memberCount: number
   currentUserRole: GroupRole
   id: number
@@ -12,7 +12,7 @@ export class AllGroups {
   createdAt: Date
   owner: UserDto
 
-  constructor(partial: Partial<AllGroups>) {
+  constructor(partial: Partial<GroupSummaryDto>) {
     Object.assign(this, partial)
     this.owner = new UserDto(this.owner)
   }
