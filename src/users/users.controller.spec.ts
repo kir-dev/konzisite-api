@@ -35,15 +35,4 @@ describe('UsersController', () => {
   it('should be defined', () => {
     expect(controller).toBeDefined()
   })
-
-  describe('update', () => {
-    it("should not change the user's authSchId", async () => {
-      await controller.update('1', { authSchId: '2' })
-      expect(fakeUsersService.update).toHaveBeenCalledTimes(1)
-      expect(fakeUsersService.update).toHaveBeenCalledWith(
-        1,
-        expect.not.objectContaining({ authSchId: expect.any(String) }),
-      )
-    })
-  })
 })

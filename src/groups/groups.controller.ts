@@ -1,32 +1,34 @@
 import {
   Body,
-  Controller,
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common'
-import { GroupRole, User } from '@prisma/client'
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
+import { GroupRole } from '@prisma/client'
+import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
 import { CurrentUser } from 'src/current-user.decorator'
 import { ManyUniqueUsersDto } from 'src/users/dto/ManyUniqueUsers.dto'
 import { UniqueUserDto } from 'src/users/dto/UniqueUser.dto'
+import { UserDto } from 'src/users/dto/User.dto'
+import { ApiController } from 'src/utils/apiController.decorator'
 import { CreateGroupDto } from './dto/createGroup.dto'
 import { GroupDetailsDto } from './dto/GroupDetails.dto'
 import { GroupPreviewDto } from './dto/GroupPreview.dto'
 import { UpdateGroupDto } from './dto/updateGroup.dto'
 import { GroupsService } from './groups.service'
-@UseGuards(JwtAuthGuard)
-@Controller('groups')
+
+@JwtAuth()
+@ApiController('groups')
 export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
 
   @Post()
   async create(
     @Body() createGroupDto: CreateGroupDto,
-    @CurrentUser() user: User,
+    @CurrentUser() user: UserDto,
   ) {
     const newGroup = await this.groupsService.create({
       ...createGroupDto,
@@ -64,25 +66,28 @@ export class GroupsController {
   }
 
   @Get()
-  findAll(@CurrentUser() user: User): Promise<GroupPreviewDto[]> {
+  findAll(@CurrentUser() user: UserDto): Promise<GroupPreviewDto[]> {
     return this.groupsService.findAll(user.id)
   }
 
   @Get(':id')
   findOne(
-    @Param('id') id: string,
-    @CurrentUser() user: User,
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: UserDto,
   ): Promise<GroupDetailsDto> {
-    return this.groupsService.findOne(+id, user.id)
+    return this.groupsService.findOne(id, user.id)
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateGroupDto: UpdateGroupDto) {
-    return this.groupsService.update(+id, updateGroupDto)
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateGroupDto: UpdateGroupDto,
+  ) {
+    return this.groupsService.update(id, updateGroupDto)
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.groupsService.remove(+id)
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.groupsService.remove(id)
   }
 }

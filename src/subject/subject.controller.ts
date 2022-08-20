@@ -1,16 +1,17 @@
 import {
   Body,
-  Controller,
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
 } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
+import { ApiController } from 'src/utils/apiController.decorator'
 import { SubjectService } from './subject.service'
 
-@Controller('subject')
+@ApiController('subject')
 export class SubjectController {
   constructor(private readonly subjectService: SubjectService) {}
 
@@ -25,20 +26,20 @@ export class SubjectController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.subjectService.findOne(+id)
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.subjectService.findOne(id)
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateSubjectDto: Prisma.SubjectUpdateInput,
   ) {
-    return this.subjectService.update(+id, updateSubjectDto)
+    return this.subjectService.update(id, updateSubjectDto)
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.subjectService.remove(+id)
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.subjectService.remove(id)
   }
 }

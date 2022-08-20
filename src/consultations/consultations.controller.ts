@@ -1,16 +1,17 @@
 import {
   Body,
-  Controller,
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   UseGuards,
 } from '@nestjs/common'
-import { User } from '@prisma/client'
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
 import { CurrentUser } from 'src/current-user.decorator'
+import { UserDto } from 'src/users/dto/User.dto'
+import { ApiController } from 'src/utils/apiController.decorator'
 import { ConsultationsService } from './consultations.service'
 import { ConsultationPreviewDto } from './dto/ConsultationPreview.dto'
 import { CreateConsultationDto } from './dto/CreateConsultation.dto'
@@ -20,7 +21,7 @@ import { ParticipationService } from './participation.service'
 import { PresentationService } from './presentation.service'
 import { RatingService } from './rating.service'
 
-@Controller('consultations')
+@ApiController('consultations')
 export class ConsultationsController {
   constructor(
     private readonly consultationsService: ConsultationsService,
@@ -33,7 +34,7 @@ export class ConsultationsController {
   @Post()
   create(
     @Body() createConsultationDto: CreateConsultationDto,
-    @CurrentUser() user: User,
+    @CurrentUser() user: UserDto,
   ) {
     return this.consultationsService.create({
       ...createConsultationDto,
@@ -48,32 +49,32 @@ export class ConsultationsController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  async findOne(@Param('id') id: string, @CurrentUser() user: User) {
-    const participation = await this.participationService.findOne(+id, user.id)
-    return this.consultationsService.findOne(
-      +id,
-      participation?.id || undefined,
-    )
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: UserDto,
+  ) {
+    const participation = await this.participationService.findOne(id, user.id)
+    return this.consultationsService.findOne(id, participation?.id || undefined)
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateConsultationDto: UpdateConsultationDto,
   ) {
-    return this.consultationsService.update(+id, updateConsultationDto)
+    return this.consultationsService.update(id, updateConsultationDto)
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.consultationsService.remove(+id)
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.consultationsService.remove(id)
   }
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/join')
-  join(@Param('id') id: string, @CurrentUser() user: User) {
+  join(@Param('id') id: string, @CurrentUser() user: UserDto) {
     return this.participationService.create({
       consultationId: +id,
       userId: user.id,
@@ -84,7 +85,7 @@ export class ConsultationsController {
   @Post(':id/rate')
   async rate(
     @Param('id') id: string,
-    @CurrentUser() user: User,
+    @CurrentUser() user: UserDto,
     @Body() ratingDto: CreateRatingDto,
   ) {
     const participation = await this.participationService.findOne(+id, user.id)
