@@ -6,12 +6,13 @@
   "configurations": [
     {
       "name": "Launch Program",
-      "program": "${workspaceFolder}/src/main.ts",
+      "runtimeArgs": ["run-script", "start:debug"],
+      "runtimeExecutable": "npm",
       "request": "launch",
       "skipFiles": ["<node_internals>/**"],
       "outputCapture": "std",
       "type": "node",
-      "preLaunchTask": "npm: build"
+      "restart": true
     }
   ]
 }
