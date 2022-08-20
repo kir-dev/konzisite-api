@@ -1,8 +1,6 @@
 import { GroupRole } from '@prisma/client'
-import { Expose } from 'class-transformer'
 import { UserDto } from '../../users/dto/User.dto'
 
-@Expose()
 export class GroupSummaryDto {
   memberCount: number
   currentUserRole: GroupRole
