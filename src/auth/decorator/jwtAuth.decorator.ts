@@ -1,6 +1,11 @@
 import { applyDecorators, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth } from '@nestjs/swagger'
-import { JwtAuthGuard } from '../jwt-auth.guard'
+
+import { Injectable } from '@nestjs/common'
+import { AuthGuard } from '@nestjs/passport'
+
+@Injectable()
+class JwtAuthGuard extends AuthGuard('jwt') {}
 
 export function JwtAuth() {
   return applyDecorators(UseGuards(JwtAuthGuard), ApiBearerAuth())
