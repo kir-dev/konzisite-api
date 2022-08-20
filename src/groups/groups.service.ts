@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { GroupRole, Prisma } from '@prisma/client'
 import { PrismaService } from 'src/prisma/prisma.service'
+import { AllGroups } from './dto/AllGroups.dto'
 
 @Injectable()
 export class GroupsService {
@@ -25,11 +26,13 @@ export class GroupsService {
         },
       },
     })
-    return groups.map(({ members, _count, ...g }) => ({
-      ...g,
-      memberCount: _count.members,
-      currentUserRole: members.length > 0 ? members[0].role : GroupRole.NONE,
-    }))
+    return groups
+      .map(({ members, _count, ...g }) => ({
+        ...g,
+        memberCount: _count.members,
+        currentUserRole: members.length > 0 ? members[0].role : GroupRole.NONE,
+      }))
+      .map((g) => new AllGroups(g))
   }
 
   async findOne(id: number, userId: number) {

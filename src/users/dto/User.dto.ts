@@ -18,4 +18,8 @@ export class UserDto {
   @IsEmail()
   @ApiProperty({ example: 'noreply@example.com' })
   email: string
+
+  constructor(partial: Partial<UserDto>) {
+    Object.assign(this, partial)
+  }
 }

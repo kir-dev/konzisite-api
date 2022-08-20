@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common'
+import { ApiProperty } from '@nestjs/swagger'
 import { GroupRole } from '@prisma/client'
 import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
 import { CurrentUser } from 'src/current-user.decorator'
@@ -14,6 +15,7 @@ import { ManyUniqueUsersDto } from 'src/users/dto/ManyUniqueUsers.dto'
 import { UniqueUserDto } from 'src/users/dto/UniqueUser.dto'
 import { UserDto } from 'src/users/dto/User.dto'
 import { ApiController } from 'src/utils/apiController.decorator'
+import { AllGroups } from './dto/AllGroups.dto'
 import { CreateGroupDto } from './dto/createGroup.dto'
 import { GroupDetailsDto } from './dto/GroupDetails.dto'
 import { GroupPreviewDto } from './dto/GroupPreview.dto'
@@ -66,6 +68,7 @@ export class GroupsController {
   }
 
   @Get()
+  @ApiProperty({ type: [AllGroups] })
   findAll(@CurrentUser() user: UserDto): Promise<GroupPreviewDto[]> {
     return this.groupsService.findAll(user.id)
   }
