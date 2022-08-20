@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { Prisma } from '@prisma/client'
+import { GroupRole, Prisma } from '@prisma/client'
 import { PrismaService } from 'src/prisma/prisma.service'
 
 @Injectable()
@@ -9,31 +9,51 @@ export class GroupsService {
     return this.prisma.group.create({ data })
   }
 
-  findAll() {
-    return this.prisma.group.findMany({
+  async findAll(userId: number) {
+    const groups = await this.prisma.group.findMany({
       include: {
         owner: true,
-        members: {
+        _count: {
           select: {
-            user: true,
+            members: true,
+          },
+        },
+        members: {
+          where: {
+            userId,
           },
         },
       },
     })
+    return groups.map(({ members, _count, ...g }) => ({
+      ...g,
+      memberCount: _count.members,
+      currentUserRole: members.length > 0 ? members[0].role : GroupRole.NONE,
+    }))
   }
 
-  findOne(id: number) {
-    return this.prisma.group.findUnique({
+  async findOne(id: number, userId: number) {
+    const group = await this.prisma.group.findUnique({
       where: { id },
       include: {
         owner: true,
         members: {
           select: {
             user: true,
+            joinedAt: true,
+            role: true,
           },
         },
       },
     })
+    return {
+      ...group,
+      members: group.members.map(({ user, ...membership }) => ({
+        ...user,
+        ...membership,
+      })),
+      currentUserRole: group.members.find((m) => m.user.id === userId).role,
+    }
   }
 
   update(id: number, data: Prisma.GroupUncheckedUpdateInput) {
@@ -44,9 +64,9 @@ export class GroupsService {
     return this.prisma.group.delete({ where: { id } })
   }
 
-  addMember(groupId: number, userId: number) {
+  addMember(groupId: number, userId: number, role: GroupRole) {
     return this.prisma.userToGroup.create({
-      data: { userId, groupId },
+      data: { userId, groupId, role },
     })
   }
 
