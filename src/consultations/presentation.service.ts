@@ -13,6 +13,9 @@ export class PresentationService {
       where: {
         userId,
       },
+      include: {
+        consultation: true,
+      },
     })
 
     return presentations
@@ -22,6 +25,9 @@ export class PresentationService {
     const presentations = await this.prisma.presentation.findMany({
       where: {
         consultationId,
+      },
+      include: {
+        user: true,
       },
     })
 

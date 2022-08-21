@@ -19,16 +19,16 @@ export class ParticipationService {
       },
     })
 
-    return participations.map(({ consultation, ...p }) => ({
-      ...p,
-      consultation,
-    }))
+    return participations
   }
 
   async findAllByConsultationId(consultationId: number) {
     const participations = await this.prisma.participation.findMany({
       where: {
         consultationId,
+      },
+      include: {
+        user: true,
       },
     })
 
