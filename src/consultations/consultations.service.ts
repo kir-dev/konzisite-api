@@ -5,8 +5,8 @@ import { PrismaService } from '../prisma/prisma.service'
 @Injectable()
 export class ConsultationsService {
   constructor(private prisma: PrismaService) {}
-  create(createConsultationDto: Prisma.ConsultationCreateInput) {
-    return 'This action adds a new consultation'
+  create(data: Prisma.ConsultationCreateInput) {
+    return ''
   }
 
   findAll() {
