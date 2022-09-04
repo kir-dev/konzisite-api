@@ -61,15 +61,16 @@ export class ConsultationsController {
     return this.consultationsService.findOne(+id) // TODO response refactor
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
     @Body() updateConsultationDto: UpdateConsultationDto,
   ) {
-    // TODO relation stuff
     return this.consultationsService.update(+id, updateConsultationDto)
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.consultationsService.remove(+id)
