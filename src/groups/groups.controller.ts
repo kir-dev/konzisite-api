@@ -14,6 +14,8 @@ import { CurrentUser } from 'src/current-user.decorator'
 import { ManyUniqueUsersDto } from 'src/users/dto/ManyUniqueUsers.dto'
 import { UniqueUserDto } from 'src/users/dto/UniqueUser.dto'
 import { CreateGroupDto } from './dto/createGroup.dto'
+import { GroupDetailsDto } from './dto/GroupDetails.dto'
+import { GroupPreviewDto } from './dto/GroupPreview.dto'
 import { UpdateGroupDto } from './dto/updateGroup.dto'
 import { GroupsService } from './groups.service'
 @UseGuards(JwtAuthGuard)
@@ -62,12 +64,15 @@ export class GroupsController {
   }
 
   @Get()
-  findAll(@CurrentUser() user: User) {
+  findAll(@CurrentUser() user: User): Promise<GroupPreviewDto[]> {
     return this.groupsService.findAll(user.id)
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @CurrentUser() user: User) {
+  findOne(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+  ): Promise<GroupDetailsDto> {
     return this.groupsService.findOne(+id, user.id)
   }
 

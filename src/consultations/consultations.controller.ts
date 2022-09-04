@@ -6,17 +6,42 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common'
-import { Prisma } from '@prisma/client'
+import { User } from '@prisma/client'
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
+import { CurrentUser } from 'src/current-user.decorator'
 import { ConsultationsService } from './consultations.service'
+import { CreateConsultationDto } from './dto/CreateConsultation.dto'
+import { UpdateConsultationDto } from './dto/UpdateConsultation.dto'
+import { ParticipationService } from './participation.service'
+import { PresentationService } from './presentation.service'
+import { RatingService } from './rating.service'
 
 @Controller('consultations')
 export class ConsultationsController {
-  constructor(private readonly consultationsService: ConsultationsService) {}
+  constructor(
+    private readonly consultationsService: ConsultationsService,
+    private readonly participationService: ParticipationService,
+    private readonly presentationService: PresentationService,
+    private readonly ratingService: RatingService,
+  ) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createConsultationDto: Prisma.ConsultationCreateInput) {
-    return this.consultationsService.create(createConsultationDto)
+  create(
+    @Body() createConsultationDto: CreateConsultationDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.consultationsService.create({
+      ...createConsultationDto,
+      ownerId: user.id,
+    })
+  }
+
+  @Get(':id/presentations')
+  findPresenters(@Param('id') id: string) {
+    return this.presentationService.findAllByConsultationId(+id)
   }
 
   @Get()
@@ -32,7 +57,7 @@ export class ConsultationsController {
   @Patch(':id')
   update(
     @Param('id') id: string,
-    @Body() updateConsultationDto: Prisma.ConsultationUpdateInput,
+    @Body() updateConsultationDto: UpdateConsultationDto,
   ) {
     return this.consultationsService.update(+id, updateConsultationDto)
   }
