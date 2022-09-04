@@ -25,7 +25,7 @@ export class ConsultationsService {
         targetGroups: {
           connect: targetGroupIds.map((id) => ({ id })),
         },
-        presantations: {
+        presentations: {
           createMany: {
             data: presenterIds.map((userId) => ({ userId })),
           },
@@ -34,8 +34,24 @@ export class ConsultationsService {
     })
   }
 
-  findAll() {
-    return this.prisma.consultation.findMany()
+  async findAll() {
+    const results = await this.prisma.consultation.findMany({
+      include: {
+        subject: true,
+        presentations: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    })
+    return results.map(({ ownerId, subjectId, ...details }) => ({
+      ...details,
+      presentations: details.presentations.map((p) => ({
+        presentationId: p.id,
+        ...p.user,
+      })),
+    }))
   }
 
   findOne(id: number) {

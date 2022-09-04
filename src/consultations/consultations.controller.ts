@@ -12,7 +12,9 @@ import { User } from '@prisma/client'
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
 import { CurrentUser } from 'src/current-user.decorator'
 import { ConsultationsService } from './consultations.service'
+import { ConsultationPreviewDto } from './dto/ConsultationPreview.dto'
 import { CreateConsultationDto } from './dto/CreateConsultation.dto'
+import { CreateRatingDto } from './dto/CreateRating.dto'
 import { UpdateConsultationDto } from './dto/UpdateConsultation.dto'
 import { ParticipationService } from './participation.service'
 import { PresentationService } from './presentation.service'
@@ -39,19 +41,24 @@ export class ConsultationsController {
     })
   }
 
-  @Get(':id/presentations')
-  findPresenters(@Param('id') id: string) {
-    return this.presentationService.findAllByConsultationId(+id)
-  }
-
   @Get()
-  findAll() {
-    return this.consultationsService.findAll()
+  async findAll(): Promise<ConsultationPreviewDto[]> {
+    const konzik = await this.consultationsService.findAll()
+    const ratings = await this.ratingService.avarageRatings()
+    return konzik.map((k) => ({
+      ...k,
+      presentations: k.presentations.map(({ presentationId, ...details }) => ({
+        ...details,
+        averageRating:
+          ratings.find((r) => r.presentationId === presentationId)?._avg
+            .value || 0,
+      })),
+    }))
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.consultationsService.findOne(+id)
+  findOne(@Param('id') id: string) /*: Promise<ConsultationDetailsDto> */ {
+    return this.consultationsService.findOne(+id) // TODO response refactor
   }
 
   @Patch(':id')
@@ -59,11 +66,41 @@ export class ConsultationsController {
     @Param('id') id: string,
     @Body() updateConsultationDto: UpdateConsultationDto,
   ) {
+    // TODO relation stuff
     return this.consultationsService.update(+id, updateConsultationDto)
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.consultationsService.remove(+id)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/join')
+  join(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.participationService.create({
+      consultationId: +id,
+      userId: user.id,
+    })
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/rate')
+  async rate(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+    @Body() ratingDto: CreateRatingDto,
+  ) {
+    const participation = await this.participationService.findOne(+id, user.id)
+    const presentation = await this.participationService.findOne(
+      +id,
+      ratingDto.ratedUserId,
+    )
+    return this.ratingService.create({
+      participationId: participation.id,
+      presentationId: presentation.id,
+      text: ratingDto.text,
+      value: ratingDto.value,
+    })
   }
 }
