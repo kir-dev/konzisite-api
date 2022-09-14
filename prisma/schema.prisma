@@ -84,6 +84,7 @@ model Rating {
   participationId   Int
   ratedPresentation Presentation  @relation(fields: [presentationId], references: [id], onDelete: Cascade)
   presentationId    Int
+  anonymous         Boolean       @default(false)
 
   @@unique([participationId, presentationId])
 }
@@ -120,7 +121,8 @@ model Consultation {
   targetGroups  Group[]
   subject       Subject              @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   subjectId     Int
-  request       ConsultationRequest?
+  request       ConsultationRequest? @relation(fields: [requestId], references: [id])
+  requestId     Int?
   location      String
   startDate     DateTime
   endDate       DateTime
@@ -131,14 +133,15 @@ model Consultation {
 }
 
 model ConsultationRequest {
-  id             Int           @id @default(autoincrement())
-  initializer    User          @relation(fields: [initializerId], references: [id], name: "initializer", onDelete: Cascade)
+  id             Int            @id @default(autoincrement())
+  name           String
+  initializer    User           @relation(fields: [initializerId], references: [id], name: "initializer", onDelete: Cascade)
   initializerId  Int
-  subject        Subject       @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subject        Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   subjectId      Int
-  supporters     User[]        @relation(name: "supporters")
-  consultation   Consultation? @relation(fields: [consultationId], references: [id])
-  consultationId Int           @unique
+  supporters     User[]         @relation(name: "supporters")
+  consultation   Consultation[]
+  consultationId Int            @unique
   descMarkdown   String
   expiryDate     DateTime
 

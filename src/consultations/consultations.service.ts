@@ -7,11 +7,22 @@ import { UpdateConsultationDto } from './dto/UpdateConsultation.dto'
 export class ConsultationsService {
   constructor(private prisma: PrismaService) {}
   create(dto: CreateConsultationDto) {
-    const { ownerId, subjectId, targetGroupIds, presenterIds, ...restOfData } =
-      dto
+    const {
+      ownerId,
+      subjectId,
+      targetGroupIds,
+      presenterIds,
+      requestId,
+      ...restOfData
+    } = dto
     return this.prisma.consultation.create({
       data: {
         ...restOfData,
+        request: {
+          connect: {
+            id: requestId,
+          },
+        },
         owner: {
           connect: {
             id: ownerId,
@@ -38,7 +49,6 @@ export class ConsultationsService {
     const results = await this.prisma.consultation.findMany({
       include: {
         subject: true,
-        targetGroups: true,
         presentations: {
           include: {
             user: true,
@@ -47,10 +57,9 @@ export class ConsultationsService {
         },
       },
     })
-    return results.map(({ ownerId, subjectId, ...details }) => ({
+    return results.map(({ ownerId, subjectId, requestId, ...details }) => ({
       ...details,
       presentations: details.presentations.map((p) => ({
-        presentationId: p.id,
         averageRating:
           p.ratings.reduce((acc, rating) => acc + rating.value, 0) /
             p.ratings.length || 0,
@@ -59,18 +68,54 @@ export class ConsultationsService {
     }))
   }
 
-  findOne(id: number) {
-    return this.prisma.consultation.findUnique({
+  async findOne(id: number, participationId?: number) {
+    const { ownerId, subjectId, requestId, ...details } =
+      await this.prisma.consultation.findUnique({
+        where: { id },
+        include: {
+          targetGroups: true,
+          presentations: {
+            include: {
+              user: true,
+              ratings: {
+                where: {
+                  participationId,
+                },
+              },
+            },
+          },
+          subject: true,
+          request: true,
+          owner: true,
+          participants: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      })
+    return {
+      ...details,
+      presentations: details.presentations.map(({ user, ratings }) => ({
+        ...user,
+        rating: ratings.length > 0 ? ratings[0] : undefined,
+      })),
+      participants: details.participants.map(({ user }) => ({ ...user })),
+    }
+  }
+
+  async update(id: number, dto: UpdateConsultationDto) {
+    const konzi = await this.prisma.consultation.findUnique({
       where: { id },
       include: {
         targetGroups: true,
         presentations: true,
+        subject: true,
+        request: true,
+        owner: true,
+        participants: true,
       },
     })
-  }
-
-  async update(id: number, dto: UpdateConsultationDto) {
-    const konzi = await this.findOne(id)
     const { subjectId, targetGroupIds, presenterIds, ...restOfData } = dto
     return this.prisma.consultation.update({
       where: { id },
