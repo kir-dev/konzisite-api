@@ -113,7 +113,7 @@ model Presentation {
 model Consultation {
   id            Int                  @id @default(autoincrement())
   name          String
-  presantations Presentation[]
+  presentations Presentation[]
   participants  Participation[]
   owner         User                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId       Int

@@ -8,6 +8,11 @@ export class PresentationService {
   create(data: Prisma.PresentationUncheckedCreateInput) {
     return this.prisma.presentation.create({ data })
   }
+
+  createMany(data: Prisma.PresentationUncheckedCreateInput[]) {
+    return this.prisma.presentation.createMany({ data })
+  }
+
   async findAllByUserId(userId: number) {
     const presentations = await this.prisma.presentation.findMany({
       where: {
