@@ -79,13 +79,4 @@ export class RatingService {
       },
     })
   }
-
-  avarageRatings() {
-    return this.prisma.rating.groupBy({
-      by: ['presentationId'],
-      _avg: {
-        value: true,
-      },
-    })
-  }
 }

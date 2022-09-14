@@ -42,6 +42,7 @@ export class ConsultationsService {
         presentations: {
           include: {
             user: true,
+            ratings: true,
           },
         },
       },
@@ -50,6 +51,9 @@ export class ConsultationsService {
       ...details,
       presentations: details.presentations.map((p) => ({
         presentationId: p.id,
+        averageRating:
+          p.ratings.reduce((acc, rating) => acc + rating.value, 0) /
+            p.ratings.length || 0,
         ...p.user,
       })),
     }))

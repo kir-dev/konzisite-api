@@ -43,17 +43,7 @@ export class ConsultationsController {
 
   @Get()
   async findAll(): Promise<ConsultationPreviewDto[]> {
-    const konzik = await this.consultationsService.findAll()
-    const ratings = await this.ratingService.avarageRatings()
-    return konzik.map((k) => ({
-      ...k,
-      presentations: k.presentations.map(({ presentationId, ...details }) => ({
-        ...details,
-        averageRating:
-          ratings.find((r) => r.presentationId === presentationId)?._avg
-            .value || 0,
-      })),
-    }))
+    return this.consultationsService.findAll()
   }
 
   @Get(':id')
@@ -93,7 +83,7 @@ export class ConsultationsController {
     @Body() ratingDto: CreateRatingDto,
   ) {
     const participation = await this.participationService.findOne(+id, user.id)
-    const presentation = await this.participationService.findOne(
+    const presentation = await this.presentationService.findOne(
       +id,
       ratingDto.ratedUserId,
     )
