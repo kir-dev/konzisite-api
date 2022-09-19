@@ -46,14 +46,19 @@ export class ConsultationsController {
     return this.consultationsService.findAll()
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) /*: Promise<ConsultationDetailsDto> */ {
-    return this.consultationsService.findOne(+id) // TODO response refactor
+  async findOne(@Param('id') id: string, @CurrentUser() user: User) {
+    const participation = await this.participationService.findOne(+id, user.id)
+    return this.consultationsService.findOne(
+      +id,
+      participation?.id || undefined,
+    )
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateConsultationDto: UpdateConsultationDto,
   ) {
@@ -92,6 +97,7 @@ export class ConsultationsController {
       presentationId: presentation.id,
       text: ratingDto.text,
       value: ratingDto.value,
+      anonymous: ratingDto.anonymous,
     })
   }
 }

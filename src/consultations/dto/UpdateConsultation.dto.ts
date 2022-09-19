@@ -7,5 +7,4 @@ export class UpdateConsultationDto {
   descMarkDown?: string
   presenterIds?: number[]
   targetGroupIds?: number[]
-  requestId?: number
 }
