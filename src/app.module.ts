@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module'
 import { ConsultationsModule } from './consultations/consultations.module'
 import { GroupsModule } from './groups/groups.module'
 import { PrismaModule } from './prisma/prisma.module'
+import { SeederModule } from './seed/seeder.module'
 import { SubjectModule } from './subject/subject.module'
 import { UsersModule } from './users/users.module'
 
@@ -16,6 +17,7 @@ import { UsersModule } from './users/users.module'
     SubjectModule,
     AuthModule,
     ConsultationsModule,
+    SeederModule,
   ],
   controllers: [AppController],
   providers: [AppService],

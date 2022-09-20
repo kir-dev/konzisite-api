@@ -6,9 +6,8 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common'
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
+import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
 import { CurrentUser } from 'src/current-user.decorator'
 import { UserDto } from 'src/users/dto/User.dto'
 import { ApiController } from 'src/utils/apiController.decorator'
@@ -30,7 +29,7 @@ export class ConsultationsController {
     private readonly ratingService: RatingService,
   ) {}
 
-  @UseGuards(JwtAuthGuard)
+  @JwtAuth()
   @Post()
   create(
     @Body() createConsultationDto: CreateConsultationDto,
@@ -47,7 +46,7 @@ export class ConsultationsController {
     return this.consultationsService.findAll()
   }
 
-  @UseGuards(JwtAuthGuard)
+  @JwtAuth()
   @Get(':id')
   async findOne(
     @Param('id', ParseIntPipe) id: number,
@@ -57,7 +56,7 @@ export class ConsultationsController {
     return this.consultationsService.findOne(id, participation?.id || undefined)
   }
 
-  @UseGuards(JwtAuthGuard)
+  @JwtAuth()
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -66,13 +65,13 @@ export class ConsultationsController {
     return this.consultationsService.update(id, updateConsultationDto)
   }
 
-  @UseGuards(JwtAuthGuard)
+  @JwtAuth()
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.consultationsService.remove(id)
   }
 
-  @UseGuards(JwtAuthGuard)
+  @JwtAuth()
   @Post(':id/join')
   join(@Param('id') id: string, @CurrentUser() user: UserDto) {
     return this.participationService.create({
@@ -81,7 +80,7 @@ export class ConsultationsController {
     })
   }
 
-  @UseGuards(JwtAuthGuard)
+  @JwtAuth()
   @Post(':id/rate')
   async rate(
     @Param('id') id: string,
