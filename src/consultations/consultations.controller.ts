@@ -12,6 +12,7 @@ import { CurrentUser } from 'src/current-user.decorator'
 import { UserDto } from 'src/users/dto/User.dto'
 import { ApiController } from 'src/utils/apiController.decorator'
 import { ConsultationsService } from './consultations.service'
+import { ConsultationDetailsDto } from './dto/ConsultationDetails.dto'
 import { ConsultationPreviewDto } from './dto/ConsultationPreview.dto'
 import { CreateConsultationDto } from './dto/CreateConsultation.dto'
 import { CreateRatingDto } from './dto/CreateRating.dto'
@@ -51,9 +52,9 @@ export class ConsultationsController {
   async findOne(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: UserDto,
-  ) {
+  ): Promise<ConsultationDetailsDto> {
     const participation = await this.participationService.findOne(id, user.id)
-    return this.consultationsService.findOne(id, participation?.id || undefined)
+    return this.consultationsService.findOne(id, participation?.id)
   }
 
   @JwtAuth()
@@ -85,19 +86,17 @@ export class ConsultationsController {
   async rate(
     @Param('id') id: string,
     @CurrentUser() user: UserDto,
-    @Body() ratingDto: CreateRatingDto,
+    @Body() { ratedUserId, ...ratingDto }: CreateRatingDto,
   ) {
     const participation = await this.participationService.findOne(+id, user.id)
     const presentation = await this.presentationService.findOne(
       +id,
-      ratingDto.ratedUserId,
+      ratedUserId,
     )
     return this.ratingService.create({
       participationId: participation.id,
       presentationId: presentation.id,
-      text: ratingDto.text,
-      value: ratingDto.value,
-      anonymous: ratingDto.anonymous,
+      ...ratingDto,
     })
   }
 }

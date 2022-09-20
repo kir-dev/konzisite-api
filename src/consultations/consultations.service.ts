@@ -77,11 +77,7 @@ export class ConsultationsService {
           presentations: {
             include: {
               user: true,
-              ratings: {
-                where: {
-                  participationId,
-                },
-              },
+              ratings: true,
             },
           },
           subject: true,
@@ -98,7 +94,10 @@ export class ConsultationsService {
       ...details,
       presentations: details.presentations.map(({ user, ratings }) => ({
         ...user,
-        rating: ratings.length > 0 ? ratings[0] : undefined,
+        averageRating:
+          ratings.reduce((acc, rating) => acc + rating.value, 0) /
+            ratings.length || 0,
+        rating: ratings.find((r) => r.participationId === participationId),
       })),
       participants: details.participants.map(({ user }) => ({ ...user })),
     }
