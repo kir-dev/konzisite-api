@@ -29,7 +29,11 @@
     "@nestjs/mapped-types": "^1.1.0",
     "@nestjs/passport": "^9.0.0",
     "@nestjs/platform-express": "^9.0.11",
+<<<<<<< HEAD
     "@nestjs/swagger": "^6.0.5",
+=======
+    "@nestjs/schedule": "^2.1.0",
+>>>>>>> d50b9e9 (add job scheduling #58)
     "@prisma/client": "^4.2.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
@@ -44,6 +48,7 @@
     "@nestjs/cli": "^9.0.0",
     "@nestjs/schematics": "^9.0.1",
     "@nestjs/testing": "^9.0.11",
+    "@types/cron": "^2.0.0",
     "@types/express": "^4.17.13",
     "@types/jest": "^28.1.7",
     "@types/node": "^18.7.7",
