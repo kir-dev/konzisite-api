@@ -188,16 +188,4 @@ export class SeederService {
     })
     this.logger.log(`${manyData.count} ratings created.`)
   }
-
-  async checkIfDbEmpty() {
-    const counts: number[] = []
-    counts.push(await this.prisma.user.count())
-    counts.push(await this.prisma.group.count())
-    counts.push(await this.prisma.subject.count())
-    counts.push(await this.prisma.consultation.count())
-    counts.push(await this.prisma.presentation.count())
-    counts.push(await this.prisma.participation.count())
-    counts.push(await this.prisma.rating.count())
-    return !counts.find((n) => n > 0)
-  }
 }
