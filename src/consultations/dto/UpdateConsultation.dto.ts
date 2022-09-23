@@ -1,10 +1,6 @@
-export class UpdateConsultationDto {
-  name?: string
-  subjectId?: number
-  location?: string
-  startDate?: Date
-  endDate?: Date
-  descMarkDown?: string
-  presenterIds?: number[]
-  targetGroupIds?: number[]
-}
+import { OmitType, PartialType } from '@nestjs/swagger'
+import { CreateConsultationDto } from './CreateConsultation.dto'
+
+export class UpdateConsultationDto extends PartialType(
+  OmitType(CreateConsultationDto, ['ownerId', 'requestId']),
+) {}

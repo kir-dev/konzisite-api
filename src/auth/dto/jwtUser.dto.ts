@@ -1,7 +1,7 @@
 import { IsNotEmpty } from 'class-validator'
-import { UserDto } from 'src/users/dto/User.dto'
+import { UserEntity } from 'src/users/dto/UserEntity.dto'
 
-export class JwtUserDto extends UserDto {
+export class JwtUserDto extends UserEntity {
   @IsNotEmpty()
   iat: number
 

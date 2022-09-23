@@ -15,14 +15,19 @@ export class ConsultationsService {
       requestId,
       ...restOfData
     } = dto
+    const requestConnection = requestId
+      ? {
+          request: {
+            connect: {
+              id: requestId,
+            },
+          },
+        }
+      : {}
     return this.prisma.consultation.create({
       data: {
         ...restOfData,
-        request: {
-          connect: {
-            id: requestId,
-          },
-        },
+        ...requestConnection,
         owner: {
           connect: {
             id: ownerId,

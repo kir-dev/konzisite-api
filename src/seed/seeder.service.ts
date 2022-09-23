@@ -18,23 +18,23 @@ export class SeederService {
     const group = await this.prisma.group.create({
       data: {
         ...seededGroup,
-        ownerId: 1,
+        ownerId: 1000001,
         members: {
           create: [
             {
-              userId: 1,
+              userId: 1000001,
               role: GroupRoles.OWNER,
             },
             {
-              userId: 2,
+              userId: 1000002,
               role: GroupRoles.MEMBER,
             },
             {
-              userId: 3,
+              userId: 1000003,
               role: GroupRoles.PENDING,
             },
             {
-              userId: 4,
+              userId: 1000004,
               role: GroupRoles.ADMIN,
             },
           ],
@@ -56,12 +56,12 @@ export class SeederService {
         ...konziData,
         owner: {
           connect: {
-            id: 1,
+            id: 1000001,
           },
         },
         subject: {
           connect: {
-            id: 1,
+            id: 1000001,
           },
         },
         targetGroups: {
@@ -71,14 +71,14 @@ export class SeederService {
         },
         presentations: {
           create: {
-            id: 1,
-            userId: 1,
+            id: 1000001,
+            userId: 1000001,
           },
         },
         participants: {
           create: {
-            id: 1,
-            userId: 2,
+            id: 1000001,
+            userId: 1000002,
           },
         },
       },
@@ -90,8 +90,8 @@ export class SeederService {
     }
     data = await this.prisma.rating.create({
       data: {
-        participationId: 1,
-        presentationId: 1,
+        participationId: 1000001,
+        presentationId: 1000001,
         value: 4,
         text: 'Egész jó volt!',
         anonymous: false,
@@ -111,39 +111,39 @@ export class SeederService {
         ...konziData,
         owner: {
           connect: {
-            id: 5,
+            id: 1000005,
           },
         },
         subject: {
           connect: {
-            id: 4,
+            id: 1000004,
           },
         },
         presentations: {
           create: [
             {
-              id: 2,
-              userId: 1,
+              id: 1000002,
+              userId: 1000001,
             },
             {
-              id: 3,
-              userId: 2,
+              id: 1000003,
+              userId: 1000002,
             },
           ],
         },
         participants: {
           create: [
             {
-              id: 2,
-              userId: 3,
+              id: 1000002,
+              userId: 1000003,
             },
             {
-              id: 3,
-              userId: 4,
+              id: 1000003,
+              userId: 1000004,
             },
             {
-              id: 4,
-              userId: 5,
+              id: 1000004,
+              userId: 1000005,
             },
           ],
         },
@@ -157,29 +157,29 @@ export class SeederService {
     const manyData = await this.prisma.rating.createMany({
       data: [
         {
-          participationId: 2,
-          presentationId: 2,
+          participationId: 1000002,
+          presentationId: 1000002,
           value: 4,
           text: 'Egész érthető volt',
           anonymous: false,
         },
         {
-          participationId: 2,
-          presentationId: 3,
+          participationId: 1000002,
+          presentationId: 1000003,
           value: 1,
           text: 'Nem tudom minek volt ott, nem tett hozzá semmit',
           anonymous: true,
         },
         {
-          participationId: 3,
-          presentationId: 2,
+          participationId: 1000003,
+          presentationId: 1000002,
           value: 5,
           text: 'Pacek',
           anonymous: true,
         },
         {
-          participationId: 3,
-          presentationId: 3,
+          participationId: 1000003,
+          presentationId: 1000003,
           value: 4,
           text: 'Gánya',
           anonymous: false,

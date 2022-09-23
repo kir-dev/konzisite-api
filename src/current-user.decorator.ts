@@ -4,9 +4,9 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common'
 import { JwtUserDto } from 'src/auth/dto/jwtUser.dto'
-import { UserDto } from 'src/users/dto/User.dto'
+import { UserEntity } from 'src/users/dto/UserEntity.dto'
 
-type AnyUser = UserDto | JwtUserDto
+type AnyUser = UserEntity | JwtUserDto
 
 export const CurrentUser = createParamDecorator<keyof AnyUser | undefined>(
   /**
