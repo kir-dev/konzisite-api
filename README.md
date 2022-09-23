@@ -41,6 +41,8 @@ Finally, copy the contents of `.env.example` to a new file named `.env`. Replace
 $ npm install
 # Then apply the migrations
 $ npx prisma migrate dev
+# Optionally seed the databse with mock data
+$ npm run seed
 ```
 
 ## Running the app
