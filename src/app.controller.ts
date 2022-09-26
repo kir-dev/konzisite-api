@@ -1,7 +1,8 @@
-import { Controller, Get } from '@nestjs/common'
+import { Get } from '@nestjs/common'
+import { ApiController } from 'src/utils/apiController.decorator'
 import { AppService } from './app.service'
 
-@Controller()
+@ApiController()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 

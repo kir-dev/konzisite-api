@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { User } from '@prisma/client'
 import { UsersService } from '../users/users.service'
@@ -6,6 +6,8 @@ import { OAuthUser } from './oauthuser'
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name)
+
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
@@ -23,6 +25,9 @@ export class AuthService {
       lastName: oAuthUser.sn,
       email: oAuthUser.mail,
     })
+
+    this.logger.log(`Created new user ${newUser.id}`)
+
     return newUser
   }
 

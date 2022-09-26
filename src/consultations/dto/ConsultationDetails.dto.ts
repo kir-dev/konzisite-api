@@ -5,11 +5,13 @@ import { ConsultationEntity } from './ConsultationEntity.dto'
 import { ConsultationRequestEntity } from './ConsultationRequestEntity.dto'
 import { RatingEntity } from './RatingEntity.dto'
 
+export class Presentation extends UserEntity {
+  averageRating: number
+  rating?: RatingEntity
+}
+
 export class ConsultationDetailsDto extends ConsultationEntity {
-  presentations: {
-    averageRating: number
-    rating?: RatingEntity
-  }[]
+  presentations: Presentation[]
   participants: UserEntity[]
   owner: UserEntity
   targetGroups: GroupEntity[]

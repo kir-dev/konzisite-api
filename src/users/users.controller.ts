@@ -1,56 +1,35 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Logger,
-  Param,
-  Patch,
-  Post,
-  UseGuards,
-} from '@nestjs/common'
-import { Prisma, User } from '@prisma/client'
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
+import { Delete, Get, Param, ParseIntPipe } from '@nestjs/common'
+import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
 import { CurrentUser } from 'src/current-user.decorator'
+import { ApiController } from 'src/utils/apiController.decorator'
+import { UserEntity } from './dto/UserEntity.dto'
 import { UsersService } from './users.service'
 
-@Controller('users')
+@JwtAuth()
+@ApiController('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  private readonly logger = new Logger(UsersController.name)
-
-  @Post()
-  create(@Body() createUserDto: Prisma.UserCreateInput) {
-    return this.usersService.create(createUserDto)
-  }
-
   @Get()
-  findAll() {
+  findAll(): Promise<UserEntity[] /*UserPreview[]*/> {
     return this.usersService.findAll()
   }
 
   @Get('profile')
-  @UseGuards(JwtAuthGuard)
-  findProfile(@CurrentUser() user: User) {
+  @JwtAuth()
+  findProfile(
+    @CurrentUser() user: UserEntity,
+  ): Promise<UserEntity /*UserDetails*/> {
     return this.usersService.findOne(user.id)
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(Number(id))
+  findOne(@Param('id', ParseIntPipe) id: number): Promise<UserEntity> {
+    return this.usersService.findOne(id)
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateUserDto: Prisma.UserUpdateInput,
-  ) {
-    return this.usersService.update(Number(id), updateUserDto)
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(Number(id))
+  @Delete('profile')
+  remove(@CurrentUser() user: UserEntity): Promise<UserEntity> {
+    return this.usersService.remove(user.id)
   }
 }
