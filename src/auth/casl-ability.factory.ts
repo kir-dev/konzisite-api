@@ -63,4 +63,14 @@ export class CaslAbilityFactory {
     }
     return build()
   }
+
+  createForSubject = async (user: User) => {
+    const { can, build } = new AbilityBuilder<AppAbility>(createPrismaAbility)
+
+    if (user.isAdmin) {
+      can(Permissions.Manage, 'Subject')
+    }
+
+    return build()
+  }
 }
