@@ -16,6 +16,7 @@ model User {
   firstName              String
   lastName               String
   email                  String                @unique
+  isAdmin                Boolean               @default(false)
   //subjects    Subject[]
   ownedGroups            Group[]
   memberships            UserToGroup[]

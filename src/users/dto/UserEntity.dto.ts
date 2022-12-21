@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsEmail, IsInt, IsNotEmpty, IsUUID, Min } from 'class-validator'
+import {
+  IsBoolean,
+  IsEmail,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsUUID,
+  Min,
+} from 'class-validator'
 
 export class UserEntity {
   @IsInt()
@@ -18,6 +26,10 @@ export class UserEntity {
   @IsEmail()
   @ApiProperty({ example: 'noreply@example.com' })
   email: string
+
+  @IsBoolean()
+  @IsOptional()
+  isAdmin: boolean
 
   constructor(partial: Partial<UserEntity>) {
     Object.assign(this, partial)

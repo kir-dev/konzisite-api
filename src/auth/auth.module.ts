@@ -1,5 +1,5 @@
 import { HttpModule } from '@nestjs/axios'
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
 import { PrismaModule } from 'src/prisma/prisma.module'
@@ -7,11 +7,12 @@ import { UsersModule } from 'src/users/users.module'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { AuthschStrategy } from './authsch.strategy'
+import { CaslAbilityFactory } from './casl-ability.factory'
 import { JwtStrategy } from './jwt.strategy'
 
 @Module({
   imports: [
-    UsersModule,
+    forwardRef(() => UsersModule),
     PrismaModule,
     HttpModule,
     JwtModule.register({
@@ -21,6 +22,7 @@ import { JwtStrategy } from './jwt.strategy'
     PassportModule.register({}),
   ],
   controllers: [AuthController],
-  providers: [AuthschStrategy, JwtStrategy, AuthService],
+  providers: [AuthschStrategy, JwtStrategy, AuthService, CaslAbilityFactory],
+  exports: [CaslAbilityFactory],
 })
 export class AuthModule {}

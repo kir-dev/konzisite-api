@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import { AuthModule } from 'src/auth/auth.module'
 import { PrismaModule } from 'src/prisma/prisma.module'
 import { ConsultationRequestService } from './consultationRequest.service'
 import { ConsultationsController } from './consultations.controller'
@@ -8,7 +9,7 @@ import { PresentationService } from './presentation.service'
 import { RatingService } from './rating.service'
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, AuthModule],
   controllers: [ConsultationsController],
   providers: [
     ConsultationsService,
