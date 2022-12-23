@@ -6,7 +6,7 @@ import {
   ConsultationRequest,
   Group,
   Subject,
-  User,
+  User
 } from '@prisma/client'
 import { GroupRoles } from 'src/groups/dto/GroupEntity.dto'
 import { PrismaService } from 'src/prisma/prisma.service'
@@ -30,6 +30,7 @@ export enum Permissions {
   AddMember = 'add_member',
   ApproveMember = 'approve_member',
   PromoteMember = 'promote_member',
+  PromoteUser = 'promote_user',
 }
 
 @Injectable()
@@ -64,12 +65,34 @@ export class CaslAbilityFactory {
     return build()
   }
 
-  createForSubject = async (user: User) => {
+  createForSubject = (user: User) => {
     const { can, build } = new AbilityBuilder<AppAbility>(createPrismaAbility)
 
     if (user.isAdmin) {
       can(Permissions.Manage, 'Subject')
     }
+
+    return build()
+  }
+
+  createForUser = (currentUser: User, userIdToManage: number) => {
+    const { can, cannot, build } = new AbilityBuilder<AppAbility>(createPrismaAbility)
+    if (currentUser.id === userIdToManage) {
+      can(Permissions.Manage, 'User')
+    }
+
+    if (currentUser.isAdmin) {
+      can(Permissions.Manage, 'User')
+    } else {
+      cannot(Permissions.PromoteUser, 'User')
+    }
+    return build()
+  }
+
+  createForConsultation = (user: User, consultationId: number) => {
+    const { can, cannot, build } = new AbilityBuilder<AppAbility>(createPrismaAbility)
+
+    // TODO
 
     return build()
   }

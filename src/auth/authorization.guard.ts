@@ -3,13 +3,13 @@ import {
   ExecutionContext,
   HttpException,
   HttpStatus,
-  Injectable,
+  Injectable
 } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import {
   AppSubjects,
   CaslAbilityFactory,
-  Permissions,
+  Permissions
 } from './casl-ability.factory'
 
 @Injectable()
@@ -30,25 +30,31 @@ export class AuthorizationGuard implements CanActivate {
     )
     if (!action || !requestSubject) return true
     const request = context.switchToHttp().getRequest()
+    const paramId: number = +request.params.id
+    if (Number.isNaN(paramId) && request.params.id) {
+      throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST)
+    }
 
     switch (requestSubject) {
       case 'Group': {
-        const groupId: number = +request.params.id
-        if (Number.isNaN(groupId) && request.params.id) {
-          throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST)
-        }
-
-        const ability = await this.caslAbilityFactory.createForGroup(
+          const ability = await this.caslAbilityFactory.createForGroup(
           request.user,
-          groupId,
+          paramId,
         )
         return ability.can(action, requestSubject)
       }
       case 'Subject': {
-        const ability = await this.caslAbilityFactory.createForSubject(
+        const ability = this.caslAbilityFactory.createForSubject(
           request.user,
         )
         return ability.can(action, requestSubject)
+      }
+      case 'User': {
+        const ability = this.caslAbilityFactory.createForUser(request.user, paramId)
+        return ability.can(action, requestSubject)
+      }
+      case 'Consultation': {
+        // TODO
       }
       default:
         return true
