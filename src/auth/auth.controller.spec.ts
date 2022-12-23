@@ -1,9 +1,11 @@
 import { JwtService } from '@nestjs/jwt'
 import { Test, TestingModule } from '@nestjs/testing'
 import { User } from '@prisma/client'
+import { PrismaModule } from 'src/prisma/prisma.module'
 import { UsersService } from '../users/users.service'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
+import { CaslAbilityFactory } from './casl-ability.factory'
 
 describe('AuthController', () => {
   let controller: AuthController
@@ -22,9 +24,11 @@ describe('AuthController', () => {
     }
 
     const module: TestingModule = await Test.createTestingModule({
+      imports: [PrismaModule],
       controllers: [AuthController],
       providers: [
         AuthService,
+        CaslAbilityFactory,
         {
           provide: JwtService,
           useValue: fakejwtService,
@@ -47,6 +51,7 @@ describe('AuthController', () => {
     it('should create a token for the user', async () => {
       const user: User = {
         id: 1,
+        isAdmin: false,
         authSchId: '1',
         email: 'noreply@example.com',
         firstName: 'test',
