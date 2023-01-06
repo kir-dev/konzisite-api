@@ -169,4 +169,11 @@ export class ConsultationsService {
   remove(id: number) {
     return this.prisma.consultation.delete({ where: { id } })
   }
+
+  async updateFileName(id: number, fileName: string) {
+    return await this.prisma.consultation.update({
+      where: { id },
+      data: { fileName },
+    })
+  }
 }

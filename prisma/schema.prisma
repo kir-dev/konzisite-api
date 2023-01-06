@@ -127,6 +127,7 @@ model Consultation {
   startDate     DateTime
   endDate       DateTime
   descMarkdown  String
+  fileName      String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()

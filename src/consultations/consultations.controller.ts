@@ -8,7 +8,14 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common'
+import { FileInterceptor } from '@nestjs/platform-express'
+import * as appRoot from 'app-root-path'
+import { unlink } from 'fs'
+import { diskStorage } from 'multer'
+import { extname } from 'path'
 import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
 import { CurrentUser } from 'src/current-user.decorator'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
@@ -117,5 +124,37 @@ export class ConsultationsController {
       presentationId: presentation.id,
       ...ratingDto,
     })
+  }
+
+  @Patch(':id/upload')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './static/',
+        filename: (req, file, callback) => {
+          callback(
+            isNaN(parseInt(req.params.id))
+              ? new HttpException('Bad Request', HttpStatus.BAD_REQUEST)
+              : null,
+            `attch_${req.params.id}${extname(file.originalname)}`,
+          )
+        },
+      }),
+      limits: {
+        fileSize: 10000000,
+      },
+    }),
+  )
+  async uploadFile(
+    @UploadedFile()
+    file: Express.Multer.File,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<ConsultationEntity> {
+    try {
+      return await this.consultationsService.updateFileName(id, file.filename)
+    } catch {
+      unlink(`${appRoot.path}/static/${file.filename}`, () => {})
+      throw new HttpException('Consultation not found!', HttpStatus.NOT_FOUND)
+    }
   }
 }

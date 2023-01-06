@@ -25,4 +25,7 @@ export class ConsultationEntity {
 
   @IsOptional()
   descMarkdown: string
+
+  @IsOptional()
+  fileName?: string
 }
