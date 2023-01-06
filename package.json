@@ -32,7 +32,6 @@
     "@nestjs/schedule": "^2.1.0",
     "@nestjs/swagger": "^6.0.5",
     "@prisma/client": "^4.2.1",
-    "app-root-path": "^3.1.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
     "dotenv": "^16.0.1",

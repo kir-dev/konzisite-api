@@ -14,7 +14,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
-import * as appRoot from 'app-root-path'
 import { Response } from 'express'
 import { createReadStream, unlink } from 'fs'
 import { diskStorage } from 'multer'
@@ -156,7 +155,7 @@ export class ConsultationsController {
     try {
       return await this.consultationsService.updateFileName(id, file.filename)
     } catch {
-      unlink(`${appRoot.path}/static/${file.filename}`, () => {})
+      unlink(join(process.cwd(), '/static', file.filename), () => {})
       throw new HttpException('Consultation not found!', HttpStatus.NOT_FOUND)
     }
   }
