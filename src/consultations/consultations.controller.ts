@@ -8,14 +8,17 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Res,
+  StreamableFile,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import * as appRoot from 'app-root-path'
-import { unlink } from 'fs'
+import { Response } from 'express'
+import { createReadStream, unlink } from 'fs'
 import { diskStorage } from 'multer'
-import { extname } from 'path'
+import { extname, join } from 'path'
 import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
 import { CurrentUser } from 'src/current-user.decorator'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
@@ -126,7 +129,7 @@ export class ConsultationsController {
     })
   }
 
-  @Patch(':id/upload')
+  @Patch(':id/file')
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
@@ -156,5 +159,25 @@ export class ConsultationsController {
       unlink(`${appRoot.path}/static/${file.filename}`, () => {})
       throw new HttpException('Consultation not found!', HttpStatus.NOT_FOUND)
     }
+  }
+
+  @Get(':id/file')
+  async getFile(
+    @Param('id', ParseIntPipe) id: number,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    const consultation = await this.consultationsService.findOne(id)
+    if (consultation.fileName) {
+      res.set({
+        'Content-Disposition': `attachment; filename="${consultation.fileName}"`,
+      })
+      return new StreamableFile(
+        createReadStream(join(process.cwd(), '/static', consultation.fileName)),
+      )
+    }
+    throw new HttpException(
+      'No file uploaded for this consultation',
+      HttpStatus.NOT_FOUND,
+    )
   }
 }
