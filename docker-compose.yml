@@ -14,7 +14,7 @@ services:
     build: .
     command: sh -c "rm -f tmp/pids/server.pid && npm run start:prod"
     ports:
-      - '3006:3000' # The exposed port should be changed accordingly
+      - '3006:${BACKEND_PORT}' # The exposed port should be changed accordingly
     env_file:
       - .env
     networks:
