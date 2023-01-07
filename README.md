@@ -38,24 +38,24 @@ Finally, copy the contents of `.env.example` to a new file named `.env`. Replace
 
 ```bash
 # Install the dependencies
-$ npm install
+npm install
 # Then apply the migrations
-$ npx prisma migrate dev
+npx prisma migrate dev
 # Optionally seed the databse with mock data
-$ npm run seed
+npm run seed
 ```
 
 ## Running the app
 
 ```bash
 # development
-$ npm run start
+npm run start
 
 # watch mode
-$ npm run start:dev
+npm run start:dev
 
 # production mode
-$ npm run start:prod
+npm run start:prod
 ```
 
 ## Test
@@ -69,6 +69,14 @@ $ npm run test:e2e
 
 # test coverage
 $ npm run test:cov
+```
+
+## Docker deployment
+
+Edit the .env file accordingly, set the exposed port to your liking.
+
+```bash
+docker-compose up --build [-d]
 ```
 
 ## Support
