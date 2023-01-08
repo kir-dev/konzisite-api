@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common'
+import { unlink } from 'fs'
+import { join } from 'path'
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateConsultationDto } from './dto/CreateConsultation.dto'
 import { UpdateConsultationDto } from './dto/UpdateConsultation.dto'
@@ -171,6 +173,13 @@ export class ConsultationsService {
   }
 
   async updateFileName(id: number, fileName: string) {
+    const consultation = await this.prisma.consultation.findUnique({
+      where: { id },
+    })
+    if (consultation.fileName) {
+      unlink(join(process.cwd(), '/static', consultation.fileName), () => {})
+    }
+
     return await this.prisma.consultation.update({
       where: { id },
       data: { fileName },

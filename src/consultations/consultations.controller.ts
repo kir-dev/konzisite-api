@@ -5,6 +5,7 @@ import {
   HttpException,
   HttpStatus,
   Param,
+  ParseFilePipe,
   ParseIntPipe,
   Patch,
   Post,
@@ -22,6 +23,7 @@ import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
 import { CurrentUser } from 'src/current-user.decorator'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { ApiController } from 'src/utils/apiController.decorator'
+import { FileExtensionValidator } from 'src/utils/FileExtensionValidator'
 import { ConsultationsService } from './consultations.service'
 import { ConsultationDetailsDto } from './dto/ConsultationDetails.dto'
 import { ConsultationEntity } from './dto/ConsultationEntity.dto'
@@ -148,7 +150,22 @@ export class ConsultationsController {
     }),
   )
   async uploadFile(
-    @UploadedFile()
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new FileExtensionValidator({
+            allowedExtensions: [
+              '.jpg',
+              '.jpeg',
+              '.pdf',
+              '.docx',
+              '.pptx',
+              '.zip',
+            ],
+          }),
+        ],
+      }),
+    )
     file: Express.Multer.File,
     @Param('id', ParseIntPipe) id: number,
   ): Promise<ConsultationEntity> {
