@@ -8,7 +8,10 @@ import {
   Post,
 } from '@nestjs/common'
 import { GroupRole } from '@prisma/client'
+import { Permissions } from 'src/auth/casl-ability.factory'
+import { AuthorizationSubject } from 'src/auth/decorator/authorizationSubject.decorator'
 import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
+import { RequiredPermission } from 'src/auth/decorator/requiredPermission'
 import { CurrentUser } from 'src/current-user.decorator'
 import { ManyUniqueUsersDto } from 'src/users/dto/ManyUniqueUsers.dto'
 import { UniqueUserDto } from 'src/users/dto/UniqueUser.dto'
@@ -25,6 +28,7 @@ import { GroupsService } from './groups.service'
 
 @JwtAuth()
 @ApiController('groups')
+@AuthorizationSubject('Group')
 export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
 
@@ -41,14 +45,6 @@ export class GroupsController {
     return newGroup
   }
 
-  @Post(':id/add')
-  addMember(
-    @Body() user: UniqueUserDto,
-    @Param('id', ParseIntPipe) groupId: number,
-  ): Promise<UserToGroupEntity> {
-    return this.groupsService.addMember(groupId, user.userId, GroupRole.MEMBER)
-  }
-
   @Post(':id/join')
   joinGroup(
     @CurrentUser() user: UserEntity,
@@ -57,7 +53,23 @@ export class GroupsController {
     return this.groupsService.addMember(groupId, user.id, GroupRole.PENDING)
   }
 
+  // Todo /:id/leave
+
+  @Post(':id/add')
+  @RequiredPermission(Permissions.AddMember)
+  async addMember(
+    @Body() userToAdd: UniqueUserDto,
+    @Param('id', ParseIntPipe) groupId: number,
+  ): Promise<UserToGroupEntity> {
+    return this.groupsService.addMember(
+      groupId,
+      userToAdd.userId,
+      GroupRole.MEMBER,
+    )
+  }
+
   @Post(':id/addMany')
+  @RequiredPermission(Permissions.AddMember)
   addManyMembers(
     @Body() user: ManyUniqueUsersDto,
     @Param('id', ParseIntPipe) groupId: number,
@@ -66,11 +78,12 @@ export class GroupsController {
   }
 
   @Post(':id/remove')
-  removeMember(
-    @Body() user: UniqueUserDto,
+  @RequiredPermission(Permissions.AddMember)
+  async removeMember(
+    @Body() userToRemove: UniqueUserDto,
     @Param('id', ParseIntPipe) groupId: number,
   ): Promise<UserToGroupEntity> {
-    return this.groupsService.removeMember(groupId, user.userId)
+    return this.groupsService.removeMember(groupId, userToRemove.userId)
   }
 
   @Get()
@@ -87,6 +100,7 @@ export class GroupsController {
   }
 
   @Patch(':id')
+  @RequiredPermission(Permissions.Update)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateGroupDto: UpdateGroupDto,
@@ -95,7 +109,13 @@ export class GroupsController {
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number): Promise<GroupEntity> {
+  @RequiredPermission(Permissions.Delete)
+  async remove(@Param('id', ParseIntPipe) id: number): Promise<GroupEntity> {
     return this.groupsService.remove(id)
   }
+
+  // Todo /:id/approve/:userid
+  // Todo /:id/decline/:userid
+  // Todo /:id/promote/:userid
+  // Todo /:id/demote/:userid
 }

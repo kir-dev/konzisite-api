@@ -19,7 +19,10 @@ import { Response } from 'express'
 import { createReadStream, unlink } from 'fs'
 import { diskStorage } from 'multer'
 import { extname, join } from 'path'
+import { Permissions } from 'src/auth/casl-ability.factory'
+import { AuthorizationSubject } from 'src/auth/decorator/authorizationSubject.decorator'
 import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
+import { RequiredPermission } from 'src/auth/decorator/requiredPermission'
 import { CurrentUser } from 'src/current-user.decorator'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { ApiController } from 'src/utils/apiController.decorator'
@@ -38,6 +41,7 @@ import { PresentationService } from './presentation.service'
 import { RatingService } from './rating.service'
 
 @ApiController('consultations')
+@AuthorizationSubject('Consultation')
 export class ConsultationsController {
   constructor(
     private readonly consultationsService: ConsultationsService,
@@ -74,6 +78,7 @@ export class ConsultationsController {
   }
 
   @JwtAuth()
+  @RequiredPermission(Permissions.Update)
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -83,6 +88,7 @@ export class ConsultationsController {
   }
 
   @JwtAuth()
+  @RequiredPermission(Permissions.Delete)
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number): Promise<ConsultationEntity> {
     return this.consultationsService.remove(id)
@@ -130,6 +136,8 @@ export class ConsultationsController {
     })
   }
 
+  @JwtAuth()
+  @RequiredPermission(Permissions.Update)
   @Patch(':id/file')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -177,6 +185,8 @@ export class ConsultationsController {
     }
   }
 
+  @JwtAuth()
+  @RequiredPermission(Permissions.DownloadFile)
   @Get(':id/file')
   async getFile(
     @Param('id', ParseIntPipe) id: number,

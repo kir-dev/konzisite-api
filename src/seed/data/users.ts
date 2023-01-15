@@ -7,6 +7,7 @@ export const seededUsers: UserEntity[] = [
     firstName: 'Jakab',
     lastName: 'Gipsz',
     email: 'gipsz@jakab.eu',
+    isAdmin: true,
   },
   {
     id: 1000002,
@@ -14,6 +15,7 @@ export const seededUsers: UserEntity[] = [
     firstName: 'John',
     lastName: 'Doe',
     email: 'john@doe.eu',
+    isAdmin: false,
   },
   {
     id: 1000003,
@@ -21,6 +23,7 @@ export const seededUsers: UserEntity[] = [
     firstName: 'Feri',
     lastName: 'Azabizonyos',
     email: 'milyen@feri.eu',
+    isAdmin: false,
   },
   {
     id: 1000004,
@@ -28,6 +31,7 @@ export const seededUsers: UserEntity[] = [
     firstName: 'Elek',
     lastName: 'Teszt',
     email: 'teszt.elek@gmail.eu',
+    isAdmin: false,
   },
   {
     id: 1000005,
@@ -35,5 +39,6 @@ export const seededUsers: UserEntity[] = [
     firstName: 'Foo',
     lastName: 'Bar',
     email: 'foo@bar.eu',
+    isAdmin: false,
   },
 ]
