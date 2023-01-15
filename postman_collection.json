@@ -1,0 +1,310 @@
+{
+	"info": {
+		"_postman_id": "f8ebf121-7e5d-4edc-8580-6c99ebadc837",
+		"name": "Konzisite",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "16816431"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "me",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/auth/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"me"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "users",
+			"item": [
+				{
+					"name": "findall",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "promote",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/1000002/promote",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"1000002",
+								"promote"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "group",
+			"item": [
+				{
+					"name": "create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"endsfdsyem\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/groups",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"groups"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/groups/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"groups",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "addMember",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userId\": 1000002\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/groups/1000001/add",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"groups",
+								"1000001",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/groups/4/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"groups",
+								"4",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "subject",
+			"item": [
+				{
+					"name": "create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"code\": \"VIAUAB1223\",\r\n    \"name\": \"Tárgy\",\r\n    \"majors\": [\"CE_BSC\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/subjects",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"subjects"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "consultations",
+			"item": [
+				{
+					"name": "list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/consultations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"consultations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "upload file",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/C:/Users/feket/Pictures/120252049_4406134966127952_6665651444862754930_o.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/consultations/3/file",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"consultations",
+								"3",
+								"file"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

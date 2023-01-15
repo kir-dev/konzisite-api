@@ -58,6 +58,15 @@ npm run start:dev
 npm run start:prod
 ```
 
+## Setting up a Postman collection
+
+If you want to use Postman for testing the endpoints, you can import `postman_collection.json` from the root of the project into Postman. This will create a collection with some of the endpoints of the app already defined. To use it, create two new variables in the Environments -> Globals tab:
+
+- `baseUrl`: the value should be the URL where the backend is running, so most likely `http://localhost:3300`
+- `token`: the value should be your JWT token. You can get this by running both the backend and frontend apps. After logging in, you can copy the token from the `JWT_TOKEN` cookie.
+
+If you add new endpoints to the collection that you think the others could use, please overwrite the `postman_collection.json` file with the export of the modified collection, and commit it.
+
 ## Test
 
 ```bash
