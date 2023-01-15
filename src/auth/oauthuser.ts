@@ -2,7 +2,7 @@ import { IsEmail, IsNotEmpty, IsUUID } from 'class-validator'
 
 export class OAuthUser {
   @IsNotEmpty()
-  sn: string
+  displayName: string
 
   @IsNotEmpty()
   givenName: string

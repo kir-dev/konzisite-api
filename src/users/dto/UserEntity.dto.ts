@@ -21,7 +21,7 @@ export class UserEntity {
   firstName: string
 
   @IsNotEmpty()
-  lastName: string
+  fullName: string
 
   @IsEmail()
   @ApiProperty({ example: 'noreply@example.com' })

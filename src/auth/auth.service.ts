@@ -22,7 +22,7 @@ export class AuthService {
     const newUser = await this.usersService.create({
       authSchId: oAuthUser.internal_id,
       firstName: oAuthUser.givenName,
-      lastName: oAuthUser.sn,
+      fullName: oAuthUser.displayName,
       email: oAuthUser.mail,
     })
 
