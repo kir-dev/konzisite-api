@@ -127,6 +127,8 @@ model Consultation {
   startDate     DateTime
   endDate       DateTime
   descMarkdown  String
+  fileName      String?
+  archived      Boolean              @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()
