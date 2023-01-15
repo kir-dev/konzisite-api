@@ -6,7 +6,7 @@ import {
   ConsultationRequest,
   Group,
   Subject,
-  User
+  User,
 } from '@prisma/client'
 import { GroupRoles } from 'src/groups/dto/GroupEntity.dto'
 import { PrismaService } from 'src/prisma/prisma.service'
@@ -31,6 +31,7 @@ export enum Permissions {
   ApproveMember = 'approve_member',
   PromoteMember = 'promote_member',
   PromoteUser = 'promote_user',
+  DownloadFile = 'download_file',
 }
 
 @Injectable()
@@ -76,7 +77,9 @@ export class CaslAbilityFactory {
   }
 
   createForUser = (currentUser: User, userIdToManage: number) => {
-    const { can, cannot, build } = new AbilityBuilder<AppAbility>(createPrismaAbility)
+    const { can, cannot, build } = new AbilityBuilder<AppAbility>(
+      createPrismaAbility,
+    )
     if (currentUser.id === userIdToManage) {
       can(Permissions.Manage, 'User')
     }
@@ -89,10 +92,37 @@ export class CaslAbilityFactory {
     return build()
   }
 
-  createForConsultation = (user: User, consultationId: number) => {
-    const { can, cannot, build } = new AbilityBuilder<AppAbility>(createPrismaAbility)
+  createForConsultation = async (user: User, consultationId: number) => {
+    const { can, cannot, build } = new AbilityBuilder<AppAbility>(
+      createPrismaAbility,
+    )
 
-    // TODO
+    const consultation = await this.prisma.consultation.findUnique({
+      where: { id: consultationId },
+      include: { presentations: true },
+    })
+
+    if (user.isAdmin) {
+      can(Permissions.Manage, 'Consultation')
+    }
+
+    if (
+      user.id === consultation.ownerId ||
+      consultation.presentations.map((p) => p.userId).includes(user.id)
+    ) {
+      can(Permissions.Update, 'Consultation')
+      can(Permissions.Delete, 'Consultation')
+      can(Permissions.DownloadFile, 'Consultation')
+    }
+
+    const participation = await this.prisma.participation.findUnique({
+      where: { consultationId_userId: { consultationId, userId: user.id } },
+      include: { ratings: true },
+    })
+
+    if (participation && participation.ratings.length > 0) {
+      can(Permissions.DownloadFile, 'Consultation')
+    }
 
     return build()
   }
