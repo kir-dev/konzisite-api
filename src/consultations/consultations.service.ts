@@ -176,7 +176,7 @@ export class ConsultationsService {
     const consultation = await this.prisma.consultation.findUnique({
       where: { id },
     })
-    if (consultation.fileName) {
+    if (consultation.fileName && fileName !== consultation.fileName) {
       unlink(join(process.cwd(), '/static', consultation.fileName), () => {})
     }
 

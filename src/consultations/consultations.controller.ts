@@ -183,6 +183,12 @@ export class ConsultationsController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
     const consultation = await this.consultationsService.findOne(id)
+    if (consultation.archived) {
+      throw new HttpException(
+        'The file uploaded for this consultation has been deleted because the consultation has been archived.',
+        HttpStatus.NOT_FOUND,
+      )
+    }
     if (consultation.fileName) {
       res.set({
         'Content-Disposition': `attachment; filename="${consultation.fileName}"`,

@@ -31,6 +31,7 @@ export class SchedulerService {
       },
       data: {
         fileName: null,
+        archived: true,
       },
     })
     this.logger.log(`${result.count} file(s) deleted`)
