@@ -93,10 +93,7 @@ export class CaslAbilityFactory {
   }
 
   createForConsultation = async (user: User, consultationId: number) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { can, cannot, build } = new AbilityBuilder<AppAbility>(
-      createPrismaAbility,
-    )
+    const { can, build } = new AbilityBuilder<AppAbility>(createPrismaAbility)
 
     const consultation = await this.prisma.consultation.findUnique({
       where: { id: consultationId },
