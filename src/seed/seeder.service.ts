@@ -50,6 +50,7 @@ export class SeederService {
   }
 
   async createKonziForGroup(groupId: number) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, ...konziData } = seededConsultations[0]
     let data: any = await this.prisma.consultation.create({
       data: {
@@ -105,6 +106,7 @@ export class SeederService {
   }
 
   async createOtherKonzi() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, ...konziData } = seededConsultations[1]
     const data = await this.prisma.consultation.create({
       data: {

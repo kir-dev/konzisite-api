@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable } from '@nestjs/common'
 import { unlink } from 'fs'
 import { join } from 'path'
@@ -177,6 +178,7 @@ export class ConsultationsService {
       where: { id },
     })
     if (consultation.fileName && fileName !== consultation.fileName) {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       unlink(join(process.cwd(), '/static', consultation.fileName), () => {})
     }
 

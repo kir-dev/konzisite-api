@@ -32,7 +32,7 @@ export class AuthorizationGuard implements CanActivate {
     const request = context.switchToHttp().getRequest()
     const paramId: number = +request.params.id
     if (Number.isNaN(paramId) && request.params.id) {
-      throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST)
+      throw new HttpException('Érvénytelen azonosító', HttpStatus.BAD_REQUEST)
     }
 
     switch (requestSubject) {
