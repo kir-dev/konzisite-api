@@ -146,7 +146,10 @@ export class ConsultationsController {
       )
     }
 
-    const rating = await this.ratingService.findByIds(presentation.id, user.id)
+    const rating = await this.ratingService.findByIds(
+      presentation.id,
+      participation.id,
+    )
     if (rating === null) {
       throw new HttpException(
         'Ez az értékelés nem létezik!',
