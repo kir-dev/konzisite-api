@@ -39,10 +39,7 @@ export class GroupsController {
     @Body() createGroupDto: CreateGroupDto,
     @CurrentUser() user: UserEntity,
   ): Promise<GroupEntity> {
-    const newGroup = await this.groupsService.create({
-      ...createGroupDto,
-      ownerId: user.id,
-    })
+    const newGroup = await this.groupsService.create(createGroupDto, user)
     await this.groupsService.addMember(newGroup.id, user.id, GroupRole.OWNER)
     return newGroup
   }
@@ -58,8 +55,22 @@ export class GroupsController {
         user.id,
         GroupRole.PENDING,
       )
-    } catch {
-      throw new HttpException('A csoport nem található!', HttpStatus.NOT_FOUND)
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          throw new HttpException(
+            'Már tagja vagy a csoportnak!',
+            HttpStatus.BAD_REQUEST,
+          )
+        }
+        if (e.code === 'P2003') {
+          throw new HttpException(
+            'A csoport nem található!',
+            HttpStatus.NOT_FOUND,
+          )
+        }
+      }
+      throw e
     }
   }
 
@@ -108,7 +119,7 @@ export class GroupsController {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2002') {
           throw new HttpException(
-            'A felhasználó már tagja a csoportnak! xdd',
+            'A felhasználó már tagja a csoportnak!',
             HttpStatus.BAD_REQUEST,
           )
         }

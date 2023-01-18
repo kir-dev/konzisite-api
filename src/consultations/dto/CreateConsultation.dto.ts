@@ -4,11 +4,8 @@ import { ConsultationEntity } from './ConsultationEntity.dto'
 
 export class CreateConsultationDto extends OmitType(ConsultationEntity, [
   'id',
+  'fileName',
 ]) {
-  @IsInt()
-  @IsOptional()
-  ownerId?: number
-
   @IsInt()
   @Min(1)
   subjectId: number

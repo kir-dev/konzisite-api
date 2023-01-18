@@ -17,7 +17,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express'
 import { Prisma } from '@prisma/client'
 import { Response } from 'express'
-import { createReadStream, unlink } from 'fs'
+import { createReadStream } from 'fs'
 import { diskStorage } from 'multer'
 import { extname, join } from 'path'
 import { Permissions } from 'src/auth/casl-ability.factory'
@@ -59,12 +59,12 @@ export class ConsultationsController {
     @CurrentUser() user: UserEntity,
   ): Promise<ConsultationEntity> {
     try {
-      return await this.consultationsService.create({
-        ...createConsultationDto,
-        ownerId: user.id,
-      })
+      return await this.consultationsService.create(createConsultationDto, user)
     } catch {
-      throw new HttpException('A tárgykód nem létezik!', HttpStatus.NOT_FOUND)
+      throw new HttpException(
+        'Érvénytelen külső kulcs!',
+        HttpStatus.BAD_REQUEST,
+      )
     }
   }
 
@@ -97,7 +97,14 @@ export class ConsultationsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateConsultationDto: UpdateConsultationDto,
   ): Promise<ConsultationEntity> {
-    return await this.consultationsService.update(id, updateConsultationDto)
+    try {
+      return await this.consultationsService.update(id, updateConsultationDto)
+    } catch {
+      throw new HttpException(
+        'Érvénytelen külső kulcs!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
   }
 
   @JwtAuth()
@@ -124,7 +131,7 @@ export class ConsultationsController {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2002') {
           throw new HttpException(
-            'A felhasználó már jelentkezett a konzultávióra!',
+            'A felhasználó már jelentkezett a konzultációra!',
             HttpStatus.BAD_REQUEST,
           )
         }
@@ -268,16 +275,7 @@ export class ConsultationsController {
     file: Express.Multer.File,
     @Param('id', ParseIntPipe) id: number,
   ): Promise<ConsultationEntity> {
-    try {
-      return await this.consultationsService.updateFileName(id, file.filename)
-    } catch {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      unlink(join(process.cwd(), '/static', file.filename), () => {})
-      throw new HttpException(
-        'A konzultáció nem található!',
-        HttpStatus.NOT_FOUND,
-      )
-    }
+    return await this.consultationsService.updateFileName(id, file.filename)
   }
 
   @JwtAuth()
@@ -288,12 +286,6 @@ export class ConsultationsController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
     const consultation = await this.consultationsService.findOne(id)
-    if (consultation === null) {
-      throw new HttpException(
-        'A konzultáció nem található!',
-        HttpStatus.NOT_FOUND,
-      )
-    }
     if (consultation.archived) {
       throw new HttpException(
         'Ez a fájl törölve lett, mert a konzultáció amihez tartozott, archiválásra került.',

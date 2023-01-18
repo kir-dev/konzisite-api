@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common'
 import { GroupRole, Prisma } from '@prisma/client'
 import { PrismaService } from 'src/prisma/prisma.service'
+import { UserEntity } from 'src/users/dto/UserEntity.dto'
+import { CreateGroupDto } from './dto/CreateGroup.dto'
 
 @Injectable()
 export class GroupsService {
   constructor(private prisma: PrismaService) {}
-  create(data: Prisma.GroupUncheckedCreateInput) {
-    return this.prisma.group.create({ data })
+  create(dto: CreateGroupDto, user: UserEntity) {
+    return this.prisma.group.create({ data: { ...dto, ownerId: user.id } })
   }
 
   async findAll(userId: number) {
