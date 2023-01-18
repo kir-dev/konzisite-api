@@ -10,6 +10,7 @@ import {
 } from '@prisma/client'
 import { GroupRoles } from 'src/groups/dto/GroupEntity.dto'
 import { PrismaService } from 'src/prisma/prisma.service'
+import { UserEntity } from 'src/users/dto/UserEntity.dto'
 
 export type AppSubjects = Subjects<{
   User: User
@@ -139,7 +140,7 @@ export class CaslAbilityFactory {
     return build()
   }
 
-  createForConsultationRead = (user?: User) => {
+  createForConsultationRead = (user?: UserEntity) => {
     const { can, build } = new AbilityBuilder<AppAbility>(createPrismaAbility)
     can(Permissions.Read, 'Consultation', { targetGroups: { none: {} } })
     if (user) {
