@@ -56,6 +56,9 @@ npm run start:dev
 
 # production mode
 npm run start:prod
+
+# running prisma studio, easy way to explore and manipulate the db
+npx prisma studio
 ```
 
 ## Setting up a Postman collection
