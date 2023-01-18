@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Injectable } from '@nestjs/common'
+import { accessibleBy } from '@casl/prisma'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { unlink } from 'fs'
 import { join } from 'path'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
@@ -9,7 +10,11 @@ import { UpdateConsultationDto } from './dto/UpdateConsultation.dto'
 
 @Injectable()
 export class ConsultationsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private caslFactory: CaslAbilityFactory,
+  ) {}
+
   create(dto: CreateConsultationDto, user: UserEntity) {
     const {
       subjectId,
@@ -76,28 +81,39 @@ export class ConsultationsService {
     }))
   }
 
-  async findOne(id: number, participationId?: number) {
-    const { ownerId, subjectId, requestId, ...details } =
-      await this.prisma.consultation.findUnique({
-        where: { id },
-        include: {
-          targetGroups: true,
-          presentations: {
-            include: {
-              user: true,
-              ratings: true,
-            },
-          },
-          subject: true,
-          request: true,
-          owner: true,
-          participants: {
-            include: {
-              user: true,
-            },
+  async findOne(id: number, user: UserEntity, participationId?: number) {
+    const ability = this.caslFactory.createForConsultationRead(user)
+    // the accessiblyBy filter doesn't work with findUnique, so we're using findMany,
+    // but there can only be zero or one result, because id is unique.
+    const consultation = await this.prisma.consultation.findMany({
+      where: { AND: [accessibleBy(ability).Consultation, { id }] },
+      include: {
+        targetGroups: true,
+        presentations: {
+          include: {
+            user: true,
+            ratings: true,
           },
         },
-      })
+        subject: true,
+        request: true,
+        owner: true,
+        participants: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    })
+    if (consultation.length === 0) {
+      // it's possible that the user just doesn't have permission to view it, but they don't have to know that
+      throw new HttpException(
+        'Nem található a konzultáció',
+        HttpStatus.NOT_FOUND,
+      )
+    }
+    const { ownerId, subjectId, requestId, ...details } = consultation[0]
+
     return {
       ...details,
       presentations: details.presentations.map(({ user, ratings }) => ({

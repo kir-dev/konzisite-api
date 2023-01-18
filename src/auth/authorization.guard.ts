@@ -55,10 +55,11 @@ export class AuthorizationGuard implements CanActivate {
         return ability.can(action, requestSubject)
       }
       case 'Consultation': {
-        const ability = await this.caslAbilityFactory.createForConsultation(
-          request.user,
-          paramId,
-        )
+        const ability =
+          await this.caslAbilityFactory.createForConsultationMutation(
+            request.user,
+            paramId,
+          )
         return ability.can(action, requestSubject)
       }
       default:

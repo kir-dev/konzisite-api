@@ -96,7 +96,10 @@ export class CaslAbilityFactory {
     return build()
   }
 
-  createForConsultation = async (user: User, consultationId: number) => {
+  createForConsultationMutation = async (
+    user: User,
+    consultationId: number,
+  ) => {
     const { can, build } = new AbilityBuilder<AppAbility>(createPrismaAbility)
 
     const consultation = await this.prisma.consultation.findUnique({
@@ -133,6 +136,23 @@ export class CaslAbilityFactory {
       can(Permissions.DownloadFile, 'Consultation')
     }
 
+    return build()
+  }
+
+  createForConsultationRead = (user?: User) => {
+    const { can, build } = new AbilityBuilder<AppAbility>(createPrismaAbility)
+    can(Permissions.Read, 'Consultation', { targetGroups: { none: {} } })
+    if (user) {
+      can(Permissions.Read, 'Consultation', {
+        OR: [
+          {
+            targetGroups: { some: { members: { some: { userId: user.id } } } },
+          },
+          { presentations: { some: { userId: user.id } } },
+          { ownerId: user.id },
+        ],
+      })
+    }
     return build()
   }
 }

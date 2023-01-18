@@ -81,7 +81,7 @@ export class ConsultationsController {
   ): Promise<ConsultationDetailsDto> {
     const participation = await this.participationService.findOne(id, user.id)
     try {
-      return await this.consultationsService.findOne(id, participation?.id)
+      return await this.consultationsService.findOne(id, user, participation?.id)
     } catch {
       throw new HttpException(
         'A konzultáció nem található!',
@@ -284,8 +284,9 @@ export class ConsultationsController {
   async getFile(
     @Param('id', ParseIntPipe) id: number,
     @Res({ passthrough: true }) res: Response,
+    @CurrentUser() user: UserEntity,
   ): Promise<StreamableFile> {
-    const consultation = await this.consultationsService.findOne(id)
+    const consultation = await this.consultationsService.findOne(id, user)
     if (consultation.archived) {
       throw new HttpException(
         'Ez a fájl törölve lett, mert a konzultáció amihez tartozott, archiválásra került.',
