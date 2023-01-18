@@ -1,4 +1,12 @@
-import { Delete, Get, Param, ParseIntPipe, Post } from '@nestjs/common'
+import {
+  Delete,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Post,
+} from '@nestjs/common'
 import { Permissions } from 'src/auth/casl-ability.factory'
 import { AuthorizationSubject } from 'src/auth/decorator/authorizationSubject.decorator'
 import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
@@ -27,19 +35,40 @@ export class UsersController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<UserEntity> {
-    return this.usersService.findOne(id)
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserEntity> {
+    const res = await this.usersService.findOne(id)
+    if (res === null) {
+      throw new HttpException(
+        'A felhasználó nem található!',
+        HttpStatus.NOT_FOUND,
+      )
+    }
+    return res
   }
 
   @Post(':id/promote')
   @RequiredPermission(Permissions.PromoteUser)
-  promote(@Param('id', ParseIntPipe) id: number): Promise<UserEntity> {
-    return this.usersService.promoteUser(id)
+  async promote(@Param('id', ParseIntPipe) id: number): Promise<UserEntity> {
+    try {
+      return await this.usersService.promoteUser(id)
+    } catch {
+      throw new HttpException(
+        'A felhasználó nem található!',
+        HttpStatus.NOT_FOUND,
+      )
+    }
   }
 
   @Delete(':id')
   @RequiredPermission(Permissions.Delete)
-  remove(@Param('id', ParseIntPipe) id: number): Promise<UserEntity> {
-    return this.usersService.remove(id)
+  async remove(@Param('id', ParseIntPipe) id: number): Promise<UserEntity> {
+    try {
+      return await this.usersService.remove(id)
+    } catch {
+      throw new HttpException(
+        'A felhasználó nem található!',
+        HttpStatus.NOT_FOUND,
+      )
+    }
   }
 }

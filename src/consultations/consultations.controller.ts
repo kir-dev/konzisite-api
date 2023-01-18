@@ -15,6 +15,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
+import { Prisma } from '@prisma/client'
 import { Response } from 'express'
 import { createReadStream, unlink } from 'fs'
 import { diskStorage } from 'multer'
@@ -53,14 +54,18 @@ export class ConsultationsController {
 
   @JwtAuth()
   @Post()
-  create(
+  async create(
     @Body() createConsultationDto: CreateConsultationDto,
     @CurrentUser() user: UserEntity,
   ): Promise<ConsultationEntity> {
-    return this.consultationsService.create({
-      ...createConsultationDto,
-      ownerId: user.id,
-    })
+    try {
+      return await this.consultationsService.create({
+        ...createConsultationDto,
+        ownerId: user.id,
+      })
+    } catch {
+      throw new HttpException('A tárgykód nem létezik!', HttpStatus.NOT_FOUND)
+    }
   }
 
   @Get()
@@ -75,36 +80,63 @@ export class ConsultationsController {
     @CurrentUser() user: UserEntity,
   ): Promise<ConsultationDetailsDto> {
     const participation = await this.participationService.findOne(id, user.id)
-    return this.consultationsService.findOne(id, participation?.id)
+    try {
+      return await this.consultationsService.findOne(id, participation?.id)
+    } catch {
+      throw new HttpException(
+        'A konzultáció nem található!',
+        HttpStatus.NOT_FOUND,
+      )
+    }
   }
 
   @JwtAuth()
   @RequiredPermission(Permissions.Update)
   @Patch(':id')
-  update(
+  async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateConsultationDto: UpdateConsultationDto,
   ): Promise<ConsultationEntity> {
-    return this.consultationsService.update(id, updateConsultationDto)
+    return await this.consultationsService.update(id, updateConsultationDto)
   }
 
   @JwtAuth()
   @RequiredPermission(Permissions.Delete)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number): Promise<ConsultationEntity> {
-    return this.consultationsService.remove(id)
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<ConsultationEntity> {
+    return await this.consultationsService.remove(id)
   }
 
   @JwtAuth()
   @Post(':id/join')
-  join(
+  async join(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: UserEntity,
   ): Promise<ParticipationEntity> {
-    return this.participationService.create({
-      consultationId: id,
-      userId: user.id,
-    })
+    try {
+      return await this.participationService.create({
+        consultationId: id,
+        userId: user.id,
+      })
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          throw new HttpException(
+            'A felhasználó már jelentkezett a konzultávióra!',
+            HttpStatus.BAD_REQUEST,
+          )
+        }
+        if (e.code === 'P2003') {
+          throw new HttpException(
+            'A konzultáció nem található!',
+            HttpStatus.NOT_FOUND,
+          )
+        }
+      }
+      throw e
+    }
   }
 
   @JwtAuth()
@@ -256,6 +288,12 @@ export class ConsultationsController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
     const consultation = await this.consultationsService.findOne(id)
+    if (consultation === null) {
+      throw new HttpException(
+        'A konzultáció nem található!',
+        HttpStatus.NOT_FOUND,
+      )
+    }
     if (consultation.archived) {
       throw new HttpException(
         'Ez a fájl törölve lett, mert a konzultáció amihez tartozott, archiválásra került.',
@@ -266,9 +304,19 @@ export class ConsultationsController {
       res.set({
         'Content-Disposition': `attachment; filename="${consultation.fileName}"`,
       })
-      return new StreamableFile(
+      const steamableFile = new StreamableFile(
         createReadStream(join(process.cwd(), '/static', consultation.fileName)),
       )
+      steamableFile.setErrorHandler((err, response) => {
+        response.statusCode = HttpStatus.NOT_FOUND
+        response.send(
+          JSON.stringify({
+            statusCode: HttpStatus.NOT_FOUND,
+            message: 'A fájl törölve lett',
+          }),
+        )
+      })
+      return steamableFile
     }
     throw new HttpException(
       'Ehhez a konzultációhoz nincs feltöltve fájl!',

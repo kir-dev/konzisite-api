@@ -1,6 +1,6 @@
 import { AbilityBuilder, PureAbility } from '@casl/ability'
 import { createPrismaAbility, PrismaQuery, Subjects } from '@casl/prisma'
-import { Injectable } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import {
   Consultation,
   ConsultationRequest,
@@ -49,6 +49,10 @@ export class CaslAbilityFactory {
       where: { id: groupId },
       include: { members: { where: { userId: user.id } } },
     })
+
+    if (group === null) {
+      throw new HttpException('A csoport nem található!', HttpStatus.NOT_FOUND)
+    }
 
     if (group?.ownerId === user.id) {
       can(Permissions.Update, 'Group')
@@ -99,6 +103,13 @@ export class CaslAbilityFactory {
       where: { id: consultationId },
       include: { presentations: true },
     })
+
+    if (consultation === null) {
+      throw new HttpException(
+        'A konzultáció nem található!',
+        HttpStatus.NOT_FOUND,
+      )
+    }
 
     if (user.isAdmin) {
       can(Permissions.Manage, 'Consultation')
