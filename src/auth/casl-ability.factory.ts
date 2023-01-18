@@ -146,7 +146,22 @@ export class CaslAbilityFactory {
       can(Permissions.Read, 'Consultation', {
         OR: [
           {
-            targetGroups: { some: { members: { some: { userId: user.id } } } },
+            targetGroups: {
+              some: {
+                members: {
+                  some: {
+                    userId: user.id,
+                    role: {
+                      in: [
+                        GroupRoles.MEMBER,
+                        GroupRoles.ADMIN,
+                        GroupRoles.OWNER,
+                      ],
+                    },
+                  },
+                },
+              },
+            },
           },
           { presentations: { some: { userId: user.id } } },
           { ownerId: user.id },

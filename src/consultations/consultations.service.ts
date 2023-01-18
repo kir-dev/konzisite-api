@@ -58,8 +58,10 @@ export class ConsultationsService {
     })
   }
 
-  async findAll() {
+  async findAll(user: UserEntity) {
+    const ability = this.caslFactory.createForConsultationRead(user)
     const results = await this.prisma.consultation.findMany({
+      where: accessibleBy(ability).Consultation,
       include: {
         subject: true,
         presentations: {

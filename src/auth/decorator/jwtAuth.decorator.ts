@@ -8,6 +8,13 @@ import { AuthorizationGuard } from '../authorization.guard'
 @Injectable()
 class JwtAuthGuard extends AuthGuard('jwt') {}
 
+@Injectable()
+export class JwtOptionalAuthGuard extends AuthGuard('jwt') {
+  handleRequest<UserEntity>(_: any, user: UserEntity): UserEntity {
+    return user
+  }
+}
+
 export function JwtAuth() {
   return applyDecorators(
     UseGuards(JwtAuthGuard),
