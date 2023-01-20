@@ -16,7 +16,7 @@ describe('UsersController', () => {
         authSchId: '1',
         email: 'example@example.com',
         firstName: 'foo',
-        lastName: 'bar',
+        fullName: 'bar foo',
       } as User),
     }
 

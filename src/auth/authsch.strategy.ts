@@ -22,7 +22,7 @@ export class AuthschStrategy extends PassportStrategy(Strategy, 'authsch') {
       clientID: process.env.AUTHSCH_CLIENT_ID,
       clientSecret: process.env.AUTHSCH_CLIENT_SECRET,
       callbackURL: '/auth/callback',
-      scope: ['basic', 'sn', 'givenName', 'mail'], // ?? niifEduPersonAttendedCourse = hallgatott tárgyak
+      scope: ['basic', 'givenName', 'displayName', 'mail'], // ?? niifEduPersonAttendedCourse = hallgatott tárgyak
       // Hallgató által jelenleg hallgatott kurzusok kódjai. Példa: "BMEVIAUA218;BMEVIIIA316"
     })
   }

@@ -55,7 +55,7 @@ describe('AuthController', () => {
         authSchId: '1',
         email: 'noreply@example.com',
         firstName: 'test',
-        lastName: 'user',
+        fullName: 'test user',
       }
       await controller.oauthRedirect(user)
       expect(fakejwtService.sign).toHaveBeenCalledTimes(1)
