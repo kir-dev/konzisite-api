@@ -11,10 +11,11 @@ export class FileExtensionValidator extends FileValidator<{
     )
   }
   buildErrorMessage(file: Express.Multer.File): string {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     unlink(join(process.cwd(), '/static', file.filename), () => {})
-    return `Invalid extension: ${extname(
+    return `Érvénytelen kiterjesztés: ${extname(
       file.originalname,
-    )}! Allowed extensions: ${this.validationOptions.allowedExtensions.join(
+    )}! Megengedett kiterjesztések: ${this.validationOptions.allowedExtensions.join(
       ', ',
     )}`
   }

@@ -27,6 +27,7 @@ import { CurrentUser } from 'src/current-user.decorator'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { ApiController } from 'src/utils/apiController.decorator'
 import { FileExtensionValidator } from 'src/utils/FileExtensionValidator'
+import { FileMaxSizeValidator } from 'src/utils/FileMaxSizeValidator'
 import { ConsultationsService } from './consultations.service'
 import { ConsultationDetailsDto } from './dto/ConsultationDetails.dto'
 import { ConsultationEntity } from './dto/ConsultationEntity.dto'
@@ -202,25 +203,27 @@ export class ConsultationsController {
         filename: (req, file, callback) => {
           callback(
             isNaN(parseInt(req.params.id))
-              ? new HttpException('Bad Request', HttpStatus.BAD_REQUEST)
+              ? new HttpException(
+                  'Érvénytelen azonosító',
+                  HttpStatus.BAD_REQUEST,
+                )
               : null,
             `attch_${req.params.id}${extname(file.originalname)}`,
           )
         },
       }),
-      limits: {
-        fileSize: 10000000,
-      },
     }),
   )
   async uploadFile(
     @UploadedFile(
       new ParseFilePipe({
         validators: [
+          new FileMaxSizeValidator({ maxSize: 10_000_000 }),
           new FileExtensionValidator({
             allowedExtensions: [
               '.jpg',
               '.jpeg',
+              '.png',
               '.pdf',
               '.docx',
               '.pptx',
@@ -238,7 +241,10 @@ export class ConsultationsController {
     } catch {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       unlink(join(process.cwd(), '/static', file.filename), () => {})
-      throw new HttpException('Consultation not found!', HttpStatus.NOT_FOUND)
+      throw new HttpException(
+        'A konzultáció nem található!',
+        HttpStatus.NOT_FOUND,
+      )
     }
   }
 
@@ -252,7 +258,7 @@ export class ConsultationsController {
     const consultation = await this.consultationsService.findOne(id)
     if (consultation.archived) {
       throw new HttpException(
-        'The file uploaded for this consultation has been deleted because the consultation has been archived.',
+        'Ez a fájl törölve lett, mert a konzultáció amihez tartozott, archiválásra került.',
         HttpStatus.NOT_FOUND,
       )
     }
@@ -265,7 +271,7 @@ export class ConsultationsController {
       )
     }
     throw new HttpException(
-      'No file uploaded for this consultation',
+      'Ehhez a konzultációhoz nincs feltöltve fájl!',
       HttpStatus.NOT_FOUND,
     )
   }

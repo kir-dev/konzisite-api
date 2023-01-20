@@ -23,6 +23,7 @@ export class SchedulerService {
       },
     })
     consultations.forEach((c) => {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       unlink(join(process.cwd(), '/static', c.fileName), () => {})
     })
     const result = await this.prisma.consultation.updateMany({

@@ -93,9 +93,7 @@ export class CaslAbilityFactory {
   }
 
   createForConsultation = async (user: User, consultationId: number) => {
-    const { can, cannot, build } = new AbilityBuilder<AppAbility>(
-      createPrismaAbility,
-    )
+    const { can, build } = new AbilityBuilder<AppAbility>(createPrismaAbility)
 
     const consultation = await this.prisma.consultation.findUnique({
       where: { id: consultationId },

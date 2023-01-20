@@ -29,7 +29,10 @@ export class UsersService {
   }
 
   async promoteUser(id: number): Promise<User> {
-    return this.prisma.user.update({ data: { isAdmin: true }, where: { id: id } })
+    return this.prisma.user.update({
+      data: { isAdmin: true },
+      where: { id: id },
+    })
   }
 
   async remove(id: number): Promise<User> {
