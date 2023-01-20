@@ -107,6 +107,62 @@ export class ConsultationsController {
   }
 
   @JwtAuth()
+  @Post(':id/leave')
+  async leave(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: UserEntity,
+  ): Promise<ParticipationEntity> {
+    const participation = await this.participationService.findOne(id, user.id)
+    if (participation === null) {
+      throw new HttpException(
+        'Nem vagy résztvevője ennek a konzultációnak!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    return this.participationService.remove(participation.id)
+  }
+
+  @JwtAuth()
+  @Patch(':id/rate')
+  async editRating(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: UserEntity,
+    @Body() { ratedUserId, ...ratingDto }: CreateRatingDto,
+  ): Promise<RatingEntity> {
+    const participation = await this.participationService.findOne(id, user.id)
+    if (participation === null) {
+      throw new HttpException(
+        'Nem vagy résztvevője ennek a konzultációnak!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    const presentation = await this.presentationService.findOne(id, ratedUserId)
+    if (presentation === null) {
+      throw new HttpException(
+        'Ez a felhasználó nem előadója ennek a konzultációnak!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    const rating = await this.ratingService.findByIds(
+      presentation.id,
+      participation.id,
+    )
+    if (rating === null) {
+      throw new HttpException(
+        'Ez az értékelés nem létezik!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    return this.ratingService.update(rating.id, {
+      ...ratingDto,
+    })
+  }
+
+  @JwtAuth()
   @Post(':id/rate')
   async rate(
     @Param('id', ParseIntPipe) id: number,
@@ -180,6 +236,7 @@ export class ConsultationsController {
     try {
       return await this.consultationsService.updateFileName(id, file.filename)
     } catch {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       unlink(join(process.cwd(), '/static', file.filename), () => {})
       throw new HttpException('Consultation not found!', HttpStatus.NOT_FOUND)
     }

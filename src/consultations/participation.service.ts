@@ -48,9 +48,9 @@ export class ParticipationService {
     return participation
   }
 
-  remove(id: number) {
+  remove(participationId: number) {
     return this.prisma.participation.delete({
-      where: { id },
+      where: { id: participationId },
     })
   }
 }
