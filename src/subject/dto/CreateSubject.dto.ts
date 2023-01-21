@@ -1,14 +1,4 @@
-import { IsEnum, IsNotEmpty } from 'class-validator'
-import { Major } from './SubjectEntity.dto'
+import { OmitType } from '@nestjs/swagger'
+import { SubjectEntity } from './SubjectEntity.dto'
 
-export class CreateSubjectDto {
-  @IsNotEmpty()
-  name: string
-
-  @IsNotEmpty()
-  code: string
-
-  @IsNotEmpty()
-  @IsEnum(Major, { each: true })
-  majors: Major[]
-}
+export class CreateSubjectDto extends OmitType(SubjectEntity, ['id']) {}
