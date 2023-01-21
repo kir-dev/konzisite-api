@@ -1,14 +1,4 @@
-import { IsEnum, IsOptional } from 'class-validator'
-import { Major } from './SubjectEntity.dto'
+import { PartialType } from '@nestjs/swagger'
+import { CreateSubjectDto } from './CreateSubject.dto'
 
-export class UpdateSubjectDto {
-  @IsOptional()
-  name?: string
-
-  @IsOptional()
-  code?: string
-
-  @IsOptional()
-  @IsEnum(Major, { each: true })
-  majors?: Major[]
-}
+export class UpdateSubjectDto extends PartialType(CreateSubjectDto) {}
