@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common'
-import { Prisma, Subject } from '@prisma/client'
+import { Subject } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
+import { CreateSubjectDto } from './dto/CreateSubject.dto'
+import { UpdateSubjectDto } from './dto/UpdateSubject.dto'
 
 @Injectable()
 export class SubjectService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: Prisma.SubjectCreateInput): Promise<Subject> {
+  async create(data: CreateSubjectDto): Promise<Subject> {
     return this.prisma.subject.create({ data })
   }
 
@@ -18,7 +20,7 @@ export class SubjectService {
     return this.prisma.subject.findUnique({ where: { id: id } })
   }
 
-  async update(id: number, data: Prisma.SubjectUpdateInput): Promise<Subject> {
+  async update(id: number, data: UpdateSubjectDto): Promise<Subject> {
     return this.prisma.subject.update({ data, where: { id: id } })
   }
 

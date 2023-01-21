@@ -7,12 +7,13 @@ import {
   Patch,
   Post,
 } from '@nestjs/common'
-import { Prisma } from '@prisma/client'
 import { Permissions } from 'src/auth/casl-ability.factory'
 import { AuthorizationSubject } from 'src/auth/decorator/authorizationSubject.decorator'
 import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
 import { RequiredPermission } from 'src/auth/decorator/requiredPermission'
 import { ApiController } from 'src/utils/apiController.decorator'
+import { CreateSubjectDto } from './dto/CreateSubject.dto'
+import { UpdateSubjectDto } from './dto/UpdateSubject.dto'
 import { SubjectService } from './subject.service'
 
 @JwtAuth()
@@ -23,7 +24,7 @@ export class SubjectController {
 
   @Post()
   @RequiredPermission(Permissions.Create)
-  create(@Body() createSubjectDto: Prisma.SubjectCreateInput) {
+  create(@Body() createSubjectDto: CreateSubjectDto) {
     return this.subjectService.create(createSubjectDto)
   }
 
@@ -43,7 +44,7 @@ export class SubjectController {
   @RequiredPermission(Permissions.Update)
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateSubjectDto: Prisma.SubjectUpdateInput,
+    @Body() updateSubjectDto: UpdateSubjectDto,
   ) {
     return this.subjectService.update(id, updateSubjectDto)
   }
