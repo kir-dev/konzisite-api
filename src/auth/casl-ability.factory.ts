@@ -144,30 +144,34 @@ export class CaslAbilityFactory {
     const { can, build } = new AbilityBuilder<AppAbility>(createPrismaAbility)
     can(Permissions.Read, 'Consultation', { targetGroups: { none: {} } })
     if (user) {
-      can(Permissions.Read, 'Consultation', {
-        OR: [
-          {
-            targetGroups: {
-              some: {
-                members: {
-                  some: {
-                    userId: user.id,
-                    role: {
-                      in: [
-                        GroupRoles.MEMBER,
-                        GroupRoles.ADMIN,
-                        GroupRoles.OWNER,
-                      ],
+      if (user.isAdmin) {
+        can(Permissions.Read, 'Consultation')
+      } else {
+        can(Permissions.Read, 'Consultation', {
+          OR: [
+            {
+              targetGroups: {
+                some: {
+                  members: {
+                    some: {
+                      userId: user.id,
+                      role: {
+                        in: [
+                          GroupRoles.MEMBER,
+                          GroupRoles.ADMIN,
+                          GroupRoles.OWNER,
+                        ],
+                      },
                     },
                   },
                 },
               },
             },
-          },
-          { presentations: { some: { userId: user.id } } },
-          { ownerId: user.id },
-        ],
-      })
+            { presentations: { some: { userId: user.id } } },
+            { ownerId: user.id },
+          ],
+        })
+      }
     }
     return build()
   }
