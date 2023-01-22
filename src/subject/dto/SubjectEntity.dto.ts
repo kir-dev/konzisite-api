@@ -1,3 +1,5 @@
+import { IsEnum, IsInt, IsNotEmpty, Min } from 'class-validator'
+
 export const Major: {
   [x: string]:
     | 'CE_BSC'
@@ -20,8 +22,16 @@ export const Major: {
 export type Major = typeof Major[keyof typeof Major]
 
 export class SubjectEntity {
+  @IsInt()
+  @Min(1)
   id: number
+
+  @IsNotEmpty()
   code: string
+
+  @IsNotEmpty()
   name: string
+  @IsNotEmpty()
+  @IsEnum(Major, { each: true })
   majors: Major[]
 }
