@@ -11,7 +11,7 @@ export class GroupsService {
     return this.prisma.group.create({ data: { ...dto, ownerId: user.id } })
   }
 
-  async findAll(userId: number) {
+  async findAll(userId: number, nameFilter?: string) {
     const groups = await this.prisma.group.findMany({
       include: {
         owner: true,
@@ -24,6 +24,12 @@ export class GroupsService {
           where: {
             userId,
           },
+        },
+      },
+      where: {
+        name: {
+          contains: nameFilter ?? '',
+          mode: 'insensitive',
         },
       },
     })

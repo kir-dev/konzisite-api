@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common'
 import { GroupRole, Prisma } from '@prisma/client'
 import { Permissions } from 'src/auth/casl-ability.factory'
@@ -151,8 +152,11 @@ export class GroupsController {
   }
 
   @Get()
-  async findAll(@CurrentUser() user: UserEntity): Promise<GroupPreviewDto[]> {
-    return this.groupsService.findAll(user.id)
+  async findAll(
+    @CurrentUser() user: UserEntity,
+    @Query('search') nameFilter: string,
+  ): Promise<GroupPreviewDto[]> {
+    return this.groupsService.findAll(user.id, nameFilter)
   }
 
   @Get(':id')
