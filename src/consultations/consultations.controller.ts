@@ -15,8 +15,9 @@ import {
   UseInterceptors,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
+import { Prisma } from '@prisma/client'
 import { Response } from 'express'
-import { createReadStream, unlink } from 'fs'
+import { createReadStream } from 'fs'
 import { diskStorage } from 'multer'
 import { extname, join } from 'path'
 import { Permissions } from 'src/auth/casl-ability.factory'
@@ -53,14 +54,18 @@ export class ConsultationsController {
 
   @JwtAuth()
   @Post()
-  create(
+  async create(
     @Body() createConsultationDto: CreateConsultationDto,
     @CurrentUser() user: UserEntity,
   ): Promise<ConsultationEntity> {
-    return this.consultationsService.create({
-      ...createConsultationDto,
-      ownerId: user.id,
-    })
+    try {
+      return await this.consultationsService.create(createConsultationDto, user)
+    } catch {
+      throw new HttpException(
+        'Érvénytelen külső kulcs!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
   }
 
   @Get()
@@ -75,36 +80,70 @@ export class ConsultationsController {
     @CurrentUser() user: UserEntity,
   ): Promise<ConsultationDetailsDto> {
     const participation = await this.participationService.findOne(id, user.id)
-    return this.consultationsService.findOne(id, participation?.id)
+    try {
+      return await this.consultationsService.findOne(id, participation?.id)
+    } catch {
+      throw new HttpException(
+        'A konzultáció nem található!',
+        HttpStatus.NOT_FOUND,
+      )
+    }
   }
 
   @JwtAuth()
   @RequiredPermission(Permissions.Update)
   @Patch(':id')
-  update(
+  async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateConsultationDto: UpdateConsultationDto,
   ): Promise<ConsultationEntity> {
-    return this.consultationsService.update(id, updateConsultationDto)
+    try {
+      return await this.consultationsService.update(id, updateConsultationDto)
+    } catch {
+      throw new HttpException(
+        'Érvénytelen külső kulcs!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
   }
 
   @JwtAuth()
   @RequiredPermission(Permissions.Delete)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number): Promise<ConsultationEntity> {
-    return this.consultationsService.remove(id)
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<ConsultationEntity> {
+    return await this.consultationsService.remove(id)
   }
 
   @JwtAuth()
   @Post(':id/join')
-  join(
+  async join(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: UserEntity,
   ): Promise<ParticipationEntity> {
-    return this.participationService.create({
-      consultationId: id,
-      userId: user.id,
-    })
+    try {
+      return await this.participationService.create({
+        consultationId: id,
+        userId: user.id,
+      })
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          throw new HttpException(
+            'A felhasználó már jelentkezett a konzultációra!',
+            HttpStatus.BAD_REQUEST,
+          )
+        }
+        if (e.code === 'P2003') {
+          throw new HttpException(
+            'A konzultáció nem található!',
+            HttpStatus.NOT_FOUND,
+          )
+        }
+      }
+      throw e
+    }
   }
 
   @JwtAuth()
@@ -236,16 +275,7 @@ export class ConsultationsController {
     file: Express.Multer.File,
     @Param('id', ParseIntPipe) id: number,
   ): Promise<ConsultationEntity> {
-    try {
-      return await this.consultationsService.updateFileName(id, file.filename)
-    } catch {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      unlink(join(process.cwd(), '/static', file.filename), () => {})
-      throw new HttpException(
-        'A konzultáció nem található!',
-        HttpStatus.NOT_FOUND,
-      )
-    }
+    return await this.consultationsService.updateFileName(id, file.filename)
   }
 
   @JwtAuth()
@@ -266,9 +296,19 @@ export class ConsultationsController {
       res.set({
         'Content-Disposition': `attachment; filename="${consultation.fileName}"`,
       })
-      return new StreamableFile(
+      const steamableFile = new StreamableFile(
         createReadStream(join(process.cwd(), '/static', consultation.fileName)),
       )
+      steamableFile.setErrorHandler((err, response) => {
+        response.statusCode = HttpStatus.NOT_FOUND
+        response.send(
+          JSON.stringify({
+            statusCode: HttpStatus.NOT_FOUND,
+            message: 'A fájl törölve lett',
+          }),
+        )
+      })
+      return steamableFile
     }
     throw new HttpException(
       'Ehhez a konzultációhoz nincs feltöltve fájl!',

@@ -2,6 +2,7 @@
 import { Injectable } from '@nestjs/common'
 import { unlink } from 'fs'
 import { join } from 'path'
+import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateConsultationDto } from './dto/CreateConsultation.dto'
 import { UpdateConsultationDto } from './dto/UpdateConsultation.dto'
@@ -9,9 +10,8 @@ import { UpdateConsultationDto } from './dto/UpdateConsultation.dto'
 @Injectable()
 export class ConsultationsService {
   constructor(private prisma: PrismaService) {}
-  create(dto: CreateConsultationDto) {
+  create(dto: CreateConsultationDto, user: UserEntity) {
     const {
-      ownerId,
       subjectId,
       targetGroupIds,
       presenterIds,
@@ -33,7 +33,7 @@ export class ConsultationsService {
         ...requestConnection,
         owner: {
           connect: {
-            id: ownerId,
+            id: user.id,
           },
         },
         subject: {

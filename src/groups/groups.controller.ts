@@ -2,12 +2,14 @@ import {
   Body,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
   Post,
 } from '@nestjs/common'
-import { GroupRole } from '@prisma/client'
+import { GroupRole, Prisma } from '@prisma/client'
 import { Permissions } from 'src/auth/casl-ability.factory'
 import { AuthorizationSubject } from 'src/auth/decorator/authorizationSubject.decorator'
 import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
@@ -37,20 +39,39 @@ export class GroupsController {
     @Body() createGroupDto: CreateGroupDto,
     @CurrentUser() user: UserEntity,
   ): Promise<GroupEntity> {
-    const newGroup = await this.groupsService.create({
-      ...createGroupDto,
-      ownerId: user.id,
-    })
+    const newGroup = await this.groupsService.create(createGroupDto, user)
     await this.groupsService.addMember(newGroup.id, user.id, GroupRole.OWNER)
     return newGroup
   }
 
   @Post(':id/join')
-  joinGroup(
+  async joinGroup(
     @CurrentUser() user: UserEntity,
     @Param('id', ParseIntPipe) groupId: number,
   ): Promise<UserToGroupEntity> {
-    return this.groupsService.addMember(groupId, user.id, GroupRole.PENDING)
+    try {
+      return await this.groupsService.addMember(
+        groupId,
+        user.id,
+        GroupRole.PENDING,
+      )
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          throw new HttpException(
+            'Már tagja vagy a csoportnak!',
+            HttpStatus.BAD_REQUEST,
+          )
+        }
+        if (e.code === 'P2003') {
+          throw new HttpException(
+            'A csoport nem található!',
+            HttpStatus.NOT_FOUND,
+          )
+        }
+      }
+      throw e
+    }
   }
 
   // Todo /:id/leave
@@ -61,20 +82,56 @@ export class GroupsController {
     @Body() userToAdd: UniqueUserDto,
     @Param('id', ParseIntPipe) groupId: number,
   ): Promise<UserToGroupEntity> {
-    return this.groupsService.addMember(
-      groupId,
-      userToAdd.userId,
-      GroupRole.MEMBER,
-    )
+    try {
+      return await this.groupsService.addMember(
+        groupId,
+        userToAdd.userId,
+        GroupRole.MEMBER,
+      )
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          throw new HttpException(
+            'A felhasználó már tagja a csoportnak!',
+            HttpStatus.BAD_REQUEST,
+          )
+        }
+        if (e.code === 'P2003') {
+          throw new HttpException(
+            'A felhasználó nem található!',
+            HttpStatus.NOT_FOUND,
+          )
+        }
+      }
+      throw e
+    }
   }
 
   @Post(':id/addMany')
   @RequiredPermission(Permissions.AddMember)
-  addManyMembers(
+  async addManyMembers(
     @Body() user: ManyUniqueUsersDto,
     @Param('id', ParseIntPipe) groupId: number,
   ): Promise<CreateManyResponse> {
-    return this.groupsService.addManyMembers(groupId, user.userIds)
+    try {
+      return await this.groupsService.addManyMembers(groupId, user.userIds)
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          throw new HttpException(
+            'A felhasználó már tagja a csoportnak!',
+            HttpStatus.BAD_REQUEST,
+          )
+        }
+        if (e.code === 'P2003') {
+          throw new HttpException(
+            'A felhasználó nem található!',
+            HttpStatus.NOT_FOUND,
+          )
+        }
+      }
+      throw e
+    }
   }
 
   @Post(':id/remove')
@@ -83,35 +140,46 @@ export class GroupsController {
     @Body() userToRemove: UniqueUserDto,
     @Param('id', ParseIntPipe) groupId: number,
   ): Promise<UserToGroupEntity> {
-    return this.groupsService.removeMember(groupId, userToRemove.userId)
+    try {
+      return await this.groupsService.removeMember(groupId, userToRemove.userId)
+    } catch {
+      throw new HttpException(
+        'Érvénytelen felhasználó azonosító!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
   }
 
   @Get()
-  findAll(@CurrentUser() user: UserEntity): Promise<GroupPreviewDto[]> {
+  async findAll(@CurrentUser() user: UserEntity): Promise<GroupPreviewDto[]> {
     return this.groupsService.findAll(user.id)
   }
 
   @Get(':id')
-  findOne(
+  async findOne(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: UserEntity,
   ): Promise<GroupDetailsDto> {
-    return this.groupsService.findOne(id, user.id)
+    try {
+      return await this.groupsService.findOne(id, user.id)
+    } catch {
+      throw new HttpException('A csoport nem található!', HttpStatus.NOT_FOUND)
+    }
   }
 
   @Patch(':id')
   @RequiredPermission(Permissions.Update)
-  update(
+  async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateGroupDto: UpdateGroupDto,
   ): Promise<GroupEntity> {
-    return this.groupsService.update(id, updateGroupDto)
+    return await this.groupsService.update(id, updateGroupDto)
   }
 
   @Delete(':id')
   @RequiredPermission(Permissions.Delete)
   async remove(@Param('id', ParseIntPipe) id: number): Promise<GroupEntity> {
-    return this.groupsService.remove(id)
+    return await this.groupsService.remove(id)
   }
 
   // Todo /:id/approve/:userid

@@ -2,11 +2,14 @@ import {
   Body,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
   Post,
 } from '@nestjs/common'
+import { Prisma } from '@prisma/client'
 import { Permissions } from 'src/auth/casl-ability.factory'
 import { AuthorizationSubject } from 'src/auth/decorator/authorizationSubject.decorator'
 import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
@@ -24,8 +27,15 @@ export class SubjectController {
 
   @Post()
   @RequiredPermission(Permissions.Create)
-  create(@Body() createSubjectDto: CreateSubjectDto) {
-    return this.subjectService.create(createSubjectDto)
+  async create(@Body() createSubjectDto: CreateSubjectDto) {
+    try {
+      return await this.subjectService.create(createSubjectDto)
+    } catch {
+      throw new HttpException(
+        'Ez a tárgykód már létezik!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
   }
 
   @Get()
@@ -36,22 +46,47 @@ export class SubjectController {
 
   @Get(':id')
   @RequiredPermission(Permissions.Read)
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.subjectService.findOne(id)
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const res = await this.subjectService.findOne(id)
+    if (res === null) {
+      throw new HttpException('A tárgy nem található!', HttpStatus.NOT_FOUND)
+    }
+    return res
   }
 
   @Patch(':id')
   @RequiredPermission(Permissions.Update)
-  update(
+  async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateSubjectDto: UpdateSubjectDto,
   ) {
-    return this.subjectService.update(id, updateSubjectDto)
+    try {
+      return await this.subjectService.update(id, updateSubjectDto)
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2025') {
+          throw new HttpException(
+            'A tárgy nem található!',
+            HttpStatus.NOT_FOUND,
+          )
+        }
+        if (e.code === 'P2002') {
+          throw new HttpException(
+            'Ez a tárgykód már létezik!',
+            HttpStatus.BAD_REQUEST,
+          )
+        }
+      }
+    }
   }
 
   @Delete(':id')
   @RequiredPermission(Permissions.Delete)
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.subjectService.remove(id)
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    try {
+      return await this.subjectService.remove(id)
+    } catch {
+      throw new HttpException('A tárgy nem található!', HttpStatus.NOT_FOUND)
+    }
   }
 }
