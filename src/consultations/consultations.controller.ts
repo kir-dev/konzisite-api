@@ -131,6 +131,7 @@ export class ConsultationsController {
   }
 
   @JwtAuth()
+  @RequiredPermission(Permissions.JoinConsultation)
   @Post(':id/join')
   async join(
     @Param('id', ParseIntPipe) id: number,
@@ -147,12 +148,6 @@ export class ConsultationsController {
           throw new HttpException(
             'A felhasználó már jelentkezett a konzultációra!',
             HttpStatus.BAD_REQUEST,
-          )
-        }
-        if (e.code === 'P2003') {
-          throw new HttpException(
-            'A konzultáció nem található!',
-            HttpStatus.NOT_FOUND,
           )
         }
       }
