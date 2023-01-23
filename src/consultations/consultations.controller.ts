@@ -12,6 +12,7 @@ import {
   Res,
   StreamableFile,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
@@ -22,9 +23,15 @@ import { diskStorage } from 'multer'
 import { extname, join } from 'path'
 import { Permissions } from 'src/auth/casl-ability.factory'
 import { AuthorizationSubject } from 'src/auth/decorator/authorizationSubject.decorator'
-import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
+import {
+  CurrentUser,
+  CurrentUserOptional,
+} from 'src/auth/decorator/current-user.decorator'
+import {
+  JwtAuth,
+  JwtOptionalAuthGuard,
+} from 'src/auth/decorator/jwtAuth.decorator'
 import { RequiredPermission } from 'src/auth/decorator/requiredPermission'
-import { CurrentUser } from 'src/current-user.decorator'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { ApiController } from 'src/utils/apiController.decorator'
 import { FileExtensionValidator } from 'src/utils/FileExtensionValidator'
@@ -68,9 +75,12 @@ export class ConsultationsController {
     }
   }
 
+  @UseGuards(JwtOptionalAuthGuard)
   @Get()
-  findAll(): Promise<ConsultationPreviewDto[]> {
-    return this.consultationsService.findAll()
+  findAll(
+    @CurrentUserOptional() user?: UserEntity,
+  ): Promise<ConsultationPreviewDto[]> {
+    return this.consultationsService.findAll(user)
   }
 
   @JwtAuth()
@@ -81,7 +91,7 @@ export class ConsultationsController {
   ): Promise<ConsultationDetailsDto> {
     const participation = await this.participationService.findOne(id, user.id)
     try {
-      return await this.consultationsService.findOne(id, participation?.id)
+      return await this.consultationsService.findOne(id, user, participation?.id)
     } catch {
       throw new HttpException(
         'A konzultáció nem található!',
@@ -284,8 +294,9 @@ export class ConsultationsController {
   async getFile(
     @Param('id', ParseIntPipe) id: number,
     @Res({ passthrough: true }) res: Response,
+    @CurrentUser() user: UserEntity,
   ): Promise<StreamableFile> {
-    const consultation = await this.consultationsService.findOne(id)
+    const consultation = await this.consultationsService.findOne(id, user)
     if (consultation.archived) {
       throw new HttpException(
         'Ez a fájl törölve lett, mert a konzultáció amihez tartozott, archiválásra került.',

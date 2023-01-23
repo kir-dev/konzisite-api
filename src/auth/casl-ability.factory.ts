@@ -10,6 +10,7 @@ import {
 } from '@prisma/client'
 import { GroupRoles } from 'src/groups/dto/GroupEntity.dto'
 import { PrismaService } from 'src/prisma/prisma.service'
+import { UserEntity } from 'src/users/dto/UserEntity.dto'
 
 export type AppSubjects = Subjects<{
   User: User
@@ -96,7 +97,10 @@ export class CaslAbilityFactory {
     return build()
   }
 
-  createForConsultation = async (user: User, consultationId: number) => {
+  createForConsultationMutation = async (
+    user: User,
+    consultationId: number,
+  ) => {
     const { can, build } = new AbilityBuilder<AppAbility>(createPrismaAbility)
 
     const consultation = await this.prisma.consultation.findUnique({
@@ -133,6 +137,42 @@ export class CaslAbilityFactory {
       can(Permissions.DownloadFile, 'Consultation')
     }
 
+    return build()
+  }
+
+  createForConsultationRead = (user?: UserEntity) => {
+    const { can, build } = new AbilityBuilder<AppAbility>(createPrismaAbility)
+    can(Permissions.Read, 'Consultation', { targetGroups: { none: {} } })
+    if (user) {
+      if (user.isAdmin) {
+        can(Permissions.Read, 'Consultation')
+      } else {
+        can(Permissions.Read, 'Consultation', {
+          OR: [
+            {
+              targetGroups: {
+                some: {
+                  members: {
+                    some: {
+                      userId: user.id,
+                      role: {
+                        in: [
+                          GroupRoles.MEMBER,
+                          GroupRoles.ADMIN,
+                          GroupRoles.OWNER,
+                        ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            { presentations: { some: { userId: user.id } } },
+            { ownerId: user.id },
+          ],
+        })
+      }
+    }
     return build()
   }
 }
