@@ -91,7 +91,11 @@ export class ConsultationsController {
   ): Promise<ConsultationDetailsDto> {
     const participation = await this.participationService.findOne(id, user.id)
     try {
-      return await this.consultationsService.findOne(id, user, participation?.id)
+      return await this.consultationsService.findOneWithRelations(
+        id,
+        user,
+        participation.id,
+      )
     } catch {
       throw new HttpException(
         'A konzultáció nem található!',
@@ -219,6 +223,8 @@ export class ConsultationsController {
     @CurrentUser() user: UserEntity,
     @Body() { ratedUserId, ...ratingDto }: CreateRatingDto,
   ): Promise<RatingEntity> {
+    const consultation = await this.consultationsService.findOne(id, user)
+
     const participation = await this.participationService.findOne(id, user.id)
     if (participation === null) {
       throw new HttpException(
@@ -231,6 +237,13 @@ export class ConsultationsController {
     if (presentation === null) {
       throw new HttpException(
         'Ez a felhasználó nem előadója ennek a konzultációnak!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    if (consultation.startDate > new Date(Date.now())) {
+      throw new HttpException(
+        'A konzultáció még nem kezdődött el!',
         HttpStatus.BAD_REQUEST,
       )
     }

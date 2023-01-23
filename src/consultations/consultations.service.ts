@@ -84,7 +84,28 @@ export class ConsultationsService {
     }))
   }
 
-  async findOne(id: number, user: UserEntity, participationId?: number) {
+  async findOne(id: number, user: UserEntity) {
+    const ability = this.caslFactory.createForConsultationRead(user)
+    // the accessiblyBy filter doesn't work with findUnique, so we're using findMany,
+    // but there can only be zero or one result, because id is unique.
+    const consultation = await this.prisma.consultation.findMany({
+      where: { AND: [accessibleBy(ability).Consultation, { id }] },
+    })
+    if (consultation.length === 0) {
+      // it's possible that the user just doesn't have permission to view it, but they don't have to know that
+      throw new HttpException(
+        'Nem található a konzultáció',
+        HttpStatus.NOT_FOUND,
+      )
+    }
+    return consultation[0]
+  }
+
+  async findOneWithRelations(
+    id: number,
+    user: UserEntity,
+    participationId: number,
+  ) {
     const ability = this.caslFactory.createForConsultationRead(user)
     // the accessiblyBy filter doesn't work with findUnique, so we're using findMany,
     // but there can only be zero or one result, because id is unique.
