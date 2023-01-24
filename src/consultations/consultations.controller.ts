@@ -241,7 +241,7 @@ export class ConsultationsController {
       )
     }
 
-    if (consultation.startDate > new Date(Date.now())) {
+    if (consultation.startDate > new Date()) {
       throw new HttpException(
         'A konzultáció még nem kezdődött el!',
         HttpStatus.BAD_REQUEST,

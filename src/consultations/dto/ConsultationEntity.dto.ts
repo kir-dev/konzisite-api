@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsDateString,
   IsInt,
   IsNotEmpty,
@@ -28,4 +29,7 @@ export class ConsultationEntity {
 
   @IsOptional()
   fileName?: string
+
+  @IsBoolean()
+  archived: boolean
 }

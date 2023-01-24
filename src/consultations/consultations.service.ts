@@ -6,6 +6,8 @@ import { join } from 'path'
 import { CaslAbilityFactory } from 'src/auth/casl-ability.factory'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { PrismaService } from '../prisma/prisma.service'
+import { ConsultationDetailsDto } from './dto/ConsultationDetails.dto'
+import { ConsultationEntity } from './dto/ConsultationEntity.dto'
 import { CreateConsultationDto } from './dto/CreateConsultation.dto'
 import { UpdateConsultationDto } from './dto/UpdateConsultation.dto'
 
@@ -84,7 +86,7 @@ export class ConsultationsService {
     }))
   }
 
-  async findOne(id: number, user: UserEntity) {
+  async findOne(id: number, user: UserEntity): Promise<ConsultationEntity> {
     const ability = this.caslFactory.createForConsultationRead(user)
     // the accessiblyBy filter doesn't work with findUnique, so we're using findMany,
     // but there can only be zero or one result, because id is unique.
@@ -105,7 +107,7 @@ export class ConsultationsService {
     id: number,
     user: UserEntity,
     participationId: number,
-  ) {
+  ): Promise<ConsultationDetailsDto> {
     const ability = this.caslFactory.createForConsultationRead(user)
     // the accessiblyBy filter doesn't work with findUnique, so we're using findMany,
     // but there can only be zero or one result, because id is unique.
