@@ -212,6 +212,7 @@ export class ConsultationsController {
   }
 
   @JwtAuth()
+  @RequiredPermission(Permissions.JoinConsultation)
   @Post(':id/rate')
   async rate(
     @Param('id', ParseIntPipe) id: number,
@@ -243,11 +244,23 @@ export class ConsultationsController {
       )
     }
 
-    return this.ratingService.create({
-      participationId: participation.id,
-      presentationId: presentation.id,
-      ...ratingDto,
-    })
+    try {
+      return await this.ratingService.create({
+        participationId: participation.id,
+        presentationId: presentation.id,
+        ...ratingDto,
+      })
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          throw new HttpException(
+            'Ezt az előadót már értékelted!',
+            HttpStatus.BAD_REQUEST,
+          )
+        }
+      }
+      throw e
+    }
   }
 
   @JwtAuth()
