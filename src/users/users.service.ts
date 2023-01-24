@@ -12,8 +12,15 @@ export class UsersService {
     return this.prisma.user.create({ data })
   }
 
-  async findAll(): Promise<User[]> {
-    return this.prisma.user.findMany()
+  async findAll(nameFilter?: string): Promise<User[]> {
+    return this.prisma.user.findMany({
+      where: {
+        fullName: {
+          contains: nameFilter ?? '',
+          mode: 'insensitive',
+        },
+      },
+    })
   }
 
   async findOne(id: number): Promise<User> {

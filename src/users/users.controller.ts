@@ -6,6 +6,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Query,
 } from '@nestjs/common'
 import { Permissions } from 'src/auth/casl-ability.factory'
 import { AuthorizationSubject } from 'src/auth/decorator/authorizationSubject.decorator'
@@ -23,8 +24,10 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  findAll(): Promise<UserEntity[] /*UserPreview[]*/> {
-    return this.usersService.findAll()
+  findAll(
+    @Query('search') nameFilter: string,
+  ): Promise<UserEntity[] /*UserPreview[]*/> {
+    return this.usersService.findAll(nameFilter)
   }
 
   @Get('profile')
