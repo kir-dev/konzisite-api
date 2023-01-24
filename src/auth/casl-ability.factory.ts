@@ -102,9 +102,7 @@ export class CaslAbilityFactory {
     user: User,
     consultationId: number,
   ) => {
-    const { can, cannot, build } = new AbilityBuilder<AppAbility>(
-      createPrismaAbility,
-    )
+    const { can, build } = new AbilityBuilder<AppAbility>(createPrismaAbility)
 
     const consultation = await this.prisma.consultation.findUnique({
       where: { id: consultationId },
@@ -129,7 +127,6 @@ export class CaslAbilityFactory {
       can(Permissions.Update, 'Consultation')
       can(Permissions.Delete, 'Consultation')
       can(Permissions.DownloadFile, 'Consultation')
-      cannot(Permissions.JoinConsultation, 'Consultation')
     } else {
       can(Permissions.JoinConsultation, 'Consultation')
     }

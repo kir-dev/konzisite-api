@@ -90,18 +90,7 @@ export class ConsultationsController {
     @CurrentUser() user: UserEntity,
   ): Promise<ConsultationDetailsDto> {
     const participation = await this.participationService.findOne(id, user.id)
-    try {
-      return await this.consultationsService.findOneWithRelations(
-        id,
-        user,
-        participation.id,
-      )
-    } catch {
-      throw new HttpException(
-        'A konzultáció nem található!',
-        HttpStatus.NOT_FOUND,
-      )
-    }
+    return await this.consultationsService.findOneWithRelations(id, user, participation?.id)
   }
 
   @JwtAuth()
@@ -173,6 +162,7 @@ export class ConsultationsController {
   }
 
   @JwtAuth()
+  @RequiredPermission(Permissions.JoinConsultation)
   @Patch(':id/rate')
   async editRating(
     @Param('id', ParseIntPipe) id: number,
