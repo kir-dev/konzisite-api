@@ -5,6 +5,7 @@ import { ConsultationEntity } from './ConsultationEntity.dto'
 export class CreateConsultationDto extends OmitType(ConsultationEntity, [
   'id',
   'fileName',
+  'archived',
 ]) {
   @IsInt()
   @Min(1)

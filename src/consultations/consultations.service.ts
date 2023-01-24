@@ -6,6 +6,8 @@ import { join } from 'path'
 import { CaslAbilityFactory } from 'src/auth/casl-ability.factory'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { PrismaService } from '../prisma/prisma.service'
+import { ConsultationDetailsDto } from './dto/ConsultationDetails.dto'
+import { ConsultationEntity } from './dto/ConsultationEntity.dto'
 import { CreateConsultationDto } from './dto/CreateConsultation.dto'
 import { UpdateConsultationDto } from './dto/UpdateConsultation.dto'
 
@@ -84,7 +86,28 @@ export class ConsultationsService {
     }))
   }
 
-  async findOne(id: number, user: UserEntity, participationId?: number) {
+  async findOne(id: number, user: UserEntity): Promise<ConsultationEntity> {
+    const ability = this.caslFactory.createForConsultationRead(user)
+    // the accessiblyBy filter doesn't work with findUnique, so we're using findMany,
+    // but there can only be zero or one result, because id is unique.
+    const consultation = await this.prisma.consultation.findMany({
+      where: { AND: [accessibleBy(ability).Consultation, { id }] },
+    })
+    if (consultation.length === 0) {
+      // it's possible that the user just doesn't have permission to view it, but they don't have to know that
+      throw new HttpException(
+        'Nem található a konzultáció',
+        HttpStatus.NOT_FOUND,
+      )
+    }
+    return consultation[0]
+  }
+
+  async findOneWithRelations(
+    id: number,
+    user: UserEntity,
+    participationId: number,
+  ): Promise<ConsultationDetailsDto> {
     const ability = this.caslFactory.createForConsultationRead(user)
     // the accessiblyBy filter doesn't work with findUnique, so we're using findMany,
     // but there can only be zero or one result, because id is unique.
