@@ -10,6 +10,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common'
+import { ApiQuery } from '@nestjs/swagger'
 import { GroupRole, Prisma } from '@prisma/client'
 import { Permissions } from 'src/auth/casl-ability.factory'
 import { AuthorizationSubject } from 'src/auth/decorator/authorizationSubject.decorator'
@@ -35,6 +36,10 @@ import { GroupsService } from './groups.service'
 export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
 
+  @ApiQuery({
+    name: 'search',
+    required: false,
+  })
   @Get()
   async findAll(
     @CurrentUser() user: UserEntity,
