@@ -33,6 +33,7 @@ export enum Permissions {
   PromoteMember = 'promote_member',
   PromoteUser = 'promote_user',
   DownloadFile = 'download_file',
+  JoinConsultation = 'join_consultation',
 }
 
 @Injectable()
@@ -126,6 +127,8 @@ export class CaslAbilityFactory {
       can(Permissions.Update, 'Consultation')
       can(Permissions.Delete, 'Consultation')
       can(Permissions.DownloadFile, 'Consultation')
+    } else {
+      can(Permissions.JoinConsultation, 'Consultation')
     }
 
     const participation = await this.prisma.participation.findUnique({

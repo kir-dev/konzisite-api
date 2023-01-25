@@ -90,18 +90,7 @@ export class ConsultationsController {
     @CurrentUser() user: UserEntity,
   ): Promise<ConsultationDetailsDto> {
     const participation = await this.participationService.findOne(id, user.id)
-    try {
-      return await this.consultationsService.findOneWithRelations(
-        id,
-        user,
-        participation.id,
-      )
-    } catch {
-      throw new HttpException(
-        'A konzultáció nem található!',
-        HttpStatus.NOT_FOUND,
-      )
-    }
+    return await this.consultationsService.findOneWithRelations(id, user, participation?.id)
   }
 
   @JwtAuth()
@@ -131,6 +120,7 @@ export class ConsultationsController {
   }
 
   @JwtAuth()
+  @RequiredPermission(Permissions.JoinConsultation)
   @Post(':id/join')
   async join(
     @Param('id', ParseIntPipe) id: number,
@@ -147,12 +137,6 @@ export class ConsultationsController {
           throw new HttpException(
             'A felhasználó már jelentkezett a konzultációra!',
             HttpStatus.BAD_REQUEST,
-          )
-        }
-        if (e.code === 'P2003') {
-          throw new HttpException(
-            'A konzultáció nem található!',
-            HttpStatus.NOT_FOUND,
           )
         }
       }
@@ -178,6 +162,7 @@ export class ConsultationsController {
   }
 
   @JwtAuth()
+  @RequiredPermission(Permissions.JoinConsultation)
   @Patch(':id/rate')
   async editRating(
     @Param('id', ParseIntPipe) id: number,
@@ -217,6 +202,7 @@ export class ConsultationsController {
   }
 
   @JwtAuth()
+  @RequiredPermission(Permissions.JoinConsultation)
   @Post(':id/rate')
   async rate(
     @Param('id', ParseIntPipe) id: number,
@@ -248,11 +234,23 @@ export class ConsultationsController {
       )
     }
 
-    return this.ratingService.create({
-      participationId: participation.id,
-      presentationId: presentation.id,
-      ...ratingDto,
-    })
+    try {
+      return await this.ratingService.create({
+        participationId: participation.id,
+        presentationId: presentation.id,
+        ...ratingDto,
+      })
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          throw new HttpException(
+            'Ezt az előadót már értékelted!',
+            HttpStatus.BAD_REQUEST,
+          )
+        }
+      }
+      throw e
+    }
   }
 
   @JwtAuth()
