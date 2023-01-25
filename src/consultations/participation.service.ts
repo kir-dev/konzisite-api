@@ -5,9 +5,6 @@ import { PrismaService } from 'src/prisma/prisma.service'
 @Injectable()
 export class ParticipationService {
   constructor(private prisma: PrismaService) {}
-  create(data: Prisma.ParticipationUncheckedCreateInput) {
-    return this.prisma.participation.create({ data })
-  }
 
   async findAllByUserId(userId: number) {
     const participations = await this.prisma.participation.findMany({
@@ -46,6 +43,10 @@ export class ParticipationService {
     })
 
     return participation
+  }
+
+  create(data: Prisma.ParticipationUncheckedCreateInput) {
+    return this.prisma.participation.create({ data })
   }
 
   remove(participationId: number) {

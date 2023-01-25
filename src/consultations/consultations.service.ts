@@ -18,49 +18,6 @@ export class ConsultationsService {
     private caslFactory: CaslAbilityFactory,
   ) {}
 
-  create(dto: CreateConsultationDto, user: UserEntity) {
-    const {
-      subjectId,
-      targetGroupIds,
-      presenterIds,
-      requestId,
-      ...restOfData
-    } = dto
-    const requestConnection = requestId
-      ? {
-          request: {
-            connect: {
-              id: requestId,
-            },
-          },
-        }
-      : {}
-    return this.prisma.consultation.create({
-      data: {
-        ...restOfData,
-        ...requestConnection,
-        owner: {
-          connect: {
-            id: user.id,
-          },
-        },
-        subject: {
-          connect: {
-            id: subjectId,
-          },
-        },
-        targetGroups: {
-          connect: targetGroupIds.map((id) => ({ id })),
-        },
-        presentations: {
-          createMany: {
-            data: presenterIds.map((userId) => ({ userId })),
-          },
-        },
-      },
-    })
-  }
-
   async findAll(user: UserEntity) {
     const ability = this.caslFactory.createForConsultationRead(user)
     const results = await this.prisma.consultation.findMany({
@@ -153,6 +110,49 @@ export class ConsultationsService {
     }
   }
 
+  create(dto: CreateConsultationDto, user: UserEntity) {
+    const {
+      subjectId,
+      targetGroupIds,
+      presenterIds,
+      requestId,
+      ...restOfData
+    } = dto
+    const requestConnection = requestId
+      ? {
+          request: {
+            connect: {
+              id: requestId,
+            },
+          },
+        }
+      : {}
+    return this.prisma.consultation.create({
+      data: {
+        ...restOfData,
+        ...requestConnection,
+        owner: {
+          connect: {
+            id: user.id,
+          },
+        },
+        subject: {
+          connect: {
+            id: subjectId,
+          },
+        },
+        targetGroups: {
+          connect: targetGroupIds.map((id) => ({ id })),
+        },
+        presentations: {
+          createMany: {
+            data: presenterIds.map((userId) => ({ userId })),
+          },
+        },
+      },
+    })
+  }
+
   async update(id: number, dto: UpdateConsultationDto) {
     const konzi = await this.prisma.consultation.findUnique({
       where: { id },
@@ -211,10 +211,6 @@ export class ConsultationsService {
     })
   }
 
-  remove(id: number) {
-    return this.prisma.consultation.delete({ where: { id } })
-  }
-
   async updateFileName(id: number, fileName: string) {
     const consultation = await this.prisma.consultation.findUnique({
       where: { id },
@@ -228,5 +224,9 @@ export class ConsultationsService {
       where: { id },
       data: { fileName },
     })
+  }
+
+  remove(id: number) {
+    return this.prisma.consultation.delete({ where: { id } })
   }
 }

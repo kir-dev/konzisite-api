@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { AuthModule } from 'src/auth/auth.module'
 import { PrismaModule } from 'src/prisma/prisma.module'
-import { ConsultationRequestService } from './consultationRequest.service'
 import { ConsultationsController } from './consultations.controller'
 import { ConsultationsService } from './consultations.service'
 import { ParticipationService } from './participation.service'
@@ -20,7 +19,6 @@ describe('ConsultationsController', () => {
         RatingService,
         ParticipationService,
         PresentationService,
-        ConsultationRequestService,
       ],
     }).compile()
 

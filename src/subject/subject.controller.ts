@@ -43,6 +43,41 @@ export class SubjectController {
     private readonly csvParser: CsvParser,
   ) {}
 
+  @Get()
+  @RequiredPermission(Permissions.Read)
+  findAll() {
+    return this.subjectService.findAll()
+  }
+
+  @RequiredPermission(Permissions.Create)
+  @Header('Content-Disposition', 'attachment; filename="example_import.csv"')
+  @Get('example')
+  async getExampleFile(): Promise<StreamableFile> {
+    const steamableFile = new StreamableFile(
+      createReadStream(join(process.cwd(), '/static/example_import.csv')),
+    )
+    steamableFile.setErrorHandler((err, response) => {
+      response.statusCode = HttpStatus.NOT_FOUND
+      response.send(
+        JSON.stringify({
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'A fájl törölve lett',
+        }),
+      )
+    })
+    return steamableFile
+  }
+
+  @Get(':id')
+  @RequiredPermission(Permissions.Read)
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const res = await this.subjectService.findOne(id)
+    if (res === null) {
+      throw new HttpException('A tárgy nem található!', HttpStatus.NOT_FOUND)
+    }
+    return res
+  }
+
   @Post()
   @RequiredPermission(Permissions.Create)
   async create(@Body() createSubjectDto: CreateSubjectDto) {
@@ -112,41 +147,6 @@ export class SubjectController {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       unlink(join(process.cwd(), '/static/importdata.csv'), () => {})
     }
-  }
-
-  @RequiredPermission(Permissions.Create)
-  @Header('Content-Disposition', 'attachment; filename="example_import.csv"')
-  @Get('example')
-  async getExampleFile(): Promise<StreamableFile> {
-    const steamableFile = new StreamableFile(
-      createReadStream(join(process.cwd(), '/static/example_import.csv')),
-    )
-    steamableFile.setErrorHandler((err, response) => {
-      response.statusCode = HttpStatus.NOT_FOUND
-      response.send(
-        JSON.stringify({
-          statusCode: HttpStatus.NOT_FOUND,
-          message: 'A fájl törölve lett',
-        }),
-      )
-    })
-    return steamableFile
-  }
-
-  @Get()
-  @RequiredPermission(Permissions.Read)
-  findAll() {
-    return this.subjectService.findAll()
-  }
-
-  @Get(':id')
-  @RequiredPermission(Permissions.Read)
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    const res = await this.subjectService.findOne(id)
-    if (res === null) {
-      throw new HttpException('A tárgy nem található!', HttpStatus.NOT_FOUND)
-    }
-    return res
   }
 
   @Patch(':id')

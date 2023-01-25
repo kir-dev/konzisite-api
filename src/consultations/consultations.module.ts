@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common'
 import { AuthModule } from 'src/auth/auth.module'
 import { PrismaModule } from 'src/prisma/prisma.module'
-import { ConsultationRequestService } from './consultationRequest.service'
 import { ConsultationsController } from './consultations.controller'
 import { ConsultationsService } from './consultations.service'
 import { ParticipationService } from './participation.service'
@@ -16,7 +15,6 @@ import { RatingService } from './rating.service'
     RatingService,
     ParticipationService,
     PresentationService,
-    ConsultationRequestService,
   ],
 })
 export class ConsultationsModule {}
