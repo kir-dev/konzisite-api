@@ -3,6 +3,7 @@ import { GroupRole, Prisma } from '@prisma/client'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { CreateGroupDto } from './dto/CreateGroup.dto'
+import { GroupRoles } from './dto/GroupEntity.dto'
 
 @Injectable()
 export class GroupsService {
@@ -17,7 +18,13 @@ export class GroupsService {
         owner: true,
         _count: {
           select: {
-            members: true,
+            members: {
+              where: {
+                role: {
+                  in: [GroupRoles.ADMIN, GroupRoles.OWNER, GroupRoles.MEMBER],
+                },
+              },
+            },
           },
         },
         members: {
