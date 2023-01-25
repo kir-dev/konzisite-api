@@ -133,13 +133,19 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/groups/",
+							"raw": "{{baseUrl}}/groups/?search=lma%20körte",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"groups",
 								""
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "lma%20körte"
+								}
 							]
 						}
 					},
@@ -265,6 +271,52 @@
 							],
 							"path": [
 								"subjects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "import",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/C:/Users/feket/Documents/konzi.csv"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/subjects/import",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"subjects",
+								"import"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "example",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/subjects/example",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"subjects",
+								"example"
 							]
 						}
 					},
