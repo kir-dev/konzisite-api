@@ -5,13 +5,6 @@ import { PrismaService } from 'src/prisma/prisma.service'
 @Injectable()
 export class PresentationService {
   constructor(private prisma: PrismaService) {}
-  create(data: Prisma.PresentationUncheckedCreateInput) {
-    return this.prisma.presentation.create({ data })
-  }
-
-  createMany(data: Prisma.PresentationUncheckedCreateInput[]) {
-    return this.prisma.presentation.createMany({ data })
-  }
 
   async findAllByUserId(userId: number) {
     const presentations = await this.prisma.presentation.findMany({
@@ -50,6 +43,14 @@ export class PresentationService {
     })
 
     return presentation
+  }
+
+  create(data: Prisma.PresentationUncheckedCreateInput) {
+    return this.prisma.presentation.create({ data })
+  }
+
+  createMany(data: Prisma.PresentationUncheckedCreateInput[]) {
+    return this.prisma.presentation.createMany({ data })
   }
 
   remove(id: number) {

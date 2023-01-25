@@ -10,6 +10,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common'
+import { ApiQuery } from '@nestjs/swagger'
 import { GroupRole, Prisma } from '@prisma/client'
 import { Permissions } from 'src/auth/casl-ability.factory'
 import { AuthorizationSubject } from 'src/auth/decorator/authorizationSubject.decorator'
@@ -35,6 +36,30 @@ import { GroupsService } from './groups.service'
 export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
 
+  @ApiQuery({
+    name: 'search',
+    required: false,
+  })
+  @Get()
+  async findAll(
+    @CurrentUser() user: UserEntity,
+    @Query('search') nameFilter: string,
+  ): Promise<GroupPreviewDto[]> {
+    return this.groupsService.findAll(user.id, nameFilter)
+  }
+
+  @Get(':id')
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: UserEntity,
+  ): Promise<GroupDetailsDto> {
+    try {
+      return await this.groupsService.findOne(id, user.id)
+    } catch {
+      throw new HttpException('A csoport nem található!', HttpStatus.NOT_FOUND)
+    }
+  }
+
   @Post()
   async create(
     @Body() createGroupDto: CreateGroupDto,
@@ -43,6 +68,21 @@ export class GroupsController {
     const newGroup = await this.groupsService.create(createGroupDto, user)
     await this.groupsService.addMember(newGroup.id, user.id, GroupRole.OWNER)
     return newGroup
+  }
+
+  @Patch(':id')
+  @RequiredPermission(Permissions.Update)
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateGroupDto: UpdateGroupDto,
+  ): Promise<GroupEntity> {
+    return await this.groupsService.update(id, updateGroupDto)
+  }
+
+  @Delete(':id')
+  @RequiredPermission(Permissions.Delete)
+  async remove(@Param('id', ParseIntPipe) id: number): Promise<GroupEntity> {
+    return await this.groupsService.remove(id)
   }
 
   @Post(':id/join')
@@ -149,41 +189,6 @@ export class GroupsController {
         HttpStatus.BAD_REQUEST,
       )
     }
-  }
-
-  @Get()
-  async findAll(
-    @CurrentUser() user: UserEntity,
-    @Query('search') nameFilter: string,
-  ): Promise<GroupPreviewDto[]> {
-    return this.groupsService.findAll(user.id, nameFilter)
-  }
-
-  @Get(':id')
-  async findOne(
-    @Param('id', ParseIntPipe) id: number,
-    @CurrentUser() user: UserEntity,
-  ): Promise<GroupDetailsDto> {
-    try {
-      return await this.groupsService.findOne(id, user.id)
-    } catch {
-      throw new HttpException('A csoport nem található!', HttpStatus.NOT_FOUND)
-    }
-  }
-
-  @Patch(':id')
-  @RequiredPermission(Permissions.Update)
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateGroupDto: UpdateGroupDto,
-  ): Promise<GroupEntity> {
-    return await this.groupsService.update(id, updateGroupDto)
-  }
-
-  @Delete(':id')
-  @RequiredPermission(Permissions.Delete)
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<GroupEntity> {
-    return await this.groupsService.remove(id)
   }
 
   // Todo /:id/approve/:userid

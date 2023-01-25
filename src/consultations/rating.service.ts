@@ -6,23 +6,6 @@ import { PrismaService } from 'src/prisma/prisma.service'
 export class RatingService {
   constructor(private prisma: PrismaService) {}
 
-  create(data: Prisma.RatingUncheckedCreateInput) {
-    return this.prisma.rating.create({ data })
-  }
-
-  remove(id: number) {
-    return this.prisma.rating.delete({
-      where: { id },
-    })
-  }
-
-  update(id: number, data: Prisma.RatingUncheckedUpdateInput) {
-    return this.prisma.rating.update({
-      where: { id },
-      data,
-    })
-  }
-
   findByIds(presentationId: number, participationId: number) {
     return this.prisma.rating.findUnique({
       where: {
@@ -77,6 +60,23 @@ export class RatingService {
           },
         },
       },
+    })
+  }
+
+  create(data: Prisma.RatingUncheckedCreateInput) {
+    return this.prisma.rating.create({ data })
+  }
+
+  remove(id: number) {
+    return this.prisma.rating.delete({
+      where: { id },
+    })
+  }
+
+  update(id: number, data: Prisma.RatingUncheckedUpdateInput) {
+    return this.prisma.rating.update({
+      where: { id },
+      data,
     })
   }
 }

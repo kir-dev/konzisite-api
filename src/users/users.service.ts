@@ -8,10 +8,6 @@ import { UpdateUserDto } from './dto/UpdateUser.dto'
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: CreateUserDto): Promise<User> {
-    return this.prisma.user.create({ data })
-  }
-
   async findAll(nameFilter?: string): Promise<User[]> {
     return this.prisma.user.findMany({
       where: {
@@ -29,6 +25,10 @@ export class UsersService {
 
   async findByAuthSchId(authSchId: string): Promise<User> {
     return this.prisma.user.findUnique({ where: { authSchId: authSchId } })
+  }
+
+  async create(data: CreateUserDto): Promise<User> {
+    return this.prisma.user.create({ data })
   }
 
   async update(id: number, data: UpdateUserDto): Promise<User> {

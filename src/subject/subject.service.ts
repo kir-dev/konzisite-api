@@ -9,20 +9,20 @@ import { UpdateSubjectDto } from './dto/UpdateSubject.dto'
 export class SubjectService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: CreateSubjectDto): Promise<SubjectEntity> {
-    return this.prisma.subject.create({ data })
-  }
-
-  async createMany(data: CreateSubjectDto[]): Promise<CreateManyResponse> {
-    return this.prisma.subject.createMany({ data })
-  }
-
   async findAll(): Promise<SubjectEntity[]> {
     return this.prisma.subject.findMany()
   }
 
   async findOne(id: number): Promise<SubjectEntity> {
     return this.prisma.subject.findUnique({ where: { id: id } })
+  }
+
+  async create(data: CreateSubjectDto): Promise<SubjectEntity> {
+    return this.prisma.subject.create({ data })
+  }
+
+  async createMany(data: CreateSubjectDto[]): Promise<CreateManyResponse> {
+    return this.prisma.subject.createMany({ data })
   }
 
   async update(id: number, data: UpdateSubjectDto): Promise<SubjectEntity> {

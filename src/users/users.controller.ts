@@ -8,6 +8,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common'
+import { ApiQuery } from '@nestjs/swagger'
 import { Permissions } from 'src/auth/casl-ability.factory'
 import { AuthorizationSubject } from 'src/auth/decorator/authorizationSubject.decorator'
 import { CurrentUser } from 'src/auth/decorator/current-user.decorator'
@@ -23,6 +24,10 @@ import { UsersService } from './users.service'
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @ApiQuery({
+    name: 'search',
+    required: false,
+  })
   @Get()
   findAll(
     @Query('search') nameFilter: string,

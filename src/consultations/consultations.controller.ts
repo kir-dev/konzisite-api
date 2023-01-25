@@ -59,22 +59,6 @@ export class ConsultationsController {
     private readonly ratingService: RatingService,
   ) {}
 
-  @JwtAuth()
-  @Post()
-  async create(
-    @Body() createConsultationDto: CreateConsultationDto,
-    @CurrentUser() user: UserEntity,
-  ): Promise<ConsultationEntity> {
-    try {
-      return await this.consultationsService.create(createConsultationDto, user)
-    } catch {
-      throw new HttpException(
-        'Érvénytelen külső kulcs!',
-        HttpStatus.BAD_REQUEST,
-      )
-    }
-  }
-
   @UseGuards(JwtOptionalAuthGuard)
   @Get()
   findAll(
@@ -90,7 +74,27 @@ export class ConsultationsController {
     @CurrentUser() user: UserEntity,
   ): Promise<ConsultationDetailsDto> {
     const participation = await this.participationService.findOne(id, user.id)
-    return await this.consultationsService.findOneWithRelations(id, user, participation?.id)
+    return await this.consultationsService.findOneWithRelations(
+      id,
+      user,
+      participation?.id,
+    )
+  }
+
+  @JwtAuth()
+  @Post()
+  async create(
+    @Body() createConsultationDto: CreateConsultationDto,
+    @CurrentUser() user: UserEntity,
+  ): Promise<ConsultationEntity> {
+    try {
+      return await this.consultationsService.create(createConsultationDto, user)
+    } catch {
+      throw new HttpException(
+        'Érvénytelen külső kulcs!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
   }
 
   @JwtAuth()
@@ -163,46 +167,6 @@ export class ConsultationsController {
 
   @JwtAuth()
   @RequiredPermission(Permissions.JoinConsultation)
-  @Patch(':id/rate')
-  async editRating(
-    @Param('id', ParseIntPipe) id: number,
-    @CurrentUser() user: UserEntity,
-    @Body() { ratedUserId, ...ratingDto }: CreateRatingDto,
-  ): Promise<RatingEntity> {
-    const participation = await this.participationService.findOne(id, user.id)
-    if (participation === null) {
-      throw new HttpException(
-        'Nem vagy résztvevője ennek a konzultációnak!',
-        HttpStatus.BAD_REQUEST,
-      )
-    }
-
-    const presentation = await this.presentationService.findOne(id, ratedUserId)
-    if (presentation === null) {
-      throw new HttpException(
-        'Ez a felhasználó nem előadója ennek a konzultációnak!',
-        HttpStatus.BAD_REQUEST,
-      )
-    }
-
-    const rating = await this.ratingService.findByIds(
-      presentation.id,
-      participation.id,
-    )
-    if (rating === null) {
-      throw new HttpException(
-        'Ez az értékelés nem létezik!',
-        HttpStatus.BAD_REQUEST,
-      )
-    }
-
-    return this.ratingService.update(rating.id, {
-      ...ratingDto,
-    })
-  }
-
-  @JwtAuth()
-  @RequiredPermission(Permissions.JoinConsultation)
   @Post(':id/rate')
   async rate(
     @Param('id', ParseIntPipe) id: number,
@@ -251,6 +215,46 @@ export class ConsultationsController {
       }
       throw e
     }
+  }
+
+  @JwtAuth()
+  @RequiredPermission(Permissions.JoinConsultation)
+  @Patch(':id/rate')
+  async editRating(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: UserEntity,
+    @Body() { ratedUserId, ...ratingDto }: CreateRatingDto,
+  ): Promise<RatingEntity> {
+    const participation = await this.participationService.findOne(id, user.id)
+    if (participation === null) {
+      throw new HttpException(
+        'Nem vagy résztvevője ennek a konzultációnak!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    const presentation = await this.presentationService.findOne(id, ratedUserId)
+    if (presentation === null) {
+      throw new HttpException(
+        'Ez a felhasználó nem előadója ennek a konzultációnak!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    const rating = await this.ratingService.findByIds(
+      presentation.id,
+      participation.id,
+    )
+    if (rating === null) {
+      throw new HttpException(
+        'Ez az értékelés nem létezik!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    return this.ratingService.update(rating.id, {
+      ...ratingDto,
+    })
   }
 
   @JwtAuth()

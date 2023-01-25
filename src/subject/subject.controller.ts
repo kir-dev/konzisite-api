@@ -43,6 +43,41 @@ export class SubjectController {
     private readonly csvParser: CsvParser,
   ) {}
 
+  @Get()
+  @RequiredPermission(Permissions.Read)
+  findAll() {
+    return this.subjectService.findAll()
+  }
+
+  @RequiredPermission(Permissions.Create)
+  @Header('Content-Disposition', 'attachment; filename="example_import.csv"')
+  @Get('example')
+  async getExampleFile(): Promise<StreamableFile> {
+    const steamableFile = new StreamableFile(
+      createReadStream(join(process.cwd(), '/static/example_import.csv')),
+    )
+    steamableFile.setErrorHandler((err, response) => {
+      response.statusCode = HttpStatus.NOT_FOUND
+      response.send(
+        JSON.stringify({
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'A fájl törölve lett',
+        }),
+      )
+    })
+    return steamableFile
+  }
+
+  @Get(':id')
+  @RequiredPermission(Permissions.Read)
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const res = await this.subjectService.findOne(id)
+    if (res === null) {
+      throw new HttpException('A tárgy nem található!', HttpStatus.NOT_FOUND)
+    }
+    return res
+  }
+
   @Post()
   @RequiredPermission(Permissions.Create)
   async create(@Body() createSubjectDto: CreateSubjectDto) {
@@ -78,76 +113,45 @@ export class SubjectController {
           }),
         ],
       }),
-    )
-    _file: // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    Express.Multer.File,
+    ) // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _file: Express.Multer.File,
   ): Promise<CreateManyResponse> {
     const stream = createReadStream(
       join(process.cwd(), '/static/importdata.csv'),
     )
     const rawSubjects: ParsedData<ImportedSubjectDto> =
       await this.csvParser.parse(stream, ImportedSubjectDto)
-    const realSubjects: CreateSubjectDto[] = rawSubjects.list.map((s) => ({
-      code: s.code,
-      name: s.name,
-      majors: s.majors.split(',').map((m) => {
-        const major = Major[m]
-        if (!major) {
-          throw new HttpException(
-            `Érvénytelen szak: ${m}`,
-            HttpStatus.BAD_REQUEST,
-          )
-        }
-        return major
-      }),
-    }))
+    const realSubjects: CreateSubjectDto[] = rawSubjects.list.map((s) => {
+      if (!s.majors) {
+        throw new HttpException('Érvénytelen formátum!', HttpStatus.BAD_REQUEST)
+      }
+      return {
+        code: s.code,
+        name: s.name,
+        majors: s.majors.split(',').map((m) => {
+          const major = Major[m]
+          if (!major) {
+            throw new HttpException(
+              `Érvénytelen szak: ${m}`,
+              HttpStatus.BAD_REQUEST,
+            )
+          }
+          return major
+        }),
+      }
+    })
     try {
       const { count } = await this.subjectService.createMany(realSubjects)
       return { count }
     } catch {
       throw new HttpException(
-        'Egy már létező kódú tárgyat próbáltál importálni!',
+        'Érvénytelen formátum vagy már létező tárgykód!',
         HttpStatus.BAD_REQUEST,
       )
     } finally {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       unlink(join(process.cwd(), '/static/importdata.csv'), () => {})
     }
-  }
-
-  @RequiredPermission(Permissions.Create)
-  @Header('Content-Disposition', 'attachment; filename="example_import.csv"')
-  @Get('example')
-  async getExampleFile(): Promise<StreamableFile> {
-    const steamableFile = new StreamableFile(
-      createReadStream(join(process.cwd(), '/static/example_import.csv')),
-    )
-    steamableFile.setErrorHandler((err, response) => {
-      response.statusCode = HttpStatus.NOT_FOUND
-      response.send(
-        JSON.stringify({
-          statusCode: HttpStatus.NOT_FOUND,
-          message: 'A fájl törölve lett',
-        }),
-      )
-    })
-    return steamableFile
-  }
-
-  @Get()
-  @RequiredPermission(Permissions.Read)
-  findAll() {
-    return this.subjectService.findAll()
-  }
-
-  @Get(':id')
-  @RequiredPermission(Permissions.Read)
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    const res = await this.subjectService.findOne(id)
-    if (res === null) {
-      throw new HttpException('A tárgy nem található!', HttpStatus.NOT_FOUND)
-    }
-    return res
   }
 
   @Patch(':id')

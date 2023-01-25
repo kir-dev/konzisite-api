@@ -8,9 +8,6 @@ import { GroupRoles } from './dto/GroupEntity.dto'
 @Injectable()
 export class GroupsService {
   constructor(private prisma: PrismaService) {}
-  create(dto: CreateGroupDto, user: UserEntity) {
-    return this.prisma.group.create({ data: { ...dto, ownerId: user.id } })
-  }
 
   async findAll(userId: number, nameFilter?: string) {
     const groups = await this.prisma.group.findMany({
@@ -69,6 +66,10 @@ export class GroupsService {
       })),
       currentUserRole: group.members.find((m) => m.user.id === userId).role,
     }
+  }
+
+  create(dto: CreateGroupDto, user: UserEntity) {
+    return this.prisma.group.create({ data: { ...dto, ownerId: user.id } })
   }
 
   update(id: number, data: Prisma.GroupUncheckedUpdateInput) {
