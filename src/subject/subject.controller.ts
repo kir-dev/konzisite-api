@@ -121,26 +121,31 @@ export class SubjectController {
     )
     const rawSubjects: ParsedData<ImportedSubjectDto> =
       await this.csvParser.parse(stream, ImportedSubjectDto)
-    const realSubjects: CreateSubjectDto[] = rawSubjects.list.map((s) => ({
-      code: s.code,
-      name: s.name,
-      majors: s.majors.split(',').map((m) => {
-        const major = Major[m]
-        if (!major) {
-          throw new HttpException(
-            `Érvénytelen szak: ${m}`,
-            HttpStatus.BAD_REQUEST,
-          )
-        }
-        return major
-      }),
-    }))
+    const realSubjects: CreateSubjectDto[] = rawSubjects.list.map((s) => {
+      if (!s.majors) {
+        throw new HttpException('Érvénytelen formátum!', HttpStatus.BAD_REQUEST)
+      }
+      return {
+        code: s.code,
+        name: s.name,
+        majors: s.majors.split(',').map((m) => {
+          const major = Major[m]
+          if (!major) {
+            throw new HttpException(
+              `Érvénytelen szak: ${m}`,
+              HttpStatus.BAD_REQUEST,
+            )
+          }
+          return major
+        }),
+      }
+    })
     try {
       const { count } = await this.subjectService.createMany(realSubjects)
       return { count }
     } catch {
       throw new HttpException(
-        'Egy már létező kódú tárgyat próbáltál importálni!',
+        'Érvénytelen formátum vagy már létező tárgykód!',
         HttpStatus.BAD_REQUEST,
       )
     } finally {
