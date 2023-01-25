@@ -78,9 +78,8 @@ export class SubjectController {
           }),
         ],
       }),
-    )
-    _file: // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    Express.Multer.File,
+    ) // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _file: Express.Multer.File,
   ): Promise<CreateManyResponse> {
     const stream = createReadStream(
       join(process.cwd(), '/static/importdata.csv'),
