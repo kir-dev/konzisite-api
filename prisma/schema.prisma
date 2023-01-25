@@ -67,6 +67,7 @@ enum Major {
   EE_MSC
   BI_MSC
   HI_MSC
+  SE_MSC
 }
 
 model Subject {

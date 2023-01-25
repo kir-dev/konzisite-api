@@ -9,6 +9,7 @@ export const Major: {
     | 'EE_MSC'
     | 'BI_MSC'
     | 'HI_MSC'
+    | 'SE_MSC'
 } = {
   CE_BSC: 'CE_BSC',
   EE_BSC: 'EE_BSC',
@@ -17,6 +18,7 @@ export const Major: {
   EE_MSC: 'EE_MSC',
   BI_MSC: 'BI_MSC',
   HI_MSC: 'HI_MSC',
+  SE_MSC: 'SE_MSC',
 }
 
 export type Major = typeof Major[keyof typeof Major]
