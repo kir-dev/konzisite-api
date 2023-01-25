@@ -79,7 +79,8 @@ export class SubjectController {
         ],
       }),
     )
-    _file: Express.Multer.File,
+    _file: // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Express.Multer.File,
   ): Promise<CreateManyResponse> {
     const stream = createReadStream(
       join(process.cwd(), '/static/importdata.csv'),
@@ -117,7 +118,7 @@ export class SubjectController {
   @RequiredPermission(Permissions.Create)
   @Header('Content-Disposition', 'attachment; filename="example_import.csv"')
   @Get('example')
-  async getFile(): Promise<StreamableFile> {
+  async getExampleFile(): Promise<StreamableFile> {
     const steamableFile = new StreamableFile(
       createReadStream(join(process.cwd(), '/static/example_import.csv')),
     )
