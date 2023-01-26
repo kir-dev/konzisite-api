@@ -16,9 +16,9 @@ import {
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { Prisma } from '@prisma/client'
-import { createReadStream, unlink } from 'fs'
+import { createReadStream, readFileSync, unlink } from 'fs'
 import { diskStorage } from 'multer'
-import { CsvParser, ParsedData } from 'nest-csv-parser'
+import { parse } from 'papaparse'
 import { join } from 'path'
 import { Permissions } from 'src/auth/casl-ability.factory'
 import { AuthorizationSubject } from 'src/auth/decorator/authorizationSubject.decorator'
@@ -29,7 +29,6 @@ import { CreateManyResponse } from 'src/utils/CreateManyResponse.dto'
 import { FileExtensionValidator } from 'src/utils/FileExtensionValidator'
 import { FileMaxSizeValidator } from 'src/utils/FileMaxSizeValidator'
 import { CreateSubjectDto } from './dto/CreateSubject.dto'
-import { ImportedSubjectDto } from './dto/ImportedSubject.dto'
 import { Major } from './dto/SubjectEntity.dto'
 import { UpdateSubjectDto } from './dto/UpdateSubject.dto'
 import { SubjectService } from './subject.service'
@@ -38,10 +37,7 @@ import { SubjectService } from './subject.service'
 @ApiController('subjects')
 @AuthorizationSubject('Subject')
 export class SubjectController {
-  constructor(
-    private readonly subjectService: SubjectService,
-    private readonly csvParser: CsvParser,
-  ) {}
+  constructor(private readonly subjectService: SubjectService) {}
 
   @Get()
   @RequiredPermission(Permissions.Read)
@@ -116,33 +112,38 @@ export class SubjectController {
     ) // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _file: Express.Multer.File,
   ): Promise<CreateManyResponse> {
-    const stream = createReadStream(
+    const file_contents = readFileSync(
       join(process.cwd(), '/static/importdata.csv'),
-    )
-    const rawSubjects: ParsedData<ImportedSubjectDto> =
-      await this.csvParser.parse(stream, ImportedSubjectDto)
-    const realSubjects: CreateSubjectDto[] = rawSubjects.list.map((s) => {
-      if (!s.majors) {
-        throw new HttpException('Érvénytelen formátum!', HttpStatus.BAD_REQUEST)
-      }
-      return {
-        code: s.code,
-        name: s.name,
-        majors: s.majors.split(',').map((m) => {
-          const major = Major[m]
-          if (!major) {
-            throw new HttpException(
-              `Érvénytelen szak: ${m}`,
-              HttpStatus.BAD_REQUEST,
-            )
-          }
-          return major
-        }),
-      }
+    ).toString()
+
+    const subjects = await parse<CreateSubjectDto>(file_contents, {
+      header: true,
+      skipEmptyLines: true,
+      transform: (value, field: string) => {
+        if (!['code', 'name', 'majors'].includes(field)) {
+          throw new HttpException(
+            `Érvénytelen mező: ${field}!`,
+            HttpStatus.BAD_REQUEST,
+          )
+        }
+        if (field === 'majors') {
+          return value.split(',').map((m) => {
+            const major = Major[m]
+            if (!major) {
+              throw new HttpException(
+                `Érvénytelen szak: ${m}`,
+                HttpStatus.BAD_REQUEST,
+              )
+            }
+            return major
+          })
+        }
+        return value
+      },
     })
+
     try {
-      const { count } = await this.subjectService.createMany(realSubjects)
-      return { count }
+      return await this.subjectService.createMany(subjects.data)
     } catch {
       throw new HttpException(
         'Érvénytelen formátum vagy már létező tárgykód!',
