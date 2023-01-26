@@ -115,7 +115,25 @@ export class GroupsController {
     }
   }
 
-  // Todo /:id/leave
+  @Post(':id/leave')
+  async leaveGroup(
+    @CurrentUser() user: UserEntity,
+    @Param('id', ParseIntPipe) groupId: number,
+  ): Promise<UserToGroupEntity> {
+    try {
+      return await this.groupsService.removeMember(groupId, user.id)
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2025') {
+          throw new HttpException(
+            'Nem tudsz kilépni ebből a csoportból!',
+            HttpStatus.BAD_REQUEST,
+          )
+        }
+      }
+      throw e
+    }
+  }
 
   @Post(':id/add')
   @RequiredPermission(Permissions.AddMember)
