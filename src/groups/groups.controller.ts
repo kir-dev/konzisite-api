@@ -18,7 +18,6 @@ import { CurrentUser } from 'src/auth/decorator/current-user.decorator'
 import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
 import { RequiredPermission } from 'src/auth/decorator/requiredPermission'
 import { ManyUniqueUsersDto } from 'src/users/dto/ManyUniqueUsers.dto'
-import { UniqueUserDto } from 'src/users/dto/UniqueUser.dto'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { ApiController } from 'src/utils/apiController.decorator'
 import { CreateManyResponse } from 'src/utils/CreateManyResponse.dto'
@@ -135,16 +134,16 @@ export class GroupsController {
     }
   }
 
-  @Post(':id/add')
+  @Post(':id/add/:userId')
   @RequiredPermission(Permissions.AddMember)
   async addMember(
-    @Body() userToAdd: UniqueUserDto,
     @Param('id', ParseIntPipe) groupId: number,
+    @Param('userId', ParseIntPipe) userId: number,
   ): Promise<UserToGroupEntity> {
     try {
       return await this.groupsService.addMember(
         groupId,
-        userToAdd.userId,
+        userId,
         GroupRole.MEMBER,
       )
     } catch (e) {
@@ -193,14 +192,14 @@ export class GroupsController {
     }
   }
 
-  @Post(':id/remove')
+  @Post(':id/remove/:userId')
   @RequiredPermission(Permissions.AddMember)
   async removeMember(
-    @Body() userToRemove: UniqueUserDto,
     @Param('id', ParseIntPipe) groupId: number,
+    @Param('userId', ParseIntPipe) userId: number,
   ): Promise<UserToGroupEntity> {
     try {
-      return await this.groupsService.removeMember(groupId, userToRemove.userId)
+      return await this.groupsService.removeMember(groupId, userId)
     } catch {
       throw new HttpException(
         'Érvénytelen felhasználó azonosító!',
