@@ -1,4 +1,4 @@
-import { IsEnum, IsInt, IsNotEmpty, Min } from 'class-validator'
+import { ArrayMinSize, IsEnum, IsInt, IsNotEmpty, Min } from 'class-validator'
 
 export const Major: {
   [x: string]:
@@ -33,7 +33,8 @@ export class SubjectEntity {
 
   @IsNotEmpty()
   name: string
-  @IsNotEmpty()
+
+  @ArrayMinSize(1)
   @IsEnum(Major, { each: true })
   majors: Major[]
 }
