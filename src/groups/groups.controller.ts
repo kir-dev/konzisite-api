@@ -18,7 +18,6 @@ import { CurrentUser } from 'src/auth/decorator/current-user.decorator'
 import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
 import { RequiredPermission } from 'src/auth/decorator/requiredPermission'
 import { ManyUniqueUsersDto } from 'src/users/dto/ManyUniqueUsers.dto'
-import { UniqueUserDto } from 'src/users/dto/UniqueUser.dto'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { ApiController } from 'src/utils/apiController.decorator'
 import { CreateManyResponse } from 'src/utils/CreateManyResponse.dto'
@@ -65,9 +64,16 @@ export class GroupsController {
     @Body() createGroupDto: CreateGroupDto,
     @CurrentUser() user: UserEntity,
   ): Promise<GroupEntity> {
-    const newGroup = await this.groupsService.create(createGroupDto, user)
-    await this.groupsService.addMember(newGroup.id, user.id, GroupRole.OWNER)
-    return newGroup
+    try {
+      const newGroup = await this.groupsService.create(createGroupDto, user)
+      await this.groupsService.addMember(newGroup.id, user.id, GroupRole.OWNER)
+      return newGroup
+    } catch (e) {
+      throw new HttpException(
+        'Már létezik csoport ilyen névvel!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
   }
 
   @Patch(':id')
@@ -115,18 +121,36 @@ export class GroupsController {
     }
   }
 
-  // Todo /:id/leave
+  @Post(':id/leave')
+  async leaveGroup(
+    @CurrentUser() user: UserEntity,
+    @Param('id', ParseIntPipe) groupId: number,
+  ): Promise<UserToGroupEntity> {
+    try {
+      return await this.groupsService.removeMember(groupId, user.id)
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2025') {
+          throw new HttpException(
+            'Nem tudsz kilépni ebből a csoportból!',
+            HttpStatus.BAD_REQUEST,
+          )
+        }
+      }
+      throw e
+    }
+  }
 
-  @Post(':id/add')
+  @Post(':id/add/:userId')
   @RequiredPermission(Permissions.AddMember)
   async addMember(
-    @Body() userToAdd: UniqueUserDto,
     @Param('id', ParseIntPipe) groupId: number,
+    @Param('userId', ParseIntPipe) userId: number,
   ): Promise<UserToGroupEntity> {
     try {
       return await this.groupsService.addMember(
         groupId,
-        userToAdd.userId,
+        userId,
         GroupRole.MEMBER,
       )
     } catch (e) {
@@ -175,14 +199,14 @@ export class GroupsController {
     }
   }
 
-  @Post(':id/remove')
+  @Post(':id/remove/:userId')
   @RequiredPermission(Permissions.AddMember)
   async removeMember(
-    @Body() userToRemove: UniqueUserDto,
     @Param('id', ParseIntPipe) groupId: number,
+    @Param('userId', ParseIntPipe) userId: number,
   ): Promise<UserToGroupEntity> {
     try {
-      return await this.groupsService.removeMember(groupId, userToRemove.userId)
+      return await this.groupsService.removeMember(groupId, userId)
     } catch {
       throw new HttpException(
         'Érvénytelen felhasználó azonosító!',

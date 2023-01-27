@@ -57,6 +57,8 @@ model Group {
   consultations Consultation[]
 
   createdAt DateTime @default(now())
+
+  @@unique(name)
 }
 
 enum Major {
@@ -129,7 +131,7 @@ model Consultation {
   location      String
   startDate     DateTime
   endDate       DateTime
-  descMarkdown  String
+  descMarkdown  String?
   fileName      String?
   archived      Boolean              @default(false)
 

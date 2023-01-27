@@ -64,7 +64,9 @@ export class GroupsService {
         ...user,
         ...membership,
       })),
-      currentUserRole: group.members.find((m) => m.user.id === userId).role,
+      currentUserRole:
+        group.members.find((m) => m.user.id === userId)?.role ||
+        GroupRoles.NONE,
     }
   }
 
