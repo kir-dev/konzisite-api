@@ -1,6 +1,6 @@
-import { UserEntity } from './UserEntity.dto'
+import { PublicUser } from './PublicUser.dto'
 
-export class UserPreview extends UserEntity {
+export class UserPreview extends PublicUser {
   presentations: number
   avarageRating: number
   attendances: number
