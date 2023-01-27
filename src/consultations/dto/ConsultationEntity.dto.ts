@@ -25,7 +25,7 @@ export class ConsultationEntity {
   endDate: Date
 
   @IsOptional()
-  descMarkdown: string
+  descMarkdown?: string
 
   @IsOptional()
   fileName?: string

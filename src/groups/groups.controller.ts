@@ -64,9 +64,16 @@ export class GroupsController {
     @Body() createGroupDto: CreateGroupDto,
     @CurrentUser() user: UserEntity,
   ): Promise<GroupEntity> {
-    const newGroup = await this.groupsService.create(createGroupDto, user)
-    await this.groupsService.addMember(newGroup.id, user.id, GroupRole.OWNER)
-    return newGroup
+    try {
+      const newGroup = await this.groupsService.create(createGroupDto, user)
+      await this.groupsService.addMember(newGroup.id, user.id, GroupRole.OWNER)
+      return newGroup
+    } catch (e) {
+      throw new HttpException(
+        'Már létezik csoport ilyen névvel!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
   }
 
   @Patch(':id')
