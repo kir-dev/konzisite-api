@@ -68,7 +68,7 @@ export class GroupsController {
       const newGroup = await this.groupsService.create(createGroupDto, user)
       await this.groupsService.addMember(newGroup.id, user.id, GroupRole.OWNER)
       return newGroup
-    } catch (e) {
+    } catch {
       throw new HttpException(
         'Már létezik csoport ilyen névvel!',
         HttpStatus.BAD_REQUEST,
@@ -82,7 +82,14 @@ export class GroupsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateGroupDto: UpdateGroupDto,
   ): Promise<GroupEntity> {
-    return await this.groupsService.update(id, updateGroupDto)
+    try {
+      return await this.groupsService.update(id, updateGroupDto)
+    } catch {
+      throw new HttpException(
+        'Már létezik csoport ilyen névvel!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
   }
 
   @Delete(':id')
