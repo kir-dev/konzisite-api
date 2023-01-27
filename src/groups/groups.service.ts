@@ -99,4 +99,23 @@ export class GroupsService {
       where: { userId_groupId: { userId, groupId } },
     })
   }
+
+  findMember(groupId: number, userId: number) {
+    return this.prisma.userToGroup.findUnique({
+      where: {
+        userId_groupId: { userId, groupId },
+      },
+    })
+  }
+
+  setMemberRole(groupId: number, userId: number, role: GroupRole) {
+    return this.prisma.userToGroup.update({
+      where: {
+        userId_groupId: { userId, groupId },
+      },
+      data: {
+        role,
+      },
+    })
+  }
 }

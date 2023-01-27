@@ -215,6 +215,35 @@ export class GroupsController {
     }
   }
 
+  @Post(':id/approve/:userId')
+  @RequiredPermission(Permissions.AddMember)
+  async approveMember(
+    @Param('id', ParseIntPipe) groupId: number,
+    @Param('userId', ParseIntPipe) userId: number,
+  ) {
+    const member = await this.groupsService.findMember(groupId, userId)
+
+    if (!member) {
+      throw new HttpException(
+        'A felhasználó nem tagja a csoportnak!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    if (member.role !== GroupRole.PENDING && member.role !== GroupRole.NONE) {
+      throw new HttpException(
+        'A felhasználó már el lett fogadva!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    return await this.groupsService.setMemberRole(
+      groupId,
+      userId,
+      GroupRole.MEMBER,
+    )
+  }
+
   // Todo /:id/approve/:userid
   // Todo /:id/decline/:userid
   // Todo /:id/promote/:userid
