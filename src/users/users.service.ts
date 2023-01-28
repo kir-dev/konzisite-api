@@ -42,6 +42,7 @@ export class UsersService {
       skip: (page || 0) * (pageSize || 20),
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return users.map(({ presentations: p, _count: c, id, fullName, ...u }) => {
       const ratings: number[] = p.reduce<number[]>(
         (arr, pres) => [...arr, ...pres.ratings.map((r) => r.value)],
@@ -103,6 +104,7 @@ export class UsersService {
       ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
 
     const presentations = user.presentations.map(
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       ({ ratings, consultation, ...p }) => {
         return {
           ...consultation,
