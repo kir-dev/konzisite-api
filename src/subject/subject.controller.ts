@@ -2,7 +2,6 @@ import {
   Body,
   Delete,
   Get,
-  Header,
   HttpException,
   HttpStatus,
   Param,
@@ -10,13 +9,12 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  StreamableFile,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { Prisma } from '@prisma/client'
-import { createReadStream, readFileSync, unlink } from 'fs'
+import { readFileSync, unlink } from 'fs'
 import { diskStorage } from 'multer'
 import { parse } from 'papaparse'
 import { join } from 'path'
@@ -43,25 +41,6 @@ export class SubjectController {
   @RequiredPermission(Permissions.Read)
   findAll() {
     return this.subjectService.findAll()
-  }
-
-  @RequiredPermission(Permissions.Create)
-  @Header('Content-Disposition', 'attachment; filename="example_import.csv"')
-  @Get('example')
-  async getExampleFile(): Promise<StreamableFile> {
-    const steamableFile = new StreamableFile(
-      createReadStream(join(process.cwd(), '/static/example_import.csv')),
-    )
-    steamableFile.setErrorHandler((err, response) => {
-      response.statusCode = HttpStatus.NOT_FOUND
-      response.send(
-        JSON.stringify({
-          statusCode: HttpStatus.NOT_FOUND,
-          message: 'A fájl törölve lett',
-        }),
-      )
-    })
-    return steamableFile
   }
 
   @Get(':id')
