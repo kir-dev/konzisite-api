@@ -15,7 +15,9 @@ import { CurrentUser } from 'src/auth/decorator/current-user.decorator'
 import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
 import { RequiredPermission } from 'src/auth/decorator/requiredPermission'
 import { ApiController } from 'src/utils/apiController.decorator'
+import { UserDetails } from './dto/UserDetails'
 import { UserEntity } from './dto/UserEntity.dto'
+import { UserPreview } from './dto/UserPreview.dto'
 import { UsersService } from './users.service'
 
 @JwtAuth()
@@ -31,19 +33,19 @@ export class UsersController {
   @Get()
   findAll(
     @Query('search') nameFilter: string,
-  ): Promise<UserEntity[] /*UserPreview[]*/> {
-    return this.usersService.findAll(nameFilter)
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
+  ): Promise<UserPreview[]> {
+    return this.usersService.findAll(nameFilter, page, pageSize)
   }
 
   @Get('profile')
-  findProfile(
-    @CurrentUser() user: UserEntity,
-  ): Promise<UserEntity /*UserDetails*/> {
+  findProfile(@CurrentUser() user: UserEntity): Promise<UserDetails> {
     return this.usersService.findOne(user.id)
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserEntity> {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserDetails> {
     const res = await this.usersService.findOne(id)
     if (res === null) {
       throw new HttpException(
