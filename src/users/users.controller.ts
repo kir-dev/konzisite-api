@@ -40,8 +40,8 @@ export class UsersController {
   }
 
   @Get('profile')
-  findProfile(@CurrentUser() user: UserEntity): Promise<UserDetails> {
-    return this.usersService.findOne(user.id)
+  findProfile(@CurrentUser() user: UserEntity): Promise<UserEntity> {
+    return this.usersService.profile(user.id)
   }
 
   @Get(':id')
