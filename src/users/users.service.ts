@@ -110,17 +110,26 @@ export class UsersService {
       ({ ratings, consultation }) => {
         return {
           ...consultation,
-          ratings: ratings
-            .filter((r) => !r.anonymous)
-            .map(({ ratedBy, ...rating }) => {
+          ratings: ratings.map(({ ratedBy, anonymous, ...rating }) => {
+            if (anonymous)
               return {
                 ...rating,
+                anonymous,
+                participationId: -1, // can get userId from participationId
                 rater: {
-                  id: ratedBy.userId,
-                  fullName: ratedBy.user.fullName,
+                  id: -1,
+                  fullName: 'Anonymous',
                 },
               }
-            }),
+            return {
+              ...rating,
+              anonymous,
+              rater: {
+                id: ratedBy.userId,
+                fullName: ratedBy.user.fullName,
+              },
+            }
+          }),
         }
       },
     )
