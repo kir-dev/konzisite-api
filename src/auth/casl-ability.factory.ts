@@ -106,7 +106,18 @@ export class CaslAbilityFactory {
 
     const consultation = await this.prisma.consultation.findUnique({
       where: { id: consultationId },
-      include: { presentations: true },
+      include: {
+        presentations: true,
+        targetGroups: {
+          include: {
+            members: {
+              where: {
+                userId: user.id,
+              },
+            },
+          },
+        },
+      },
     })
 
     if (consultation === null) {
@@ -127,7 +138,10 @@ export class CaslAbilityFactory {
       can(Permissions.Update, 'Consultation')
       can(Permissions.Delete, 'Consultation')
       can(Permissions.DownloadFile, 'Consultation')
-    } else {
+    } else if (
+      consultation.targetGroups.length === 0 ||
+      consultation.targetGroups.some((g) => g.members.length > 0)
+    ) {
       can(Permissions.JoinConsultation, 'Consultation')
     }
 
