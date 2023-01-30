@@ -38,13 +38,11 @@ export class SubjectController {
   constructor(private readonly subjectService: SubjectService) {}
 
   @Get()
-  @RequiredPermission(Permissions.Read)
   findAll() {
     return this.subjectService.findAll()
   }
 
   @Get(':id')
-  @RequiredPermission(Permissions.Read)
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const res = await this.subjectService.findOne(id)
     if (res === null) {
