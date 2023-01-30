@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { JwtService } from '@nestjs/jwt'
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateUserDto } from './dto/CreateUser.dto'
 import { UpdateUserDto } from './dto/UpdateUser.dto'
@@ -8,7 +9,10 @@ import { UserPreview } from './dto/UserPreview.dto'
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   async findAll(
     nameFilter?: string,
@@ -56,8 +60,20 @@ export class UsersService {
     })
   }
 
-  async profile(id: number): Promise<UserEntity> {
-    return await this.prisma.user.findUnique({ where: { id } })
+  async profile(oldUser: UserEntity): Promise<UserEntity & { jwt?: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: oldUser.id },
+    })
+    return {
+      ...user,
+      jwt:
+        user.isAdmin !== oldUser.isAdmin
+          ? this.jwtService.sign(user, {
+              secret: process.env.JWT_SECRET,
+              expiresIn: '2 days',
+            })
+          : undefined,
+    }
   }
 
   async findOne(id: number): Promise<UserDetails> {
