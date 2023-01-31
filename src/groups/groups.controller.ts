@@ -222,8 +222,115 @@ export class GroupsController {
     }
   }
 
-  // Todo /:id/approve/:userid
-  // Todo /:id/decline/:userid
-  // Todo /:id/promote/:userid
-  // Todo /:id/demote/:userid
+  @Post(':id/approve/:userId')
+  @RequiredPermission(Permissions.AddMember)
+  async approveMember(
+    @Param('id', ParseIntPipe) groupId: number,
+    @Param('userId', ParseIntPipe) userId: number,
+  ) {
+    const member = await this.groupsService.findMember(groupId, userId)
+
+    if (!member) {
+      throw new HttpException(
+        'A felhasználó nem tagja a csoportnak!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    if (member.role !== GroupRole.PENDING && member.role !== GroupRole.NONE) {
+      throw new HttpException(
+        'A felhasználó már el lett fogadva!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    return await this.groupsService.setMemberRole(
+      groupId,
+      userId,
+      GroupRole.MEMBER,
+    )
+  }
+
+  @Post(':id/decline/:userId')
+  @RequiredPermission(Permissions.AddMember)
+  async declineMember(
+    @Param('id', ParseIntPipe) groupId: number,
+    @Param('userId', ParseIntPipe) userId: number,
+  ) {
+    const member = await this.groupsService.findMember(groupId, userId)
+
+    if (!member) {
+      throw new HttpException(
+        'A felhasználó nem tagja a csoportnak!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    if (member.role !== GroupRole.PENDING && member.role !== GroupRole.NONE) {
+      throw new HttpException(
+        'A felhasználó már el lett fogadva!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    return await this.groupsService.removeMember(groupId, userId)
+  }
+
+  @Post(':id/promote/:userId')
+  @RequiredPermission(Permissions.PromoteMember)
+  async promoteMember(
+    @Param('id', ParseIntPipe) groupId: number,
+    @Param('userId', ParseIntPipe) userId: number,
+  ) {
+    const member = await this.groupsService.findMember(groupId, userId)
+
+    if (!member) {
+      throw new HttpException(
+        'A felhasználó nem tagja a csoportnak!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    if (member.role === GroupRole.ADMIN || member.role === GroupRole.OWNER) {
+      throw new HttpException(
+        'A felhasználó már admin!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    return await this.groupsService.setMemberRole(
+      groupId,
+      userId,
+      GroupRole.ADMIN,
+    )
+  }
+
+  @Post(':id/demote/:userId')
+  @RequiredPermission(Permissions.PromoteMember)
+  async demoteUser(
+    @Param('id', ParseIntPipe) groupId: number,
+    @Param('userId', ParseIntPipe) userId: number,
+  ) {
+    const member = await this.groupsService.findMember(groupId, userId)
+
+    if (!member) {
+      throw new HttpException(
+        'A felhasználó nem tagja a csoportnak!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    if (member.role !== GroupRole.ADMIN) {
+      throw new HttpException(
+        'A felhasználó nem admin!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    return await this.groupsService.setMemberRole(
+      groupId,
+      userId,
+      GroupRole.MEMBER,
+    )
+  }
 }
