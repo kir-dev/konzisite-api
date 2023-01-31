@@ -10,11 +10,13 @@ services:
       - konzisite_db_folder:/var/lib/postgresql/data
     networks:
       - konzisite-network
+    ports:
+      - '10123:5432'
   web:
     build: .
     command: sh -c "rm -f tmp/pids/server.pid && npm run start:prod"
     ports:
-      - '3006:${BACKEND_PORT}' # The exposed port should be changed accordingly
+      - '3006:${BACKEND_PORT}'
     env_file:
       - .env
     networks:
