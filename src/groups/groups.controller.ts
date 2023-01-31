@@ -212,14 +212,23 @@ export class GroupsController {
     @Param('id', ParseIntPipe) groupId: number,
     @Param('userId', ParseIntPipe) userId: number,
   ): Promise<UserToGroupEntity> {
-    try {
-      return await this.groupsService.removeMember(groupId, userId)
-    } catch {
+    const member = await this.groupsService.findMember(groupId, userId)
+
+    if (!member) {
       throw new HttpException(
-        'Érvénytelen felhasználó azonosító!',
+        'A felhasználó nem tagja a csoportnak!',
         HttpStatus.BAD_REQUEST,
       )
     }
+
+    if (member.role === GroupRole.ADMIN || member.role === GroupRole.OWNER) {
+      throw new HttpException(
+        'Admint vagy tulajdonost nem lehet eltávolítani!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    return await this.groupsService.removeMember(groupId, userId)
   }
 
   @Post(':id/approve/:userId')
