@@ -9,10 +9,12 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
+import { ApiQuery } from '@nestjs/swagger'
 import { Prisma } from '@prisma/client'
 import { readFileSync, unlink } from 'fs'
 import { diskStorage } from 'multer'
@@ -37,9 +39,13 @@ import { SubjectService } from './subject.service'
 export class SubjectController {
   constructor(private readonly subjectService: SubjectService) {}
 
+  @ApiQuery({
+    name: 'search',
+    required: false,
+  })
   @Get()
-  findAll() {
-    return this.subjectService.findAll()
+  findAll(@Query('search') nameFilter: string) {
+    return this.subjectService.findAll(nameFilter)
   }
 
   @Get(':id')
