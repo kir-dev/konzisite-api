@@ -18,6 +18,7 @@ import { ApiController } from 'src/utils/apiController.decorator'
 import { UserDetails } from './dto/UserDetails'
 import { UserEntity } from './dto/UserEntity.dto'
 import { UserPreview } from './dto/UserPreview.dto'
+import { UserProfileDto } from './dto/UserProfile.dto'
 import { UsersService } from './users.service'
 
 @JwtAuth()
@@ -40,9 +41,7 @@ export class UsersController {
   }
 
   @Get('profile')
-  findProfile(
-    @CurrentUser() user: UserEntity,
-  ): Promise<UserEntity & { jwt?: string }> {
+  findProfile(@CurrentUser() user: UserEntity): Promise<UserProfileDto> {
     return this.usersService.profile(user)
   }
 

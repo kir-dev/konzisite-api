@@ -6,6 +6,7 @@ import { UpdateUserDto } from './dto/UpdateUser.dto'
 import { UserDetails } from './dto/UserDetails'
 import { UserEntity } from './dto/UserEntity.dto'
 import { UserPreview } from './dto/UserPreview.dto'
+import { UserProfileDto } from './dto/UserProfile.dto'
 
 @Injectable()
 export class UsersService {
@@ -60,7 +61,7 @@ export class UsersService {
     })
   }
 
-  async profile(oldUser: UserEntity): Promise<UserEntity & { jwt?: string }> {
+  async profile(oldUser: UserEntity): Promise<UserProfileDto> {
     const user = await this.prisma.user.findUnique({
       where: { id: oldUser.id },
     })
