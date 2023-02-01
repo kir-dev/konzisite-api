@@ -9,8 +9,15 @@ import { UpdateSubjectDto } from './dto/UpdateSubject.dto'
 export class SubjectService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(): Promise<SubjectEntity[]> {
-    return this.prisma.subject.findMany()
+  async findAll(nameFilter?: string): Promise<SubjectEntity[]> {
+    return this.prisma.subject.findMany({
+      where: {
+        name: {
+          contains: nameFilter ?? '',
+          mode: 'insensitive',
+        },
+      },
+    })
   }
 
   async findOne(id: number): Promise<SubjectEntity> {
