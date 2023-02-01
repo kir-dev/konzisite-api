@@ -2,6 +2,6 @@ import { PublicUser } from './PublicUser.dto'
 
 export class UserPreview extends PublicUser {
   presentations: number
-  avarageRating: number
+  averageRating: number
   attendances: number
 }

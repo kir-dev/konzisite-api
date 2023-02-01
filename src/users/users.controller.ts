@@ -47,14 +47,7 @@ export class UsersController {
 
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserDetails> {
-    const res = await this.usersService.findOne(id)
-    if (res === null) {
-      throw new HttpException(
-        'A felhasználó nem található!',
-        HttpStatus.NOT_FOUND,
-      )
-    }
-    return res
+    return await this.usersService.findOne(id)
   }
 
   @Post(':id/promote')
