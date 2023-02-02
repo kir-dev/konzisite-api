@@ -46,8 +46,11 @@ export class UsersController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserDetails> {
-    return await this.usersService.findOne(id)
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: UserEntity,
+  ): Promise<UserDetails> {
+    return await this.usersService.findOne(id, id === user.id)
   }
 
   @Post(':id/promote')

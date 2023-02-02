@@ -9,12 +9,14 @@ export class UserDetails extends PublicUser {
   presentations: (ConsultationEntity & {
     subject: SubjectEntity
     ratings: (RatingEntity & { rater: PublicUser })[]
+    participants: number
   })[]
   participations: (ConsultationEntity & {
     subject: SubjectEntity
   })[]
-  consultationRequests: (ConsultationRequestEntity & {
+  consultationRequests?: (ConsultationRequestEntity & {
     subject: SubjectEntity
+    supporters: number
   })[]
   averageRating: number
 }

@@ -77,7 +77,7 @@ export class UsersService {
     }
   }
 
-  async findOne(id: number): Promise<UserDetails> {
+  async findOne(id: number, isCurrentUser: boolean): Promise<UserDetails> {
     const user = await this.prisma.user.findUnique({
       where: { id: id },
       include: {
@@ -86,6 +86,7 @@ export class UsersService {
             consultation: {
               include: {
                 subject: true,
+                participants: true,
               },
             },
             ratings: {
@@ -111,6 +112,13 @@ export class UsersService {
         requestedConsultations: {
           include: {
             subject: true,
+            supporters: true,
+          },
+        },
+        supportedConsultations: {
+          include: {
+            subject: true,
+            supporters: true,
           },
         },
       },
@@ -134,6 +142,7 @@ export class UsersService {
       ({ ratings, consultation }) => {
         return {
           ...consultation,
+          participants: consultation.participants.length,
           ratings: ratings.map(({ ratedBy, anonymous, ...rating }) => {
             if (anonymous)
               return {
@@ -162,7 +171,11 @@ export class UsersService {
       return { ...consultation }
     })
 
-    const consultationRequests = user.requestedConsultations
+    const consultationRequests = isCurrentUser
+      ? user.requestedConsultations
+          .concat(user.supportedConsultations)
+          .map((cr) => ({ ...cr, supporters: cr.supporters.length }))
+      : undefined
 
     return {
       id: user.id,
