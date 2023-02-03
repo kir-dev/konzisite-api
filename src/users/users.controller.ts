@@ -46,15 +46,11 @@ export class UsersController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserDetails> {
-    const res = await this.usersService.findOne(id)
-    if (res === null) {
-      throw new HttpException(
-        'A felhasználó nem található!',
-        HttpStatus.NOT_FOUND,
-      )
-    }
-    return res
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: UserEntity,
+  ): Promise<UserDetails> {
+    return await this.usersService.findOne(id, id === user.id)
   }
 
   @Post(':id/promote')

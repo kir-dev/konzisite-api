@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateUserDto } from './dto/CreateUser.dto'
@@ -54,10 +54,10 @@ export class UsersService {
       )
       const presentations = p.length
       const attendances = c.participations
-      const avarageRating =
+      const averageRating =
         ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
 
-      return { presentations, attendances, avarageRating, id, fullName }
+      return { presentations, attendances, averageRating, id, fullName }
     })
   }
 
@@ -77,7 +77,7 @@ export class UsersService {
     }
   }
 
-  async findOne(id: number): Promise<UserDetails> {
+  async findOne(id: number, isCurrentUser: boolean): Promise<UserDetails> {
     const user = await this.prisma.user.findUnique({
       where: { id: id },
       include: {
@@ -86,6 +86,7 @@ export class UsersService {
             consultation: {
               include: {
                 subject: true,
+                participants: true,
               },
             },
             ratings: {
@@ -111,22 +112,37 @@ export class UsersService {
         requestedConsultations: {
           include: {
             subject: true,
+            supporters: true,
+          },
+        },
+        supportedConsultations: {
+          include: {
+            subject: true,
+            supporters: true,
           },
         },
       },
     })
 
+    if (user === null) {
+      throw new HttpException(
+        'A felhasználó nem található!',
+        HttpStatus.NOT_FOUND,
+      )
+    }
+
     const ratings: number[] = user.presentations.reduce<number[]>(
       (arr, pres) => [...arr, ...pres.ratings.map((r) => r.value)],
       [],
     )
-    const avarageRating =
+    const averageRating =
       ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
 
     const presentations = user.presentations.map(
       ({ ratings, consultation }) => {
         return {
           ...consultation,
+          participants: consultation.participants.length,
           ratings: ratings.map(({ ratedBy, anonymous, ...rating }) => {
             if (anonymous)
               return {
@@ -155,15 +171,20 @@ export class UsersService {
       return { ...consultation }
     })
 
-    const consultationRequests = user.requestedConsultations
+    const consultationRequests = isCurrentUser
+      ? user.requestedConsultations
+          .concat(user.supportedConsultations)
+          .map((cr) => ({ ...cr, supporters: cr.supporters.length }))
+      : undefined
 
     return {
       id: user.id,
       fullName: user.fullName,
+      isAdmin: user.isAdmin,
       presentations,
       participations,
       consultationRequests,
-      avarageRating,
+      averageRating,
     }
   }
 

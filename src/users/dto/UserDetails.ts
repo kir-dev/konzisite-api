@@ -5,15 +5,18 @@ import { SubjectEntity } from 'src/subject/dto/SubjectEntity.dto'
 import { PublicUser } from './PublicUser.dto'
 
 export class UserDetails extends PublicUser {
+  isAdmin: boolean
   presentations: (ConsultationEntity & {
     subject: SubjectEntity
     ratings: (RatingEntity & { rater: PublicUser })[]
+    participants: number
   })[]
   participations: (ConsultationEntity & {
     subject: SubjectEntity
   })[]
-  consultationRequests: (ConsultationRequestEntity & {
+  consultationRequests?: (ConsultationRequestEntity & {
     subject: SubjectEntity
+    supporters: number
   })[]
-  avarageRating: number
+  averageRating: number
 }
