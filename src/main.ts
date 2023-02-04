@@ -21,7 +21,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Konzisite API')
     .setDescription('Konzisite API')
-    .setVersion('0.1.0')
+    .setVersion(process.env.npm_package_version || '0.1.0')
     .addBearerAuth()
     .build()
   const document = SwaggerModule.createDocument(app, config)

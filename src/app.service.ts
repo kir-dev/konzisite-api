@@ -4,7 +4,9 @@ import { Injectable } from '@nestjs/common'
 export class AppService {
   getHello(): string {
     return `Konzisite REST API ${
-      process.env.VERSION ? 'v' + process.env.VERSION : 'in Development mode'
+      process.env.npm_package_version
+        ? 'v' + process.env.npm_package_version
+        : 'in Development mode'
     } © ${new Date().getFullYear()} Kir-Dev`
   }
 }

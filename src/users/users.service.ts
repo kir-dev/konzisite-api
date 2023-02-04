@@ -151,7 +151,7 @@ export class UsersService {
                 participationId: -1, // can get userId from participationId
                 rater: {
                   id: -1,
-                  fullName: 'Anonymous',
+                  fullName: 'Névtelen felhasználó',
                 },
               }
             return {

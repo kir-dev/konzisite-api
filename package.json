@@ -1,8 +1,8 @@
 {
   "name": "konzisite-api",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "",
-  "author": "",
+  "author": "Kir-Dev",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
