@@ -19,8 +19,8 @@ import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
 import { RequiredPermission } from 'src/auth/decorator/requiredPermission'
 import { ManyUniqueUsersDto } from 'src/users/dto/ManyUniqueUsers.dto'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
-import { ApiController } from 'src/utils/apiController.decorator'
 import { CreateManyResponse } from 'src/utils/CreateManyResponse.dto'
+import { ApiController } from 'src/utils/apiController.decorator'
 import { CreateGroupDto } from './dto/CreateGroup.dto'
 import { GroupDetailsDto } from './dto/GroupDetails.dto'
 import { GroupEntity } from './dto/GroupEntity.dto'
@@ -341,5 +341,39 @@ export class GroupsController {
       userId,
       GroupRole.MEMBER,
     )
+  }
+
+  @Post('/:id/subscribe')
+  async subscribe(
+    @CurrentUser() user: UserEntity,
+    @Param('id', ParseIntPipe) groupId: number,
+  ) {
+    const member = await this.groupsService.findOne(groupId, user.id)
+
+    if (!member) {
+      throw new HttpException(
+        'A felhasználó nem tagja a csoportnak!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    return await this.groupsService.setSubscribe(user.id, groupId, true)
+  }
+
+  @Post('/:id/subscribe')
+  async unsubscribe(
+    @CurrentUser() user: UserEntity,
+    @Param('id', ParseIntPipe) groupId: number,
+  ) {
+    const member = await this.groupsService.findOne(groupId, user.id)
+
+    if (!member) {
+      throw new HttpException(
+        'A felhasználó nem tagja a csoportnak!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+
+    return await this.groupsService.setSubscribe(user.id, groupId, false)
   }
 }

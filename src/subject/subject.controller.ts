@@ -22,12 +22,14 @@ import { parse } from 'papaparse'
 import { join } from 'path'
 import { Permissions } from 'src/auth/casl-ability.factory'
 import { AuthorizationSubject } from 'src/auth/decorator/authorizationSubject.decorator'
+import { CurrentUser } from 'src/auth/decorator/current-user.decorator'
 import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
 import { RequiredPermission } from 'src/auth/decorator/requiredPermission'
-import { ApiController } from 'src/utils/apiController.decorator'
+import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { CreateManyResponse } from 'src/utils/CreateManyResponse.dto'
 import { FileExtensionValidator } from 'src/utils/FileExtensionValidator'
 import { FileMaxSizeValidator } from 'src/utils/FileMaxSizeValidator'
+import { ApiController } from 'src/utils/apiController.decorator'
 import { CreateSubjectDto } from './dto/CreateSubject.dto'
 import { Major } from './dto/SubjectEntity.dto'
 import { UpdateSubjectDto } from './dto/UpdateSubject.dto'
@@ -171,6 +173,36 @@ export class SubjectController {
       return await this.subjectService.remove(id)
     } catch {
       throw new HttpException('A tárgy nem található!', HttpStatus.NOT_FOUND)
+    }
+  }
+
+  @Post(':id/subscribe')
+  async subscribe(
+    @CurrentUser() user: UserEntity,
+    @Param('id', ParseIntPipe) subjectId: number,
+  ) {
+    try {
+      //return await this.subjectService.subscribe(user, subjectId)
+    } catch {
+      throw new HttpException(
+        'Már fel vagy iratkozva a tárgyra!',
+        HttpStatus.NOT_FOUND,
+      )
+    }
+  }
+
+  @Post(':id/unsubscribe')
+  async unsubscribe(
+    @CurrentUser() user: UserEntity,
+    @Param('id', ParseIntPipe) subjectId: number,
+  ) {
+    try {
+      //return await this.subjectService.unsubscribe(user, subjectId)
+    } catch {
+      throw new HttpException(
+        'Nem vagy feliratkozva a tárgyra!',
+        HttpStatus.NOT_FOUND,
+      )
     }
   }
 }

@@ -118,4 +118,15 @@ export class GroupsService {
       },
     })
   }
+
+  setSubscribe(userId: number, groupId: number, value: boolean) {
+    return this.prisma.userToGroup.update({
+      where: {
+        userId_groupId: { userId, groupId },
+      },
+      data: {
+        isSubscribed: value,
+      },
+    })
+  }
 }

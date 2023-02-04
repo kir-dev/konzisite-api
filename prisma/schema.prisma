@@ -18,7 +18,7 @@ model User {
   firstName              String
   email                  String                @unique
   isAdmin                Boolean               @default(false)
-  //subjects    Subject[]
+  subscribedSubjects               Subject[]
   ownedGroups            Group[]
   memberships            UserToGroup[]
   participations         Participation[]
@@ -42,7 +42,7 @@ model UserToGroup {
   group   Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId Int
   role    GroupRole @default(MEMBER)
-
+  isSubscribed      Boolean                     @default(false)
   joinedAt DateTime @default(now())
 
   @@id([userId, groupId])
@@ -79,6 +79,7 @@ model Subject {
   majors        Major[]
   consultations Consultation[]
   requests      ConsultationRequest[]
+  subscribers         User[]
 }
 
 model Rating {
