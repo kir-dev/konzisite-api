@@ -2,7 +2,9 @@ import { Injectable } from '@nestjs/common'
 import { GroupRole, Prisma } from '@prisma/client'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
+import { removeSensitiveUserData } from 'src/utils/removeSensitiveUserData'
 import { CreateGroupDto } from './dto/CreateGroup.dto'
+import { GroupDetailsDto } from './dto/GroupDetails.dto'
 import { GroupRoles } from './dto/GroupEntity.dto'
 
 @Injectable()
@@ -39,12 +41,13 @@ export class GroupsService {
     })
     return groups.map(({ members, _count, ...g }) => ({
       ...g,
+      owner: removeSensitiveUserData(g.owner),
       memberCount: _count.members,
       currentUserRole: members.length > 0 ? members[0].role : GroupRole.NONE,
     }))
   }
 
-  async findOne(id: number, userId: number) {
+  async findOne(id: number, userId: number): Promise<GroupDetailsDto> {
     const group = await this.prisma.group.findUnique({
       where: { id },
       include: {
@@ -60,8 +63,9 @@ export class GroupsService {
     })
     return {
       ...group,
+      owner: removeSensitiveUserData(group.owner),
       members: group.members.map(({ user, ...membership }) => ({
-        ...user,
+        ...removeSensitiveUserData(user),
         ...membership,
       })),
       currentUserRole:

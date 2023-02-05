@@ -5,6 +5,7 @@ import { unlink } from 'fs'
 import { join } from 'path'
 import { CaslAbilityFactory } from 'src/auth/casl-ability.factory'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
+import { removeSensitiveUserData } from 'src/utils/removeSensitiveUserData'
 import { PrismaService } from '../prisma/prisma.service'
 import { ConsultationDetailsDto } from './dto/ConsultationDetails.dto'
 import { ConsultationEntity } from './dto/ConsultationEntity.dto'
@@ -38,7 +39,7 @@ export class ConsultationsService {
         averageRating:
           p.ratings.reduce((acc, rating) => acc + rating.value, 0) /
             p.ratings.length || 0,
-        ...p.user,
+        ...removeSensitiveUserData(p.user),
       })),
     }))
   }
@@ -99,14 +100,17 @@ export class ConsultationsService {
 
     return {
       ...details,
+      owner: removeSensitiveUserData(details.owner),
       presentations: details.presentations.map(({ user, ratings }) => ({
-        ...user,
+        ...removeSensitiveUserData(user),
         averageRating:
           ratings.reduce((acc, rating) => acc + rating.value, 0) /
             ratings.length || 0,
         rating: ratings.find((r) => r.participationId === participationId),
       })),
-      participants: details.participants.map(({ user }) => ({ ...user })),
+      participants: details.participants.map(({ user }) => ({
+        ...removeSensitiveUserData(user),
+      })),
     }
   }
 
