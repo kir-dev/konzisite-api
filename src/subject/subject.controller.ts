@@ -182,7 +182,7 @@ export class SubjectController {
     @Param('id', ParseIntPipe) subjectId: number,
   ) {
     try {
-      //return await this.subjectService.subscribe(user, subjectId)
+      return await this.subjectService.subscribe(user, subjectId)
     } catch {
       throw new HttpException(
         'Már fel vagy iratkozva a tárgyra!',
@@ -197,7 +197,7 @@ export class SubjectController {
     @Param('id', ParseIntPipe) subjectId: number,
   ) {
     try {
-      //return await this.subjectService.unsubscribe(user, subjectId)
+      return await this.subjectService.unsubscribe(user, subjectId)
     } catch {
       throw new HttpException(
         'Nem vagy feliratkozva a tárgyra!',
