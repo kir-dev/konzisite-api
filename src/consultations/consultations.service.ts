@@ -75,8 +75,16 @@ export class ConsultationsService {
         targetGroups: true,
         presentations: {
           include: {
-            user: publicUserProjection,
             ratings: true,
+            user: {
+              include: {
+                presentations: {
+                  include: {
+                    ratings: true,
+                  },
+                },
+              },
+            },
           },
         },
         subject: true,
@@ -98,14 +106,21 @@ export class ConsultationsService {
     }
     const { ownerId, subjectId, requestId, ...details } = consultation[0]
 
+    const averageRatings = details.presentations
+      .map(({ user }) =>
+        user.presentations.reduce<number[]>(
+          (arr, pres) => [...arr, ...pres.ratings.map((r) => r.value)],
+          [],
+        ),
+      )
+      .map((r) => r.reduce((sum, rating) => sum + rating, 0) / r.length)
+
     return {
       ...details,
       owner: details.owner,
-      presentations: details.presentations.map(({ user, ratings }) => ({
+      presentations: details.presentations.map(({ user, ratings }, index) => ({
         ...user,
-        averageRating:
-          ratings.reduce((acc, rating) => acc + rating.value, 0) /
-            ratings.length || 0,
+        averageRating: averageRatings[index],
         rating: ratings.find((r) => r.participationId === participationId),
       })),
       participants: details.participants.map(({ user }) => ({
