@@ -303,6 +303,12 @@ export class ConsultationsController {
     return await this.consultationsService.updateFileName(id, file.filename)
   }
 
+  @Patch(':id/deleteFile')
+  @RequiredPermission(Permissions.Update)
+  async deleteFile(@Param('id', ParseIntPipe) id: number) {
+    return await this.consultationsService.removeFileName(id)
+  }
+
   @JwtAuth()
   @RequiredPermission(Permissions.DownloadFile)
   @Get(':id/file')
