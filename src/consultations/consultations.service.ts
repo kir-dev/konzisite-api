@@ -119,7 +119,8 @@ export class ConsultationsService {
       ...details,
       owner: details.owner,
       presentations: details.presentations.map(({ user, ratings }, index) => ({
-        ...user,
+        id: user.id,
+        fullName: user.fullName,
         averageRating: averageRatings[index],
         rating: ratings.find((r) => r.participationId === participationId),
       })),
