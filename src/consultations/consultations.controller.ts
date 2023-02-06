@@ -272,7 +272,7 @@ export class ConsultationsController {
                   HttpStatus.BAD_REQUEST,
                 )
               : null,
-            `attch_${req.params.id}${extname(file.originalname)}`,
+            `konzi_${req.params.id}_jegyzet${extname(file.originalname)}`,
           )
         },
       }),
