@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
+import { publicUserProjection } from 'src/utils/publicUserProjection'
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateUserDto } from './dto/CreateUser.dto'
 import { UpdateUserDto } from './dto/UpdateUser.dto'
@@ -93,7 +94,7 @@ export class UsersService {
               include: {
                 ratedBy: {
                   include: {
-                    user: true,
+                    user: publicUserProjection,
                   },
                 },
               },
@@ -157,10 +158,7 @@ export class UsersService {
             return {
               ...rating,
               anonymous,
-              rater: {
-                id: ratedBy.userId,
-                fullName: ratedBy.user.fullName,
-              },
+              rater: ratedBy.user,
             }
           }),
         }
