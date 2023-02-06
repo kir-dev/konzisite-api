@@ -42,16 +42,11 @@ export class SubjectService {
   }
 
   async subscribe(user: UserEntity, subjectId: number): Promise<SubjectEntity> {
-    const current = await this.prisma.subject.findUnique({
-      select: { subscribers: true },
-      where: { id: subjectId },
-    })
-
     return this.prisma.subject.update({
       where: { id: subjectId },
       data: {
         subscribers: {
-          set: [...current.subscribers, user],
+          connect: { id: user.id },
         },
       },
     })
@@ -61,16 +56,11 @@ export class SubjectService {
     user: UserEntity,
     subjectId: number,
   ): Promise<SubjectEntity> {
-    const current = await this.prisma.subject.findUnique({
-      select: { subscribers: true },
-      where: { id: subjectId },
-    })
-
     return this.prisma.subject.update({
       where: { id: subjectId },
       data: {
         subscribers: {
-          set: [...current.subscribers.filter((x) => x != user)],
+          disconnect: { id: user.id },
         },
       },
     })

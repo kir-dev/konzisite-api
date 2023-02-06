@@ -348,30 +348,24 @@ export class GroupsController {
     @CurrentUser() user: UserEntity,
     @Param('id', ParseIntPipe) groupId: number,
   ) {
-    const member = await this.groupsService.findOne(groupId, user.id)
+    const member = await this.groupsService.findMember(groupId, user.id)
 
     if (!member) {
-      throw new HttpException(
-        'A felhasználó nem tagja a csoportnak!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new HttpException('Hiba a feliratkozásban!', HttpStatus.BAD_REQUEST)
     }
 
     return await this.groupsService.setSubscribe(user.id, groupId, true)
   }
 
-  @Post('/:id/subscribe')
+  @Post('/:id/unsubscribe')
   async unsubscribe(
     @CurrentUser() user: UserEntity,
     @Param('id', ParseIntPipe) groupId: number,
   ) {
-    const member = await this.groupsService.findOne(groupId, user.id)
+    const member = await this.groupsService.findMember(groupId, user.id)
 
     if (!member) {
-      throw new HttpException(
-        'A felhasználó nem tagja a csoportnak!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new HttpException('Hiba a leiratkozásban!', HttpStatus.BAD_REQUEST)
     }
 
     return await this.groupsService.setSubscribe(user.id, groupId, false)
