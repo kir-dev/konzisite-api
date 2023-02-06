@@ -5,6 +5,7 @@ import { unlink } from 'fs'
 import { join } from 'path'
 import { CaslAbilityFactory } from 'src/auth/casl-ability.factory'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
+import { publicUserProjection } from 'src/utils/publicUserProjection'
 import { PrismaService } from '../prisma/prisma.service'
 import { ConsultationDetailsDto } from './dto/ConsultationDetails.dto'
 import { ConsultationEntity } from './dto/ConsultationEntity.dto'
@@ -26,7 +27,7 @@ export class ConsultationsService {
         subject: true,
         presentations: {
           include: {
-            user: true,
+            user: publicUserProjection,
             ratings: true,
           },
         },
@@ -74,16 +75,16 @@ export class ConsultationsService {
         targetGroups: true,
         presentations: {
           include: {
-            user: true,
+            user: publicUserProjection,
             ratings: true,
           },
         },
         subject: true,
         request: true,
-        owner: true,
+        owner: publicUserProjection,
         participants: {
           include: {
-            user: true,
+            user: publicUserProjection,
           },
         },
       },
@@ -99,6 +100,7 @@ export class ConsultationsService {
 
     return {
       ...details,
+      owner: details.owner,
       presentations: details.presentations.map(({ user, ratings }) => ({
         ...user,
         averageRating:
@@ -106,7 +108,9 @@ export class ConsultationsService {
             ratings.length || 0,
         rating: ratings.find((r) => r.participationId === participationId),
       })),
-      participants: details.participants.map(({ user }) => ({ ...user })),
+      participants: details.participants.map(({ user }) => ({
+        ...user,
+      })),
     }
   }
 

@@ -1,8 +1,8 @@
-import { UserEntity } from 'src/users/dto/UserEntity.dto'
+import { PublicUser } from 'src/users/dto/PublicUser.dto'
 import { GroupEntity, GroupRoles } from './GroupEntity.dto'
 
 export class GroupPreviewDto extends GroupEntity {
   memberCount: number
-  owner: UserEntity
+  owner: PublicUser
   currentUserRole: GroupRoles
 }
