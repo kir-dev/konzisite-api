@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { CreateManyResponse } from 'src/utils/CreateManyResponse.dto'
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateSubjectDto } from './dto/CreateSubject.dto'
@@ -38,5 +39,30 @@ export class SubjectService {
 
   async remove(id: number): Promise<SubjectEntity> {
     return this.prisma.subject.delete({ where: { id: id } })
+  }
+
+  async subscribe(user: UserEntity, subjectId: number): Promise<SubjectEntity> {
+    return this.prisma.subject.update({
+      where: { id: subjectId },
+      data: {
+        subscribers: {
+          connect: { id: user.id },
+        },
+      },
+    })
+  }
+
+  async unsubscribe(
+    user: UserEntity,
+    subjectId: number,
+  ): Promise<SubjectEntity> {
+    return this.prisma.subject.update({
+      where: { id: subjectId },
+      data: {
+        subscribers: {
+          disconnect: { id: user.id },
+        },
+      },
+    })
   }
 }
