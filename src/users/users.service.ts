@@ -6,7 +6,7 @@ import { CreateUserDto } from './dto/CreateUser.dto'
 import { UpdateUserDto } from './dto/UpdateUser.dto'
 import { UserDetails } from './dto/UserDetails'
 import { UserEntity } from './dto/UserEntity.dto'
-import { UserPreview } from './dto/UserPreview.dto'
+import { UserList } from './dto/UserPreview.dto'
 import { UserProfileDto } from './dto/UserProfile.dto'
 
 @Injectable()
@@ -20,7 +20,7 @@ export class UsersService {
     nameFilter?: string,
     page?: number,
     pageSize?: number,
-  ): Promise<UserPreview[]> {
+  ): Promise<UserList> {
     const users = await this.prisma.user.findMany({
       where: {
         fullName: {
@@ -48,18 +48,31 @@ export class UsersService {
       skip: (page || 0) * (pageSize || 20),
     })
 
-    return users.map(({ presentations: p, _count: c, id, fullName }) => {
-      const ratings: number[] = p.reduce<number[]>(
-        (arr, pres) => [...arr, ...pres.ratings.map((r) => r.value)],
-        [],
-      )
-      const presentations = p.length
-      const attendances = c.participations
-      const averageRating =
-        ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
+    return {
+      userList: users.map(({ presentations: p, _count: c, id, fullName }) => {
+        const ratings: number[] = p.reduce<number[]>(
+          (arr, pres) => [...arr, ...pres.ratings.map((r) => r.value)],
+          [],
+        )
+        const presentations = p.length
+        const attendances = c.participations
+        const averageRating =
+          ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
 
-      return { presentations, attendances, averageRating, id, fullName }
-    })
+        return { presentations, attendances, averageRating, id, fullName }
+      }),
+      userCount: (
+        await this.prisma.user.aggregate({
+          _count: { id: true },
+          where: {
+            fullName: {
+              contains: nameFilter ?? '',
+              mode: 'insensitive',
+            },
+          },
+        })
+      )._count.id,
+    }
   }
 
   async profile(oldUser: UserEntity): Promise<UserProfileDto> {
