@@ -5,8 +5,3 @@ export class UserPreview extends PublicUser {
   averageRating: number
   attendances: number
 }
-
-export class UserList {
-  userList: UserPreview[]
-  userCount: number
-}

@@ -6,7 +6,7 @@ import { CreateUserDto } from './dto/CreateUser.dto'
 import { UpdateUserDto } from './dto/UpdateUser.dto'
 import { UserDetails } from './dto/UserDetails'
 import { UserEntity } from './dto/UserEntity.dto'
-import { UserList } from './dto/UserPreview.dto'
+import { UserList } from './dto/UserList.dto'
 import { UserProfileDto } from './dto/UserProfile.dto'
 
 @Injectable()
@@ -21,32 +21,48 @@ export class UsersService {
     page?: number,
     pageSize?: number,
   ): Promise<UserList> {
-    const users = await this.prisma.user.findMany({
-      where: {
-        fullName: {
-          contains: nameFilter ?? '',
-          mode: 'insensitive',
-        },
-      },
-      include: {
-        _count: {
-          select: {
-            participations: true,
+    const [users, userCount] = await Promise.all([
+      this.prisma.user.findMany({
+        where: {
+          fullName: {
+            contains: nameFilter ?? '',
+            mode: 'insensitive',
           },
         },
-        presentations: {
-          include: {
-            ratings: {
-              select: {
-                value: true,
+        include: {
+          _count: {
+            select: {
+              participations: true,
+            },
+          },
+          presentations: {
+            include: {
+              ratings: {
+                select: {
+                  value: true,
+                },
               },
             },
           },
         },
-      },
-      take: pageSize || 20,
-      skip: (page || 0) * (pageSize || 20),
-    })
+        orderBy: {
+          presentations: {
+            _count: 'desc',
+          },
+        },
+        take: pageSize ? pageSize : undefined,
+        skip: (page || 0) * (pageSize || 2),
+      }),
+      this.prisma.user.aggregate({
+        _count: { id: true },
+        where: {
+          fullName: {
+            contains: nameFilter ?? '',
+            mode: 'insensitive',
+          },
+        },
+      }),
+    ])
 
     return {
       userList: users.map(({ presentations: p, _count: c, id, fullName }) => {
@@ -61,17 +77,7 @@ export class UsersService {
 
         return { presentations, attendances, averageRating, id, fullName }
       }),
-      userCount: (
-        await this.prisma.user.aggregate({
-          _count: { id: true },
-          where: {
-            fullName: {
-              contains: nameFilter ?? '',
-              mode: 'insensitive',
-            },
-          },
-        })
-      )._count.id,
+      userCount: userCount._count.id,
     }
   }
 
