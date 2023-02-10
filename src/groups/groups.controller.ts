@@ -49,6 +49,12 @@ export class GroupsController {
     @Query('search') nameFilter?: string,
     @Query('limit') limit?: number,
   ): Promise<GroupPreviewDto[]> {
+    if (limit < 0) {
+      throw new HttpException(
+        'Érvénytelen limit paraméter!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
     return this.groupsService.findAll(user.id, nameFilter, limit)
   }
 
