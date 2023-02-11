@@ -26,12 +26,12 @@ import { CurrentUser } from 'src/auth/decorator/current-user.decorator'
 import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
 import { RequiredPermission } from 'src/auth/decorator/requiredPermission'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
+import { ApiController } from 'src/utils/apiController.decorator'
 import { CreateManyResponse } from 'src/utils/CreateManyResponse.dto'
 import { FileExtensionValidator } from 'src/utils/FileExtensionValidator'
 import { FileMaxSizeValidator } from 'src/utils/FileMaxSizeValidator'
-import { ApiController } from 'src/utils/apiController.decorator'
 import { CreateSubjectDto } from './dto/CreateSubject.dto'
-import { Major } from './dto/SubjectEntity.dto'
+import { Major, SubjectEntity } from './dto/SubjectEntity.dto'
 import { UpdateSubjectDto } from './dto/UpdateSubject.dto'
 import { SubjectService } from './subject.service'
 
@@ -45,9 +45,22 @@ export class SubjectController {
     name: 'search',
     required: false,
   })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+  })
   @Get()
-  findAll(@Query('search') nameFilter: string) {
-    return this.subjectService.findAll(nameFilter)
+  findAll(
+    @Query('search') nameFilter?: string,
+    @Query('limit') limit?: number,
+  ): Promise<SubjectEntity[]> {
+    if (limit < 0) {
+      throw new HttpException(
+        'Érvénytelen limit paraméter!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+    return this.subjectService.findAll(nameFilter, limit)
   }
 
   @Get(':id')

@@ -19,8 +19,8 @@ import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
 import { RequiredPermission } from 'src/auth/decorator/requiredPermission'
 import { ManyUniqueUsersDto } from 'src/users/dto/ManyUniqueUsers.dto'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
-import { CreateManyResponse } from 'src/utils/CreateManyResponse.dto'
 import { ApiController } from 'src/utils/apiController.decorator'
+import { CreateManyResponse } from 'src/utils/CreateManyResponse.dto'
 import { CreateGroupDto } from './dto/CreateGroup.dto'
 import { GroupDetailsDto } from './dto/GroupDetails.dto'
 import { GroupEntity } from './dto/GroupEntity.dto'
@@ -39,12 +39,23 @@ export class GroupsController {
     name: 'search',
     required: false,
   })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+  })
   @Get()
-  async findAll(
+  findAll(
     @CurrentUser() user: UserEntity,
-    @Query('search') nameFilter: string,
+    @Query('search') nameFilter?: string,
+    @Query('limit') limit?: number,
   ): Promise<GroupPreviewDto[]> {
-    return this.groupsService.findAll(user.id, nameFilter)
+    if (limit < 0) {
+      throw new HttpException(
+        'Érvénytelen limit paraméter!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+    return this.groupsService.findAll(user.id, nameFilter, limit)
   }
 
   @Get(':id')

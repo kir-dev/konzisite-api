@@ -6,7 +6,7 @@ import { CreateUserDto } from './dto/CreateUser.dto'
 import { UpdateUserDto } from './dto/UpdateUser.dto'
 import { UserDetails } from './dto/UserDetails'
 import { UserEntity } from './dto/UserEntity.dto'
-import { UserPreview } from './dto/UserPreview.dto'
+import { UserList } from './dto/UserList.dto'
 import { UserProfileDto } from './dto/UserProfile.dto'
 
 @Injectable()
@@ -20,46 +20,65 @@ export class UsersService {
     nameFilter?: string,
     page?: number,
     pageSize?: number,
-  ): Promise<UserPreview[]> {
-    const users = await this.prisma.user.findMany({
-      where: {
-        fullName: {
-          contains: nameFilter ?? '',
-          mode: 'insensitive',
-        },
-      },
-      include: {
-        _count: {
-          select: {
-            participations: true,
+  ): Promise<UserList> {
+    const [users, userCount] = await Promise.all([
+      this.prisma.user.findMany({
+        where: {
+          fullName: {
+            contains: nameFilter ?? '',
+            mode: 'insensitive',
           },
         },
-        presentations: {
-          include: {
-            ratings: {
-              select: {
-                value: true,
+        include: {
+          _count: {
+            select: {
+              participations: true,
+            },
+          },
+          presentations: {
+            include: {
+              ratings: {
+                select: {
+                  value: true,
+                },
               },
             },
           },
         },
-      },
-      take: pageSize || 20,
-      skip: (page || 0) * (pageSize || 20),
-    })
+        orderBy: {
+          presentations: {
+            _count: 'desc',
+          },
+        },
+        take: pageSize ? pageSize : undefined,
+        skip: (page || 0) * (pageSize || 2),
+      }),
+      this.prisma.user.aggregate({
+        _count: { id: true },
+        where: {
+          fullName: {
+            contains: nameFilter ?? '',
+            mode: 'insensitive',
+          },
+        },
+      }),
+    ])
 
-    return users.map(({ presentations: p, _count: c, id, fullName }) => {
-      const ratings: number[] = p.reduce<number[]>(
-        (arr, pres) => [...arr, ...pres.ratings.map((r) => r.value)],
-        [],
-      )
-      const presentations = p.length
-      const attendances = c.participations
-      const averageRating =
-        ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
+    return {
+      userList: users.map(({ presentations: p, _count: c, id, fullName }) => {
+        const ratings: number[] = p.reduce<number[]>(
+          (arr, pres) => [...arr, ...pres.ratings.map((r) => r.value)],
+          [],
+        )
+        const presentations = p.length
+        const attendances = c.participations
+        const averageRating =
+          ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
 
-      return { presentations, attendances, averageRating, id, fullName }
-    })
+        return { presentations, attendances, averageRating, id, fullName }
+      }),
+      userCount: userCount._count.id,
+    }
   }
 
   async profile(oldUser: UserEntity): Promise<UserProfileDto> {

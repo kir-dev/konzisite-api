@@ -17,7 +17,7 @@ import { RequiredPermission } from 'src/auth/decorator/requiredPermission'
 import { ApiController } from 'src/utils/apiController.decorator'
 import { UserDetails } from './dto/UserDetails'
 import { UserEntity } from './dto/UserEntity.dto'
-import { UserPreview } from './dto/UserPreview.dto'
+import { UserList } from './dto/UserList.dto'
 import { UserProfileDto } from './dto/UserProfile.dto'
 import { UsersService } from './users.service'
 
@@ -31,12 +31,26 @@ export class UsersController {
     name: 'search',
     required: false,
   })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'pageSize',
+    required: false,
+  })
   @Get()
   findAll(
-    @Query('search') nameFilter: string,
-    @Query('page') page: number,
-    @Query('pageSize') pageSize: number,
-  ): Promise<UserPreview[]> {
+    @Query('search') nameFilter?: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+  ): Promise<UserList> {
+    if (page < 0 || pageSize < 0) {
+      throw new HttpException(
+        'Érvénytelen lapozási paraméterek!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
     return this.usersService.findAll(nameFilter, page, pageSize)
   }
 

@@ -10,7 +10,7 @@ import { UpdateSubjectDto } from './dto/UpdateSubject.dto'
 export class SubjectService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(nameFilter?: string): Promise<SubjectEntity[]> {
+  async findAll(nameFilter?: string, limit?: number): Promise<SubjectEntity[]> {
     return this.prisma.subject.findMany({
       where: {
         name: {
@@ -18,6 +18,12 @@ export class SubjectService {
           mode: 'insensitive',
         },
       },
+      orderBy: {
+        consultations: {
+          _count: 'desc',
+        },
+      },
+      take: limit ? limit : undefined,
     })
   }
 

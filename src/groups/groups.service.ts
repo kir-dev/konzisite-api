@@ -11,7 +11,7 @@ import { GroupRoles } from './dto/GroupEntity.dto'
 export class GroupsService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(userId: number, nameFilter?: string) {
+  async findAll(userId: number, nameFilter?: string, limit?: number) {
     const groups = await this.prisma.group.findMany({
       include: {
         owner: publicUserProjection,
@@ -36,6 +36,12 @@ export class GroupsService {
         name: {
           contains: nameFilter ?? '',
           mode: 'insensitive',
+        },
+      },
+      take: limit ? limit : undefined,
+      orderBy: {
+        members: {
+          _count: 'desc',
         },
       },
     })
