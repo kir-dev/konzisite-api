@@ -122,6 +122,9 @@ export class ConsultationsService {
         id: user.id,
         fullName: user.fullName,
         averageRating: averageRatings[index],
+        averageRatingForConsultation:
+          ratings.reduce((acc, rating) => acc + rating.value, 0) /
+            ratings.length || 0,
         rating: ratings.find((r) => r.participationId === participationId),
       })),
       participants: details.participants.map(({ user }) => ({

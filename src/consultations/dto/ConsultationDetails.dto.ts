@@ -7,6 +7,7 @@ import { RatingEntity } from './RatingEntity.dto'
 
 export class Presentation extends PublicUser {
   averageRating: number
+  averageRatingForConsultation: number
   rating?: RatingEntity
 }
 
