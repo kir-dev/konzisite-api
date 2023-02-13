@@ -192,4 +192,26 @@ export class CaslAbilityFactory {
     }
     return build()
   }
+
+  createForRequest = async (user: UserEntity, requestId: number) => {
+    const { can, build } = new AbilityBuilder<AppAbility>(createPrismaAbility)
+
+    const request = await this.prisma.consultationRequest.findUnique({
+      where: { id: requestId },
+    })
+
+    if (request === null) {
+      throw new HttpException(
+        'A konzi kérés nem található!',
+        HttpStatus.NOT_FOUND,
+      )
+    }
+
+    if (request.initializerId == user.id) {
+      can(Permissions.Update, 'ConsultationRequest')
+      can(Permissions.Delete, 'ConsultationRequest')
+    }
+
+    return build()
+  }
 }

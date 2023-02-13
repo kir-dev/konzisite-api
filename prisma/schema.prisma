@@ -18,7 +18,7 @@ model User {
   firstName              String
   email                  String                @unique
   isAdmin                Boolean               @default(false)
-  subscribedSubjects               Subject[]
+  subscribedSubjects     Subject[]
   ownedGroups            Group[]
   memberships            UserToGroup[]
   participations         Participation[]
@@ -37,13 +37,13 @@ enum GroupRole {
 }
 
 model UserToGroup {
-  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId  Int
-  group   Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  groupId Int
-  role    GroupRole @default(MEMBER)
-  isSubscribed      Boolean                     @default(false)
-  joinedAt DateTime @default(now())
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       Int
+  group        Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId      Int
+  role         GroupRole @default(MEMBER)
+  isSubscribed Boolean   @default(false)
+  joinedAt     DateTime  @default(now())
 
   @@id([userId, groupId])
 }
@@ -79,7 +79,7 @@ model Subject {
   majors        Major[]
   consultations Consultation[]
   requests      ConsultationRequest[]
-  subscribers         User[]
+  subscribers   User[]
 }
 
 model Rating {
@@ -141,17 +141,16 @@ model Consultation {
 }
 
 model ConsultationRequest {
-  id             Int            @id @default(autoincrement())
-  name           String
-  initializer    User           @relation(fields: [initializerId], references: [id], name: "initializer", onDelete: Cascade)
-  initializerId  Int
-  subject        Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  subjectId      Int
-  supporters     User[]         @relation(name: "supporters")
-  consultation   Consultation[]
-  consultationId Int            @unique
-  descMarkdown   String
-  expiryDate     DateTime
+  id            Int            @id @default(autoincrement())
+  name          String
+  initializer   User           @relation(fields: [initializerId], references: [id], name: "initializer", onDelete: Cascade)
+  initializerId Int
+  subject       Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId     Int
+  supporters    User[]         @relation(name: "supporters")
+  consultation  Consultation[]
+  descMarkdown  String?
+  expiryDate    DateTime
 
   createdAt DateTime @default(now())
 }
