@@ -62,11 +62,28 @@ export class ConsultationsController {
   ) {}
 
   @UseGuards(JwtOptionalAuthGuard)
+  /*@ApiQuery({
+    name: 'major',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+  })*/
   @Get()
   findAll(
+    /*@Query('major') major?: Major,
+    @Query('startDate') startDate?: Date,
+    @Query('endDate') endDate?: Date,*/
     @CurrentUserOptional() user?: UserEntity,
   ): Promise<ConsultationPreviewDto[]> {
-    return this.consultationsService.findAll(user)
+    return this.consultationsService.findAll(
+      user /*, major, startDate, endDate*/,
+    )
   }
 
   @JwtAuth()

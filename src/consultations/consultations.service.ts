@@ -19,6 +19,23 @@ export class ConsultationsService {
     private caslFactory: CaslAbilityFactory,
   ) {}
 
+  /*where: {
+        AND: [
+          accessibleBy(ability).Consultation,
+          {
+            subject: {
+              majors: {
+                //TODO
+              },
+            },
+          },
+        ],
+      },*/
+
+  /*    majors?: Major,
+    startDate?: Date,
+    endDate?: Date, */
+
   async findAll(user: UserEntity) {
     const ability = this.caslFactory.createForConsultationRead(user)
     const results = await this.prisma.consultation.findMany({
