@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { accessibleBy } from '@casl/prisma'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { Major } from '@prisma/client'
 import { unlink } from 'fs'
 import { join } from 'path'
 import { CaslAbilityFactory } from 'src/auth/casl-ability.factory'
@@ -19,27 +20,21 @@ export class ConsultationsService {
     private caslFactory: CaslAbilityFactory,
   ) {}
 
-  /*where: {
-        AND: [
-          accessibleBy(ability).Consultation,
-          {
-            subject: {
-              majors: {
-                //TODO
-              },
-            },
-          },
-        ],
-      },*/
-
   /*    majors?: Major,
     startDate?: Date,
     endDate?: Date, */
 
-  async findAll(user: UserEntity) {
+  async findAll(user: UserEntity, major?: Major) {
     const ability = this.caslFactory.createForConsultationRead(user)
     const results = await this.prisma.consultation.findMany({
-      where: accessibleBy(ability).Consultation,
+      where: {
+        AND: [
+          accessibleBy(ability).Consultation,
+          {
+            ...(major ? { subject: { majors: { has: major } } } : {}),
+          },
+        ],
+      },
       include: {
         subject: true,
         presentations: {

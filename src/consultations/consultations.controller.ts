@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   Res,
   StreamableFile,
   UploadedFile,
@@ -16,7 +17,8 @@ import {
   UseInterceptors,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
-import { Prisma } from '@prisma/client'
+import { ApiQuery } from '@nestjs/swagger'
+import { Major, Prisma } from '@prisma/client'
 import { Response } from 'express'
 import { createReadStream } from 'fs'
 import { diskStorage } from 'multer'
@@ -62,11 +64,11 @@ export class ConsultationsController {
   ) {}
 
   @UseGuards(JwtOptionalAuthGuard)
-  /*@ApiQuery({
+  @ApiQuery({
     name: 'major',
     required: false,
   })
-  @ApiQuery({
+  /*@ApiQuery({
     name: 'startDate',
     required: false,
   })
@@ -76,13 +78,14 @@ export class ConsultationsController {
   })*/
   @Get()
   findAll(
-    /*@Query('major') major?: Major,
-    @Query('startDate') startDate?: Date,
+    @Query('major') major?: Major,
+    /*@Query('startDate') startDate?: Date,
     @Query('endDate') endDate?: Date,*/
     @CurrentUserOptional() user?: UserEntity,
   ): Promise<ConsultationPreviewDto[]> {
     return this.consultationsService.findAll(
-      user /*, major, startDate, endDate*/,
+      user,
+      major /*, startDate, endDate*/,
     )
   }
 
