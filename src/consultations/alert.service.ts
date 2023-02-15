@@ -8,7 +8,7 @@ export class AlertService {
 
   async findFirst(): Promise<Alert> {
     const first = await this.prisma.alert.findFirst()
-    if (first && first.validUntil < new Date()) {
+    if (first && first.validUntil && first.validUntil < new Date()) {
       return null
     }
     return first
