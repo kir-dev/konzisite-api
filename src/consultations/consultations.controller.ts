@@ -36,6 +36,7 @@ import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { ApiController } from 'src/utils/apiController.decorator'
 import { FileExtensionValidator } from 'src/utils/FileExtensionValidator'
 import { FileMaxSizeValidator } from 'src/utils/FileMaxSizeValidator'
+import { AlertService } from './alert.service'
 import { ConsultationsService } from './consultations.service'
 import { ConsultationDetailsDto } from './dto/ConsultationDetails.dto'
 import { ConsultationEntity } from './dto/ConsultationEntity.dto'
@@ -57,6 +58,7 @@ export class ConsultationsController {
     private readonly participationService: ParticipationService,
     private readonly presentationService: PresentationService,
     private readonly ratingService: RatingService,
+    private readonly alertService: AlertService,
   ) {}
 
   @UseGuards(JwtOptionalAuthGuard)

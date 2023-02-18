@@ -18,7 +18,7 @@ model User {
   firstName              String
   email                  String                @unique
   isAdmin                Boolean               @default(false)
-  subscribedSubjects               Subject[]
+  subscribedSubjects     Subject[]
   ownedGroups            Group[]
   memberships            UserToGroup[]
   participations         Participation[]
@@ -37,13 +37,13 @@ enum GroupRole {
 }
 
 model UserToGroup {
-  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId  Int
-  group   Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  groupId Int
-  role    GroupRole @default(MEMBER)
-  isSubscribed      Boolean                     @default(false)
-  joinedAt DateTime @default(now())
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       Int
+  group        Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId      Int
+  role         GroupRole @default(MEMBER)
+  isSubscribed Boolean   @default(false)
+  joinedAt     DateTime  @default(now())
 
   @@id([userId, groupId])
 }
@@ -79,7 +79,7 @@ model Subject {
   majors        Major[]
   consultations Consultation[]
   requests      ConsultationRequest[]
-  subscribers         User[]
+  subscribers   User[]
 }
 
 model Rating {
@@ -152,6 +152,22 @@ model ConsultationRequest {
   consultationId Int            @unique
   descMarkdown   String
   expiryDate     DateTime
+
+  createdAt DateTime @default(now())
+}
+
+enum AlertType {
+  info
+  warning
+  error
+  success
+}
+
+model Alert {
+  id          Int       @id @default(autoincrement())
+  description String
+  type        AlertType @default(info)
+  validUntil  DateTime?
 
   createdAt DateTime @default(now())
 }
