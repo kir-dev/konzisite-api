@@ -24,7 +24,12 @@ export class ConsultationsService {
     startDate?: Date,
     endDate?: Date, */
 
-  async findAll(user: UserEntity, major?: Major) {
+  async findAll(
+    user: UserEntity,
+    major?: Major,
+    startDate?: Date,
+    endDate?: Date,
+  ) {
     const ability = this.caslFactory.createForConsultationRead(user)
     const results = await this.prisma.consultation.findMany({
       where: {
@@ -32,6 +37,16 @@ export class ConsultationsService {
           accessibleBy(ability).Consultation,
           {
             ...(major ? { subject: { majors: { has: major } } } : {}),
+            ...(startDate.getTime()
+              ? { startDate: { gte: startDate } }
+              : { startDate: { gte: new Date() } }),
+            ...(endDate.getTime()
+              ? {
+                  endDate: {
+                    lt: new Date(endDate.getTime() + 60 * 60 * 24 * 1000),
+                  },
+                }
+              : {}),
           },
         ],
       },

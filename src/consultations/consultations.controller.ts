@@ -68,24 +68,26 @@ export class ConsultationsController {
     name: 'major',
     required: false,
   })
-  /*@ApiQuery({
+  @ApiQuery({
     name: 'startDate',
     required: false,
   })
   @ApiQuery({
     name: 'endDate',
     required: false,
-  })*/
+  })
   @Get()
   findAll(
     @Query('major') major?: Major,
-    /*@Query('startDate') startDate?: Date,
-    @Query('endDate') endDate?: Date,*/
+    @Query('startDate') startDate?: number,
+    @Query('endDate') endDate?: number,
     @CurrentUserOptional() user?: UserEntity,
   ): Promise<ConsultationPreviewDto[]> {
     return this.consultationsService.findAll(
       user,
-      major /*, startDate, endDate*/,
+      major,
+      new Date(startDate),
+      new Date(endDate),
     )
   }
 
