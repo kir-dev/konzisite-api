@@ -45,6 +45,7 @@ import { ConsultationEntity } from './dto/ConsultationEntity.dto'
 import { ConsultationPreviewDto } from './dto/ConsultationPreview.dto'
 import { CreateConsultationDto } from './dto/CreateConsultation.dto'
 import { CreateRatingDto } from './dto/CreateRating.dto'
+import { HomeDto } from './dto/Home.dto'
 import { ParticipationEntity } from './dto/ParticipationEntity.dto'
 import { RatingEntity } from './dto/RatingEntity.dto'
 import { UpdateConsultationDto } from './dto/UpdateConsultation.dto'
@@ -89,6 +90,17 @@ export class ConsultationsController {
       new Date(startDate),
       new Date(endDate),
     )
+  }
+
+  @UseGuards(JwtOptionalAuthGuard)
+  @Get('home')
+  async home(@CurrentUserOptional() user?: UserEntity): Promise<HomeDto> {
+    const [consultations, unratedConsultations, alert] = await Promise.all([
+      this.consultationsService.findAll(user, 2),
+      this.consultationsService.findAll(user, 2),
+      this.alertService.findFirst(),
+    ])
+    return { consultations, unratedConsultations, alert, requests: [] }
   }
 
   @JwtAuth()

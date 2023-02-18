@@ -25,6 +25,7 @@ export class ConsultationsService {
     major?: Major,
     startDate?: Date,
     endDate?: Date,
+    limit?: number,
   ) {
     const ability = this.caslFactory.createForConsultationRead(user)
     let results
@@ -58,7 +59,9 @@ export class ConsultationsService {
             },
           },
         },
-      })
+      },
+      take: limit ? limit : undefined,
+    })
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2009' && (startDate || endDate)) {
