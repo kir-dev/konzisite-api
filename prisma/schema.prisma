@@ -148,7 +148,7 @@ model ConsultationRequest {
   subject       Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   subjectId     Int
   supporters    User[]         @relation(name: "supporters")
-  consultation  Consultation[]
+  consultations Consultation[]
   descMarkdown  String?
   expiryDate    DateTime
 

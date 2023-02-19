@@ -1,6 +1,5 @@
 import {
   Body,
-  Controller,
   Delete,
   Get,
   HttpException,
@@ -10,20 +9,23 @@ import {
   Patch,
   Post,
 } from '@nestjs/common'
+import { Prisma } from '@prisma/client'
 import { Permissions } from 'src/auth/casl-ability.factory'
 import { AuthorizationSubject } from 'src/auth/decorator/authorizationSubject.decorator'
 import { CurrentUser } from 'src/auth/decorator/current-user.decorator'
 import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
 import { RequiredPermission } from 'src/auth/decorator/requiredPermission'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
+import { ApiController } from 'src/utils/apiController.decorator'
 import { CreateRequestDto } from './dto/CreateRequest.dto'
 import { RequestDetailsDto } from './dto/RequestDetails.dto'
+import { RequestEntity } from './dto/RequestEntity.dto'
 import { RequestPreviewDto } from './dto/RequestPreview.dto'
 import { UpdateRequestDto } from './dto/UpdateRequest.dto'
 import { RequestsService } from './requests.service'
 
 @JwtAuth()
-@Controller('requests')
+@ApiController('requests')
 @AuthorizationSubject('ConsultationRequest')
 export class RequestsController {
   constructor(private readonly requestsService: RequestsService) {}
@@ -37,22 +39,27 @@ export class RequestsController {
   async findOne(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<RequestDetailsDto> {
-    try {
-      return this.requestsService.findOne(id)
-    } catch {
-      throw new HttpException(
-        'A konzi kérés nem található!',
-        HttpStatus.NOT_FOUND,
-      )
-    }
+    return this.requestsService.findOne(id)
   }
 
   @Post()
   async create(
     @Body() createRequest: CreateRequestDto,
     @CurrentUser() user: UserEntity,
-  ) {
-    return this.requestsService.create(createRequest, user)
+  ): Promise<RequestEntity> {
+    try {
+      return await this.requestsService.create(createRequest, user)
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2003' || e.code === 'P2025') {
+          throw new HttpException(
+            'Nincs ilyen azonosítójú tárgy!',
+            HttpStatus.BAD_REQUEST,
+          )
+        }
+      }
+      throw e
+    }
   }
 
   @Patch(':id')
@@ -60,13 +67,25 @@ export class RequestsController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateRequestDto,
-  ) {
-    return this.requestsService.update(id, dto)
+  ): Promise<RequestEntity> {
+    try {
+      return await this.requestsService.update(id, dto)
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2003' || e.code === 'P2025') {
+          throw new HttpException(
+            'Nincs ilyen azonosítójú tárgy!',
+            HttpStatus.BAD_REQUEST,
+          )
+        }
+      }
+      throw e
+    }
   }
 
   @Delete(':id')
   @RequiredPermission(Permissions.Delete)
-  async remove(@Param('id', ParseIntPipe) id: number) {
+  async remove(@Param('id', ParseIntPipe) id: number): Promise<RequestEntity> {
     return this.requestsService.remove(id)
   }
 
@@ -74,19 +93,19 @@ export class RequestsController {
   async support(
     @CurrentUser() user: UserEntity,
     @Param('id', ParseIntPipe) id: number,
-  ) {
+  ): Promise<RequestEntity> {
     const request = await this.requestsService.findOne(id)
 
-    if (request.initializer.id == user.id) {
+    if (request.initializer.id === user.id) {
       throw new HttpException(
         'A saját konzi kérésedet nem támogathatod!',
         HttpStatus.BAD_REQUEST,
       )
     }
 
-    if (request.supporters.some((s) => s.id == user.id)) {
+    if (request.supporters.some((s) => s.id === user.id)) {
       throw new HttpException(
-        'Ezt a kérést már táogatod!',
+        'Ezt a kérést már támogatod!',
         HttpStatus.BAD_REQUEST,
       )
     }
@@ -98,19 +117,19 @@ export class RequestsController {
   async unsupport(
     @CurrentUser() user: UserEntity,
     @Param('id', ParseIntPipe) id: number,
-  ) {
+  ): Promise<RequestEntity> {
     const request = await this.requestsService.findOne(id)
 
-    if (request.initializer.id == user.id) {
+    if (request.initializer.id === user.id) {
       throw new HttpException(
         'A saját konzi kérésedet nem támogathatod!',
         HttpStatus.BAD_REQUEST,
       )
     }
 
-    if (!request.supporters.some((s) => s.id == user.id)) {
+    if (!request.supporters.some((s) => s.id === user.id)) {
       throw new HttpException(
-        'Ezt a kérést már nem táogatod!',
+        'Ezt a kérést már nem támogatod!',
         HttpStatus.BAD_REQUEST,
       )
     }

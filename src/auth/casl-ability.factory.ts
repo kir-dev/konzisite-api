@@ -207,7 +207,11 @@ export class CaslAbilityFactory {
       )
     }
 
-    if (request.initializerId == user.id) {
+    if (user.isAdmin) {
+      can(Permissions.Manage, 'ConsultationRequest')
+    }
+
+    if (request.initializerId === user.id) {
       can(Permissions.Update, 'ConsultationRequest')
       can(Permissions.Delete, 'ConsultationRequest')
     }
