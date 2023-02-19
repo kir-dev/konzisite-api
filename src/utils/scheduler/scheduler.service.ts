@@ -1,18 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { Cron, CronExpression, Interval } from '@nestjs/schedule'
+import { Cron, CronExpression } from '@nestjs/schedule'
 import { unlink } from 'fs'
 import { join } from 'path'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { Intervals } from './IntervalExpressions'
 
 @Injectable()
 export class SchedulerService {
   constructor(private readonly prisma: PrismaService) {}
   private readonly logger = new Logger(SchedulerService.name)
-  @Interval(5 * Intervals.minutes)
-  handleCron() {
-    this.logger.debug('Scheduling is active')
-  }
 
   @Cron(CronExpression.EVERY_DAY_AT_1AM)
   async deleteOldFiles() {
