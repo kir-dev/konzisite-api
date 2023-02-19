@@ -1,12 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { SeederService } from './seeder.service'
 
 @Injectable()
 export class Seeder {
-  constructor(
-    private readonly logger: Logger,
-    private readonly seederService: SeederService,
-  ) {}
+  constructor(private readonly seederService: SeederService) {}
 
   async seed() {
     const groupId = await this.seederService.createBasics()

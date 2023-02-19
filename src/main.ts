@@ -6,7 +6,12 @@ import 'dotenv/config'
 import { AppModule } from './app.module'
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule)
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    logger:
+      process.env.NODE_ENV === 'production'
+        ? ['log', 'error', 'warn']
+        : ['log', 'error', 'warn', 'debug'],
+  })
 
   app.useGlobalPipes(
     new ValidationPipe({
