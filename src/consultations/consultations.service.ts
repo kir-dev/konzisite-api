@@ -20,10 +20,6 @@ export class ConsultationsService {
     private caslFactory: CaslAbilityFactory,
   ) {}
 
-  /*    majors?: Major,
-    startDate?: Date,
-    endDate?: Date, */
-
   async findAll(
     user: UserEntity,
     major?: Major,
