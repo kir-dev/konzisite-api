@@ -39,7 +39,7 @@ export class ConsultationsService {
             ...(major ? { subject: { majors: { has: major } } } : {}),
             ...(startDate.getTime()
               ? { startDate: { gte: startDate } }
-              : { startDate: { gte: new Date() } }),
+              : { startDate: {} }),
             ...(endDate.getTime()
               ? {
                   endDate: {
@@ -50,6 +50,7 @@ export class ConsultationsService {
           },
         ],
       },
+      orderBy: { startDate: 'asc' },
       include: {
         subject: true,
         presentations: {
