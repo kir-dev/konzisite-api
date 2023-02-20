@@ -141,17 +141,16 @@ model Consultation {
 }
 
 model ConsultationRequest {
-  id             Int            @id @default(autoincrement())
-  name           String
-  initializer    User           @relation(fields: [initializerId], references: [id], name: "initializer", onDelete: Cascade)
-  initializerId  Int
-  subject        Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  subjectId      Int
-  supporters     User[]         @relation(name: "supporters")
-  consultation   Consultation[]
-  consultationId Int            @unique
-  descMarkdown   String
-  expiryDate     DateTime
+  id            Int            @id @default(autoincrement())
+  name          String
+  initializer   User           @relation(fields: [initializerId], references: [id], name: "initializer", onDelete: Cascade)
+  initializerId Int
+  subject       Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId     Int
+  supporters    User[]         @relation(name: "supporters")
+  consultations Consultation[]
+  descMarkdown  String?
+  expiryDate    DateTime
 
   createdAt DateTime @default(now())
 }
