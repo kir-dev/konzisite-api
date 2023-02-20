@@ -26,7 +26,7 @@ export class AuthService {
       email: oAuthUser.mail,
     })
 
-    this.logger.log(`Created new user ${newUser.id}`)
+    this.logger.debug(`Created new user ${newUser.id}`)
 
     return newUser
   }
