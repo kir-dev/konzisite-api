@@ -86,7 +86,6 @@ export class ConsultationsController {
     @Query('endDate') endDate?: number,
     @CurrentUserOptional() user?: UserEntity,
   ): Promise<ConsultationPreviewDto[]> {
-    console.log(endDate)
     return this.consultationsService.findAll({
       user,
       major,
