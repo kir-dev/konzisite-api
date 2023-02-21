@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { accessibleBy } from '@casl/prisma'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
-import { Major } from '@prisma/client'
+import { Major, Prisma } from '@prisma/client'
 import { unlink } from 'fs'
 import { join } from 'path'
 import { CaslAbilityFactory } from 'src/auth/casl-ability.factory'
@@ -27,36 +27,50 @@ export class ConsultationsService {
     endDate?: Date,
   ) {
     const ability = this.caslFactory.createForConsultationRead(user)
-    const results = await this.prisma.consultation.findMany({
-      where: {
-        AND: [
-          accessibleBy(ability).Consultation,
-          {
-            ...(major ? { subject: { majors: { has: major } } } : {}),
-            ...(startDate.getTime()
-              ? { startDate: { gte: startDate } }
-              : { startDate: {} }),
-            ...(endDate.getTime()
-              ? {
-                  endDate: {
-                    lt: new Date(endDate.getTime() + 60 * 60 * 24 * 1000),
-                  },
-                }
-              : {}),
-          },
-        ],
-      },
-      orderBy: { startDate: 'asc' },
-      include: {
-        subject: true,
-        presentations: {
-          include: {
-            user: publicUserProjection,
-            ratings: true,
+    let results
+    try {
+      results = await this.prisma.consultation.findMany({
+        where: {
+          AND: [
+            accessibleBy(ability).Consultation,
+            {
+              ...(major ? { subject: { majors: { has: major } } } : {}),
+              ...(startDate.getTime()
+                ? { startDate: { gte: startDate } }
+                : { startDate: {} }),
+              ...(endDate.getTime()
+                ? {
+                    endDate: {
+                      lt: new Date(endDate.getTime() + 60 * 60 * 24 * 1000),
+                    },
+                  }
+                : {}),
+            },
+          ],
+        },
+        orderBy: { startDate: 'asc' },
+        include: {
+          subject: true,
+          presentations: {
+            include: {
+              user: publicUserProjection,
+              ratings: true,
+            },
           },
         },
-      },
-    })
+      })
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2009' && (startDate || endDate)) {
+          throw new HttpException('Hibás dátum!', HttpStatus.BAD_REQUEST)
+        }
+      }
+      if (major) {
+        throw new HttpException('Hibás szak!', HttpStatus.BAD_REQUEST)
+      }
+      throw e
+    }
+
     return results.map(({ ownerId, subjectId, requestId, ...details }) => ({
       ...details,
       presentations: details.presentations.map((p) => ({
