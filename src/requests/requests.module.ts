@@ -8,5 +8,6 @@ import { RequestsService } from './requests.service'
   imports: [PrismaModule, AuthModule],
   providers: [RequestsService],
   controllers: [RequestsController],
+  exports: [RequestsService],
 })
 export class RequestsModule {}

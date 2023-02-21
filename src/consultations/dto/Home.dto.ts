@@ -1,9 +1,10 @@
-import { Alert, ConsultationRequest } from '@prisma/client'
+import { Alert } from '@prisma/client'
+import { RequestPreviewDto } from 'src/requests/dto/RequestPreview.dto'
 import { ConsultationPreviewDto } from './ConsultationPreview.dto'
 
 export class HomeDto {
   consultations: ConsultationPreviewDto[]
-  requests: ConsultationRequest[] // TODO change to dto after #124 is merged
+  requests: RequestPreviewDto[]
   unratedConsultations: ConsultationPreviewDto[]
   alert?: Alert
 }
