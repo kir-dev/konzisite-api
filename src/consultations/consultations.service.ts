@@ -66,7 +66,7 @@ export class ConsultationsService {
         }
       }
       if (major) {
-        throw new HttpException('Hibás szak!', HttpStatus.BAD_REQUEST)
+        throw new HttpException('Nincs ilyen szak!', HttpStatus.BAD_REQUEST)
       }
       throw e
     }
