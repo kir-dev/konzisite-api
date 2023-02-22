@@ -104,11 +104,13 @@ export class ConsultationsController {
           limit: 2,
           startDate: new Date(),
         }),
-        this.consultationsService.findAll({
-          user,
-          endDate: new Date(),
-          unratedOnly: true,
-        }),
+        user
+          ? this.consultationsService.findAll({
+              user,
+              endDate: new Date(),
+              unratedOnly: true,
+            })
+          : Promise.resolve([]),
         this.requestsService.findAll(true, 2),
         this.alertService.findFirst(),
       ])
