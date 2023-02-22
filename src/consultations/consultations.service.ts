@@ -13,6 +13,15 @@ import { ConsultationEntity } from './dto/ConsultationEntity.dto'
 import { CreateConsultationDto } from './dto/CreateConsultation.dto'
 import { UpdateConsultationDto } from './dto/UpdateConsultation.dto'
 
+type findAllParams = {
+  user: UserEntity
+  major?: Major
+  startDate?: Date
+  endDate?: Date
+  limit?: number
+  unratedOnly?: boolean
+}
+
 @Injectable()
 export class ConsultationsService {
   constructor(
@@ -20,28 +29,49 @@ export class ConsultationsService {
     private caslFactory: CaslAbilityFactory,
   ) {}
 
-  async findAll(
-    user: UserEntity,
-    major?: Major,
-    startDate?: Date,
-    endDate?: Date,
-  ) {
+  async findAll({
+    user,
+    major,
+    startDate,
+    endDate,
+    limit,
+    unratedOnly = false,
+  }: findAllParams) {
     const ability = this.caslFactory.createForConsultationRead(user)
-    let results
     try {
-      results = await this.prisma.consultation.findMany({
+      const results = await this.prisma.consultation.findMany({
         where: {
           AND: [
             accessibleBy(ability).Consultation,
             {
               ...(major ? { subject: { majors: { has: major } } } : {}),
-              ...(startDate.getTime()
-                ? { startDate: { gte: startDate } }
-                : { startDate: {} }),
-              ...(endDate.getTime()
+              ...(startDate ? { startDate: { gte: startDate } } : {}),
+              ...(endDate
                 ? {
                     endDate: {
-                      lt: new Date(endDate.getTime() + 60 * 60 * 24 * 1000),
+                      lt: endDate,
+                    },
+                  }
+                : {}),
+              ...(unratedOnly
+                ? {
+                    presentations: {
+                      some: {
+                        NOT: {
+                          ratings: {
+                            some: {
+                              ratedBy: {
+                                userId: user.id,
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                    participants: {
+                      some: {
+                        userId: user.id,
+                      },
                     },
                   }
                 : {}),
@@ -58,7 +88,17 @@ export class ConsultationsService {
             },
           },
         },
+        take: limit ? limit : undefined,
       })
+      return results.map(({ ownerId, subjectId, requestId, ...details }) => ({
+        ...details,
+        presentations: details.presentations.map((p) => ({
+          averageRating:
+            p.ratings.reduce((acc, rating) => acc + rating.value, 0) /
+              p.ratings.length || 0,
+          ...p.user,
+        })),
+      }))
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2009' && (startDate || endDate)) {
@@ -70,16 +110,6 @@ export class ConsultationsService {
       }
       throw e
     }
-
-    return results.map(({ ownerId, subjectId, requestId, ...details }) => ({
-      ...details,
-      presentations: details.presentations.map((p) => ({
-        averageRating:
-          p.ratings.reduce((acc, rating) => acc + rating.value, 0) /
-            p.ratings.length || 0,
-        ...p.user,
-      })),
-    }))
   }
 
   async findOne(id: number, user: UserEntity): Promise<ConsultationEntity> {

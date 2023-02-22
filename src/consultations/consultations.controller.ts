@@ -34,6 +34,7 @@ import {
   JwtOptionalAuthGuard,
 } from 'src/auth/decorator/jwtAuth.decorator'
 import { RequiredPermission } from 'src/auth/decorator/requiredPermission'
+import { RequestsService } from 'src/requests/requests.service'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { ApiController } from 'src/utils/apiController.decorator'
 import { FileExtensionValidator } from 'src/utils/FileExtensionValidator'
@@ -45,6 +46,7 @@ import { ConsultationEntity } from './dto/ConsultationEntity.dto'
 import { ConsultationPreviewDto } from './dto/ConsultationPreview.dto'
 import { CreateConsultationDto } from './dto/CreateConsultation.dto'
 import { CreateRatingDto } from './dto/CreateRating.dto'
+import { HomeDto } from './dto/Home.dto'
 import { ParticipationEntity } from './dto/ParticipationEntity.dto'
 import { RatingEntity } from './dto/RatingEntity.dto'
 import { UpdateConsultationDto } from './dto/UpdateConsultation.dto'
@@ -61,6 +63,7 @@ export class ConsultationsController {
     private readonly presentationService: PresentationService,
     private readonly ratingService: RatingService,
     private readonly alertService: AlertService,
+    private readonly requestsService: RequestsService,
   ) {}
 
   @UseGuards(JwtOptionalAuthGuard)
@@ -83,12 +86,33 @@ export class ConsultationsController {
     @Query('endDate') endDate?: number,
     @CurrentUserOptional() user?: UserEntity,
   ): Promise<ConsultationPreviewDto[]> {
-    return this.consultationsService.findAll(
+    return this.consultationsService.findAll({
       user,
       major,
-      new Date(startDate),
-      new Date(endDate),
-    )
+      startDate: startDate ? new Date(startDate) : undefined,
+      endDate: endDate ? new Date(endDate + 60 * 60 * 24 * 1000) : undefined,
+    })
+  }
+
+  @UseGuards(JwtOptionalAuthGuard)
+  @Get('home')
+  async home(@CurrentUserOptional() user?: UserEntity): Promise<HomeDto> {
+    const [consultations, unratedConsultations, requests, alert] =
+      await Promise.all([
+        this.consultationsService.findAll({
+          user,
+          limit: 2,
+          startDate: new Date(),
+        }),
+        this.consultationsService.findAll({
+          user,
+          endDate: new Date(),
+          unratedOnly: true,
+        }),
+        this.requestsService.findAll(true, 2),
+        this.alertService.findFirst(),
+      ])
+    return { consultations, unratedConsultations, alert, requests }
   }
 
   @JwtAuth()

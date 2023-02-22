@@ -11,7 +11,10 @@ import { UpdateRequestDto } from './dto/UpdateRequest.dto'
 export class RequestsService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(): Promise<RequestPreviewDto[]> {
+  async findAll(
+    validOnly = false,
+    limit?: number,
+  ): Promise<RequestPreviewDto[]> {
     const requests = await this.prisma.consultationRequest.findMany({
       include: {
         initializer: publicUserProjection,
@@ -23,6 +26,11 @@ export class RequestsService {
           },
         },
       },
+      where: {
+        ...(validOnly ? { expiryDate: { gt: new Date() } } : {}),
+      },
+      orderBy: { expiryDate: 'asc' },
+      take: limit ? limit : undefined,
     })
 
     return requests.map(({ _count, ...request }) => {
