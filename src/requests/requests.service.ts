@@ -13,6 +13,7 @@ export class RequestsService {
 
   async findAll(
     validOnly = false,
+    user?: UserEntity,
     limit?: number,
   ): Promise<RequestPreviewDto[]> {
     const requests = await this.prisma.consultationRequest.findMany({
@@ -25,6 +26,11 @@ export class RequestsService {
             consultations: true,
           },
         },
+        supporters: {
+          where: {
+            id: user?.id,
+          },
+        },
       },
       where: {
         ...(validOnly ? { expiryDate: { gt: new Date() } } : {}),
@@ -33,11 +39,12 @@ export class RequestsService {
       take: limit ? limit : undefined,
     })
 
-    return requests.map(({ _count, ...request }) => {
+    return requests.map(({ _count, supporters, ...request }) => {
       return {
         ...request,
         supporterCount: _count.supporters,
         consultationCount: _count.consultations,
+        currentUserSupports: supporters.length !== 0,
       }
     })
   }
@@ -51,7 +58,17 @@ export class RequestsService {
         initializer: publicUserProjection,
         subject: true,
         supporters: publicUserProjection,
-        consultations: true,
+        consultations: {
+          include: {
+            presentations: {
+              include: {
+                user: publicUserProjection,
+                ratings: true,
+              },
+            },
+            subject: true,
+          },
+        },
       },
     })
 
@@ -62,7 +79,23 @@ export class RequestsService {
       )
     }
 
-    return request
+    const { consultations, ...restOfRequest } = request
+
+    const consultationsWithSubject = consultations.map(
+      ({ presentations, ...c }) => {
+        return {
+          ...c,
+          presentations: presentations.map((p) => ({
+            averageRating:
+              p.ratings.reduce((acc, rating) => acc + rating.value, 0) /
+                p.ratings.length || 0,
+            ...p.user,
+          })),
+        }
+      },
+    )
+
+    return { consultations: consultationsWithSubject, ...restOfRequest }
   }
 
   create(dto: CreateRequestDto, user: UserEntity) {

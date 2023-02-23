@@ -7,4 +7,5 @@ export class RequestPreviewDto extends RequestEntity {
   subject: SubjectEntity
   supporterCount: number
   consultationCount: number
+  currentUserSupports: boolean
 }

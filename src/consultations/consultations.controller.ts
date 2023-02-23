@@ -111,7 +111,7 @@ export class ConsultationsController {
               unratedOnly: true,
             })
           : Promise.resolve([]),
-        this.requestsService.findAll(true, 2),
+        this.requestsService.findAll(true, user, 2),
         this.alertService.findFirst(),
       ])
     return { consultations, unratedConsultations, alert, requests }

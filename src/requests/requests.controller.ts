@@ -31,8 +31,8 @@ export class RequestsController {
   constructor(private readonly requestsService: RequestsService) {}
 
   @Get()
-  async findAll(): Promise<RequestPreviewDto[]> {
-    return this.requestsService.findAll()
+  async findAll(@CurrentUser() user: UserEntity): Promise<RequestPreviewDto[]> {
+    return this.requestsService.findAll(true, user)
   }
 
   @Get(':id')
