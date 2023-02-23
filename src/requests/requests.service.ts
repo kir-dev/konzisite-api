@@ -50,28 +50,27 @@ export class RequestsService {
   }
 
   async findOne(id: number): Promise<RequestDetailsDto> {
-    const { consultations, ...request } =
-      await this.prisma.consultationRequest.findUnique({
-        where: {
-          id,
-        },
-        include: {
-          initializer: publicUserProjection,
-          subject: true,
-          supporters: publicUserProjection,
-          consultations: {
-            include: {
-              presentations: {
-                include: {
-                  user: publicUserProjection,
-                  ratings: true,
-                },
+    const request = await this.prisma.consultationRequest.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        initializer: publicUserProjection,
+        subject: true,
+        supporters: publicUserProjection,
+        consultations: {
+          include: {
+            presentations: {
+              include: {
+                user: publicUserProjection,
+                ratings: true,
               },
-              subject: true,
             },
+            subject: true,
           },
         },
-      })
+      },
+    })
 
     if (request === null) {
       throw new HttpException(
@@ -79,6 +78,8 @@ export class RequestsService {
         HttpStatus.NOT_FOUND,
       )
     }
+
+    const { consultations, ...restOfRequest } = request
 
     const consultationsWithSubject = consultations.map(
       ({ presentations, ...c }) => {
@@ -94,7 +95,7 @@ export class RequestsService {
       },
     )
 
-    return { consultations: consultationsWithSubject, ...request }
+    return { consultations: consultationsWithSubject, ...restOfRequest }
   }
 
   create(dto: CreateRequestDto, user: UserEntity) {
