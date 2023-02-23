@@ -45,11 +45,16 @@ export class UsersService {
             },
           },
         },
-        orderBy: {
-          presentations: {
-            _count: 'desc',
+        orderBy: [
+          {
+            presentations: {
+              _count: 'desc',
+            },
           },
-        },
+          {
+            fullName: 'asc',
+          },
+        ],
         take: pageSize ? pageSize : undefined,
         skip: (page || 0) * (pageSize || 2),
       }),
