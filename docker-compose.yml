@@ -19,6 +19,8 @@ services:
       - '${BACKEND_PORT}:${BACKEND_PORT}'
     env_file:
       - .env
+    volumes:
+      - konzisite_static_folder:/usr/src/app/static
     networks:
       - konzisite-network
     restart: always
@@ -26,3 +28,4 @@ networks:
   konzisite-network:
 volumes:
   konzisite_db_folder:
+  konzisite_static_folder:
