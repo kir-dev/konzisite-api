@@ -1,6 +1,4 @@
-import { OmitType, PartialType } from '@nestjs/swagger'
+import { PartialType } from '@nestjs/swagger'
 import { CreateConsultationDto } from './CreateConsultation.dto'
 
-export class UpdateConsultationDto extends PartialType(
-  OmitType(CreateConsultationDto, ['requestId']),
-) {}
+export class UpdateConsultationDto extends PartialType(CreateConsultationDto) {}

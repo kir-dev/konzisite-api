@@ -256,7 +256,13 @@ export class ConsultationsService {
         participants: true,
       },
     })
-    const { subjectId, targetGroupIds, presenterIds, ...restOfData } = dto
+    const {
+      subjectId,
+      targetGroupIds,
+      presenterIds,
+      requestId,
+      ...restOfData
+    } = dto
     return this.prisma.consultation.update({
       where: { id },
       data: {
@@ -297,6 +303,9 @@ export class ConsultationsService {
                 )
                 .map((userId) => ({ userId })) || [],
           },
+        },
+        request: {
+          connect: { id: dto.requestId || konzi.requestId },
         },
       },
     })

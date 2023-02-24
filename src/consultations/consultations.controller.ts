@@ -137,6 +137,23 @@ export class ConsultationsController {
     @Body() createConsultationDto: CreateConsultationDto,
     @CurrentUser() user: UserEntity,
   ): Promise<ConsultationEntity> {
+    if (createConsultationDto.startDate >= createConsultationDto.endDate) {
+      throw new HttpException('Érvénytelen dátum!', HttpStatus.BAD_REQUEST)
+    }
+    if (createConsultationDto.requestId) {
+      const request = await this.requestsService.findOne(
+        createConsultationDto.requestId,
+      )
+      if (
+        request === null ||
+        request.subject.id !== createConsultationDto.subjectId
+      ) {
+        throw new HttpException(
+          'Érvénytelen konzi kérés!',
+          HttpStatus.BAD_REQUEST,
+        )
+      }
+    }
     try {
       return await this.consultationsService.create(createConsultationDto, user)
     } catch {
@@ -154,6 +171,23 @@ export class ConsultationsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateConsultationDto: UpdateConsultationDto,
   ): Promise<ConsultationEntity> {
+    if (updateConsultationDto.startDate >= updateConsultationDto.endDate) {
+      throw new HttpException('Érvénytelen dátum!', HttpStatus.BAD_REQUEST)
+    }
+    if (updateConsultationDto.requestId) {
+      const request = await this.requestsService.findOne(
+        updateConsultationDto.requestId,
+      )
+      if (
+        request === null ||
+        request.subject.id !== updateConsultationDto.subjectId
+      ) {
+        throw new HttpException(
+          'Érvénytelen konzi kérés!',
+          HttpStatus.BAD_REQUEST,
+        )
+      }
+    }
     try {
       return await this.consultationsService.update(id, updateConsultationDto)
     } catch {
