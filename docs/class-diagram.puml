@@ -1,33 +1,34 @@
-@startuml
+@startuml konzisite
 'https://plantuml.com/class-diagram
 
-[Consultation] -d- "1..*" [presenters: Presentation]
-[presenters: Presentation] - "1" [User]
-[presenters: Presentation] "1" - "0..*" [Rating]
-[Consultation] -d- "0..1" [owner: User]
-[Consultation] - "0..*" [target: Group]
-[Consultation] -u- "0..*" [participants: Participation]
-[Consultation] -u- "1"    [subject: Subject]
+[Consultation] -d- "1..*" [Presentation] : "presenters"
+[Presentation] - "1" [User]
+[Presentation] "1" - "0..*" [Rating]
+[Consultation] -d- "1" [User] : "owner"
+[Consultation] - "0..*" [Group] : "targetGroups"
+[Consultation] -u- "0..*" [Participation] : "participants"
+[Consultation] -u- "1"    [Subject] : "subject"
 
 'Hidden connection for arranging the diagram
-[owner: User] -[hidden]- [presenters: Presentation]
-[target: Group] -[hidden]- [owner: User]
-[participants: Participation] -[hidden]- [target: Group]
-[subject: Subject] -[hidden]- [participants: Participation]
+[User] -[hidden]- [Presentation]
+[Group] -[hidden]- [User]
+[Participation] -[hidden]- [Group]
+[Subject] -[hidden]- [Participation]
 
-[participants: Participation] "1" -"1" [User]
-[participants: Participation] "1" -"0..*" [Rating]
-[target: Group] "0..*"-"0..*" [User]
+[Participation] "1" -"1" [User]
+[Participation] "1" -"0..*" [Rating]
+[Group] "0..*"-"0..*" [User] : "membership"
+[Subject] "0..*"-"0..*" [User] : "subscriptions"
 
-[ConsultationRequest] -":nullable" [Consultation]
+[ConsultationRequest] "0..1" -"0..*" [Consultation] : "request"
 
-[Subject] "1"-u- [ConsultationRequest]
-[initializer: User] "1"- [ConsultationRequest]
-[supporters: User] "0..*"-d- [ConsultationRequest]
+[Subject] "1"-u- [ConsultationRequest] : "subject"
+[User] "1"- [ConsultationRequest] : "initializer"
+[User] "0..*"-d- [ConsultationRequest] : "supporter"
 
 'Hidden connection for arranging the diagram
-[initializer: User] -[hidden]- [Subject]
-[supporters: User] -[hidden]- [initializer: User]
+[User] -[hidden]- [Subject]
+[User] -[hidden]- [User]
 
 
 sprite $Logo [32x14/16]{
@@ -49,7 +50,7 @@ FFF00000000000FFF0000000000000FF
 
 rectangle "Kir-Dev" as logo<<$Logo>>
 
-[User] --[hidden]- logo
+[Consultation] --[hidden]- logo
 
 
 @enduml
