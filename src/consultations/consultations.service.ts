@@ -304,8 +304,13 @@ export class ConsultationsService {
                 .map((userId) => ({ userId })) || [],
           },
         },
-        request: {
-          connect: { id: dto.requestId || konzi.requestId },
+        ...{
+          request:
+            dto.requestId || konzi.requestId
+              ? {
+                  connect: { id: dto.requestId || konzi.requestId },
+                }
+              : {},
         },
       },
     })
