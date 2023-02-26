@@ -306,7 +306,9 @@ export class ConsultationsService {
         },
         ...{
           request:
-            dto.requestId || konzi.requestId
+            dto.requestId === null
+              ? { disconnect: true }
+              : dto.requestId || konzi.requestId
               ? {
                   connect: { id: dto.requestId || konzi.requestId },
                 }
