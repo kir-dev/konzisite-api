@@ -137,7 +137,10 @@ export class ConsultationsController {
     @Body() createConsultationDto: CreateConsultationDto,
     @CurrentUser() user: UserEntity,
   ): Promise<ConsultationEntity> {
-    if (createConsultationDto.startDate >= createConsultationDto.endDate) {
+    if (
+      new Date(createConsultationDto.startDate) >=
+      new Date(createConsultationDto.endDate)
+    ) {
       throw new HttpException('Érvénytelen dátum!', HttpStatus.BAD_REQUEST)
     }
     if (createConsultationDto.requestId) {
@@ -150,6 +153,12 @@ export class ConsultationsController {
       ) {
         throw new HttpException(
           'Érvénytelen konzi kérés!',
+          HttpStatus.BAD_REQUEST,
+        )
+      }
+      if (new Date(createConsultationDto.startDate) > request.expiryDate) {
+        throw new HttpException(
+          'A konzi később kezdődne, mint a megvalósított kérés határideje!',
           HttpStatus.BAD_REQUEST,
         )
       }
@@ -171,7 +180,10 @@ export class ConsultationsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateConsultationDto: UpdateConsultationDto,
   ): Promise<ConsultationEntity> {
-    if (updateConsultationDto.startDate >= updateConsultationDto.endDate) {
+    if (
+      new Date(updateConsultationDto.startDate) >=
+      new Date(updateConsultationDto.endDate)
+    ) {
       throw new HttpException('Érvénytelen dátum!', HttpStatus.BAD_REQUEST)
     }
     if (updateConsultationDto.requestId) {
@@ -184,6 +196,12 @@ export class ConsultationsController {
       ) {
         throw new HttpException(
           'Érvénytelen konzi kérés!',
+          HttpStatus.BAD_REQUEST,
+        )
+      }
+      if (new Date(updateConsultationDto.startDate) > request.expiryDate) {
+        throw new HttpException(
+          'A konzi később kezdődne, mint a megvalósított kérés határideje!',
           HttpStatus.BAD_REQUEST,
         )
       }
