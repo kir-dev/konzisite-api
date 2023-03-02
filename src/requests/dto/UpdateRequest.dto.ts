@@ -3,12 +3,14 @@ import {
   IsInt,
   IsNotEmpty,
   IsOptional,
+  MaxLength,
   Min,
 } from 'class-validator'
 
 export class UpdateRequestDto {
   @IsNotEmpty()
   @IsOptional()
+  @MaxLength(100)
   name: string
 
   @IsInt()
@@ -17,6 +19,7 @@ export class UpdateRequestDto {
   subjectId: number
 
   @IsOptional()
+  @MaxLength(5000)
   descMarkdown: string
 
   @IsDateString()
