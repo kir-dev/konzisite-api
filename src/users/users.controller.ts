@@ -64,7 +64,7 @@ export class UsersController {
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: UserEntity,
   ): Promise<UserDetails> {
-    return await this.usersService.findOne(id, id === user.id)
+    return await this.usersService.findOne(id, user)
   }
 
   @Post(':id/promote')

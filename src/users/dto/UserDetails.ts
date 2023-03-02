@@ -18,5 +18,13 @@ export class UserDetails extends PublicUser {
     subject: SubjectEntity
     supporters: number
   })[]
+  stats: UserStats
+}
+
+export class UserStats {
+  presentationCount: number
+  allParticipants: number
+  ratingCount: number
   averageRating: number
+  participationCount: number
 }
