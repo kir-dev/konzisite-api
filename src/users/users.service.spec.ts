@@ -1,5 +1,6 @@
 import { JwtService } from '@nestjs/jwt'
 import { Test, TestingModule } from '@nestjs/testing'
+import { AuthModule } from 'src/auth/auth.module'
 import { PrismaModule } from '../prisma/prisma.module'
 import { UsersService } from './users.service'
 
@@ -12,7 +13,7 @@ describe('UsersService', () => {
       sign: jest.fn().mockReturnValue('token'),
     }
     const module: TestingModule = await Test.createTestingModule({
-      imports: [PrismaModule],
+      imports: [PrismaModule, AuthModule],
       providers: [
         UsersService,
         {
