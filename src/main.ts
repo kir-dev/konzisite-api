@@ -6,11 +6,11 @@ import 'dotenv/config'
 import { AppModule } from './app.module'
 
 async function bootstrap() {
+  const isProduction = process.env.NODE_ENV === 'production'
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    logger:
-      process.env.NODE_ENV === 'production'
-        ? ['log', 'error', 'warn']
-        : ['log', 'error', 'warn', 'debug'],
+    logger: isProduction
+      ? ['log', 'error', 'warn']
+      : ['log', 'error', 'warn', 'debug'],
   })
 
   app.useGlobalPipes(
@@ -30,7 +30,9 @@ async function bootstrap() {
     .addBearerAuth()
     .build()
   const document = SwaggerModule.createDocument(app, config)
-  SwaggerModule.setup('api', app, document)
+  if (!isProduction) {
+    SwaggerModule.setup('api', app, document)
+  }
 
   app.enableCors({
     origin: process.env.FRONTEND_HOST,
