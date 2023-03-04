@@ -1,6 +1,7 @@
-import { IsNotEmpty } from 'class-validator'
+import { IsNotEmpty, MaxLength } from 'class-validator'
 
 export class UpdateGroupDto {
   @IsNotEmpty()
+  @MaxLength(100)
   name: string
 }

@@ -4,6 +4,7 @@ import {
   IsInt,
   IsNotEmpty,
   IsOptional,
+  MaxLength,
   Min,
 } from 'class-validator'
 
@@ -13,9 +14,11 @@ export class ConsultationEntity {
   id: number
 
   @IsNotEmpty()
+  @MaxLength(100)
   name: string
 
   @IsNotEmpty()
+  @MaxLength(100)
   location: string
 
   @IsDateString()
@@ -25,6 +28,7 @@ export class ConsultationEntity {
   endDate: Date
 
   @IsOptional()
+  @MaxLength(5000)
   descMarkdown?: string
 
   @IsOptional()
