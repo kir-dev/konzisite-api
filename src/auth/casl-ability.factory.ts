@@ -5,6 +5,8 @@ import {
   Consultation,
   ConsultationRequest,
   Group,
+  Participation,
+  Presentation,
   Subject,
   User,
 } from '@prisma/client'
@@ -18,6 +20,8 @@ export type AppSubjects = Subjects<{
   Subject: Subject
   Consultation: Consultation
   ConsultationRequest: ConsultationRequest
+  Presentation: Presentation
+  Participation: Participation
 }>
 
 type AppAbility = PureAbility<[string, AppSubjects], PrismaQuery>
@@ -159,34 +163,46 @@ export class CaslAbilityFactory {
 
   createForConsultationRead = (user?: UserEntity) => {
     const { can, build } = new AbilityBuilder<AppAbility>(createPrismaAbility)
-    can(Permissions.Read, 'Consultation', { targetGroups: { none: {} } })
-    if (user) {
-      if (user.isAdmin) {
-        can(Permissions.Read, 'Consultation')
-      } else {
-        can(Permissions.Read, 'Consultation', {
-          OR: [
-            {
-              targetGroups: {
+    const noTargetGroupFilter = { targetGroups: { none: {} } }
+    const memberOfGroupOrPresenterFilter = {
+      OR: [
+        {
+          targetGroups: {
+            some: {
+              members: {
                 some: {
-                  members: {
-                    some: {
-                      userId: user.id,
-                      role: {
-                        in: [
-                          GroupRoles.MEMBER,
-                          GroupRoles.ADMIN,
-                          GroupRoles.OWNER,
-                        ],
-                      },
-                    },
+                  userId: user.id,
+                  role: {
+                    in: [GroupRoles.MEMBER, GroupRoles.ADMIN, GroupRoles.OWNER],
                   },
                 },
               },
             },
-            { presentations: { some: { userId: user.id } } },
-            { ownerId: user.id },
-          ],
+          },
+        },
+        { presentations: { some: { userId: user.id } } },
+        { ownerId: user.id },
+      ],
+    }
+    can(Permissions.Read, 'Consultation', noTargetGroupFilter)
+    can(Permissions.Read, 'Presentation', {
+      consultation: noTargetGroupFilter,
+    })
+    can(Permissions.Read, 'Participation', {
+      consultation: noTargetGroupFilter,
+    })
+    if (user) {
+      if (user.isAdmin) {
+        can(Permissions.Read, 'Consultation')
+        can(Permissions.Read, 'Presentation')
+        can(Permissions.Read, 'Participation')
+      } else {
+        can(Permissions.Read, 'Consultation', memberOfGroupOrPresenterFilter)
+        can(Permissions.Read, 'Presentation', {
+          consultation: memberOfGroupOrPresenterFilter,
+        })
+        can(Permissions.Read, 'Participation', {
+          consultation: memberOfGroupOrPresenterFilter,
         })
       }
     }

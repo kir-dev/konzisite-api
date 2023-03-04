@@ -1,10 +1,12 @@
+import { accessibleBy } from '@casl/prisma'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
+import { CaslAbilityFactory } from 'src/auth/casl-ability.factory'
 import { publicUserProjection } from 'src/utils/publicUserProjection'
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateUserDto } from './dto/CreateUser.dto'
 import { UpdateUserDto } from './dto/UpdateUser.dto'
-import { UserDetails } from './dto/UserDetails'
+import { UserDetails, UserStats } from './dto/UserDetails'
 import { UserEntity } from './dto/UserEntity.dto'
 import { UserList } from './dto/UserList.dto'
 import { UserProfileDto } from './dto/UserProfile.dto'
@@ -14,6 +16,7 @@ export class UsersService {
   constructor(
     private prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly caslFactory: CaslAbilityFactory,
   ) {}
 
   async findAll(
@@ -102,52 +105,92 @@ export class UsersService {
     }
   }
 
-  async findOne(id: number, isCurrentUser: boolean): Promise<UserDetails> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: id },
+  private async userStats(id: number): Promise<UserStats> {
+    const userStats = await this.prisma.user.findUnique({
+      where: { id },
       include: {
         presentations: {
           include: {
             consultation: {
               include: {
-                subject: true,
                 participants: true,
               },
             },
-            ratings: {
-              include: {
-                ratedBy: {
-                  include: {
-                    user: publicUserProjection,
+            ratings: true,
+          },
+        },
+        participations: true,
+      },
+    })
+    const ratings = userStats.presentations.reduce<number[]>(
+      (arr, pres) => [...arr, ...pres.ratings.map((r) => r.value)],
+      [],
+    )
+    return {
+      allParticipants: userStats.presentations.reduce(
+        (acc, cur) => acc + cur.consultation.participants.length,
+        0,
+      ),
+      averageRating:
+        ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length,
+      participationCount: userStats.participations.length,
+      presentationCount: userStats.presentations.length,
+      ratingCount: ratings.length,
+    }
+  }
+
+  async findOne(id: number, loggedInUser: UserEntity): Promise<UserDetails> {
+    const ability = this.caslFactory.createForConsultationRead(loggedInUser)
+    const [user, stats] = await Promise.all([
+      this.prisma.user.findUnique({
+        where: { id },
+        include: {
+          presentations: {
+            where: accessibleBy(ability).Presentation,
+            include: {
+              consultation: {
+                include: {
+                  subject: true,
+                  participants: true,
+                },
+              },
+              ratings: {
+                include: {
+                  ratedBy: {
+                    include: {
+                      user: publicUserProjection,
+                    },
                   },
                 },
               },
             },
           },
-        },
-        participations: {
-          include: {
-            consultation: {
-              include: {
-                subject: true,
+          participations: {
+            where: accessibleBy(ability).Participation,
+            include: {
+              consultation: {
+                include: {
+                  subject: true,
+                },
               },
             },
           },
-        },
-        requestedConsultations: {
-          include: {
-            subject: true,
-            supporters: true,
+          requestedConsultations: {
+            include: {
+              subject: true,
+              supporters: true,
+            },
+          },
+          supportedConsultations: {
+            include: {
+              subject: true,
+              supporters: true,
+            },
           },
         },
-        supportedConsultations: {
-          include: {
-            subject: true,
-            supporters: true,
-          },
-        },
-      },
-    })
+      }),
+      this.userStats(id),
+    ])
 
     if (user === null) {
       throw new HttpException(
@@ -155,13 +198,6 @@ export class UsersService {
         HttpStatus.NOT_FOUND,
       )
     }
-
-    const ratings: number[] = user.presentations.reduce<number[]>(
-      (arr, pres) => [...arr, ...pres.ratings.map((r) => r.value)],
-      [],
-    )
-    const averageRating =
-      ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
 
     const presentations = user.presentations.map(
       ({ ratings, consultation }) => {
@@ -193,11 +229,12 @@ export class UsersService {
       return { ...consultation }
     })
 
-    const consultationRequests = isCurrentUser
-      ? user.requestedConsultations
-          .concat(user.supportedConsultations)
-          .map((cr) => ({ ...cr, supporters: cr.supporters.length }))
-      : undefined
+    const consultationRequests =
+      loggedInUser.id === id
+        ? user.requestedConsultations
+            .concat(user.supportedConsultations)
+            .map((cr) => ({ ...cr, supporters: cr.supporters.length }))
+        : undefined
 
     return {
       id: user.id,
@@ -206,7 +243,7 @@ export class UsersService {
       presentations,
       participations,
       consultationRequests,
-      averageRating,
+      stats,
     }
   }
 
