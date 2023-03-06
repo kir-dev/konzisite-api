@@ -37,12 +37,14 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "dotenv": "^16.0.1",
+    "ical": "^0.8.0",
     "papaparse": "^5.3.2",
     "passport-jwt": "^4.0.0",
     "passport-oauth2": "^1.6.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.5.6"
+    "rxjs": "^7.5.6",
+    "seed": "^0.4.4"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",
