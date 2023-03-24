@@ -122,6 +122,13 @@ export class UsersService {
         participations: true,
       },
     })
+    if (userStats === null) {
+      throw new HttpException(
+        'A felhasználó nem található!',
+        HttpStatus.NOT_FOUND,
+      )
+    }
+
     const ratings = userStats.presentations.reduce<number[]>(
       (arr, pres) => [...arr, ...pres.ratings.map((r) => r.value)],
       [],
@@ -191,13 +198,6 @@ export class UsersService {
       }),
       this.userStats(id),
     ])
-
-    if (user === null) {
-      throw new HttpException(
-        'A felhasználó nem található!',
-        HttpStatus.NOT_FOUND,
-      )
-    }
 
     const presentations = user.presentations.map(
       ({ ratings, consultation }) => {
