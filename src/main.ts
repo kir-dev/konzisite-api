@@ -11,6 +11,7 @@ async function bootstrap() {
     logger: isProduction
       ? ['log', 'error', 'warn']
       : ['log', 'error', 'warn', 'debug'],
+    snapshot: true,
   })
 
   app.useGlobalPipes(

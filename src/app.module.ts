@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import { DevtoolsModule } from '@nestjs/devtools-integration'
 import { ScheduleModule } from '@nestjs/schedule'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
@@ -14,6 +15,9 @@ import { SchedulerService } from './utils/scheduler/scheduler.service'
 
 @Module({
   imports: [
+    DevtoolsModule.register({
+      http: process.env.NODE_ENV !== 'production',
+    }),
     UsersModule,
     GroupsModule,
     PrismaModule,
