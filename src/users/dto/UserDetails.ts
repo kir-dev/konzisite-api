@@ -14,7 +14,7 @@ export class UserDetails extends PublicUser {
   participations: (ConsultationEntity & {
     subject: SubjectEntity
   })[]
-  consultationRequests?: (ConsultationRequestEntity & {
+  consultationRequests: (ConsultationRequestEntity & {
     subject: SubjectEntity
     supporters: number
   })[]
@@ -27,4 +27,5 @@ export class UserStats {
   ratingCount: number
   averageRating: number
   participationCount: number
+  requestCount: number
 }

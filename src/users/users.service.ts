@@ -119,6 +119,8 @@ export class UsersService {
             ratings: true,
           },
         },
+        requestedConsultations: true,
+        supportedConsultations: true,
         participations: true,
       },
     })
@@ -143,6 +145,9 @@ export class UsersService {
       participationCount: userStats.participations.length,
       presentationCount: userStats.presentations.length,
       ratingCount: ratings.length,
+      requestCount:
+        userStats.requestedConsultations.length +
+        userStats.supportedConsultations.length,
     }
   }
 
@@ -229,20 +234,15 @@ export class UsersService {
       return { ...consultation }
     })
 
-    const consultationRequests =
-      loggedInUser.id === id
-        ? user.requestedConsultations
-            .concat(user.supportedConsultations)
-            .map((cr) => ({ ...cr, supporters: cr.supporters.length }))
-        : undefined
-
     return {
       id: user.id,
       fullName: user.fullName,
       isAdmin: user.isAdmin,
       presentations,
       participations,
-      consultationRequests,
+      consultationRequests: user.requestedConsultations
+        .concat(user.supportedConsultations)
+        .map((cr) => ({ ...cr, supporters: cr.supporters.length })),
       stats,
     }
   }
