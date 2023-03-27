@@ -36,9 +36,10 @@ import {
 import { RequiredPermission } from 'src/auth/decorator/requiredPermission'
 import { RequestsService } from 'src/requests/requests.service'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
-import { ApiController } from 'src/utils/apiController.decorator'
 import { FileExtensionValidator } from 'src/utils/FileExtensionValidator'
 import { FileMaxSizeValidator } from 'src/utils/FileMaxSizeValidator'
+import { GenerateIcs } from 'src/utils/IcsGenerator'
+import { ApiController } from 'src/utils/apiController.decorator'
 import { AlertService } from './alert.service'
 import { ConsultationsService } from './consultations.service'
 import { ConsultationDetailsDto } from './dto/ConsultationDetails.dto'
@@ -448,5 +449,24 @@ export class ConsultationsController {
       'Ehhez a konzultációhoz nincs feltöltve fájl!',
       HttpStatus.NOT_FOUND,
     )
+  }
+
+  @JwtAuth()
+  @Get(':id/ics')
+  async getCalendar(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: UserEntity,
+    @Res() res: Response,
+  ) {
+    const consultation = await this.consultationsService.findOne(id, user)
+
+    const eventText = GenerateIcs(consultation)
+
+    res.set({
+      'Content-Disposition':
+        'attachment; filename="konzultacio_' + consultation.id + '.ics"',
+      'Content-type': 'text/plain',
+    })
+    res.send(eventText)
   }
 }
