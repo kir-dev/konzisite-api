@@ -4,6 +4,7 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  InternalServerErrorException,
   Param,
   ParseFilePipe,
   ParseIntPipe,
@@ -21,6 +22,7 @@ import { ApiQuery } from '@nestjs/swagger'
 import { Major, Prisma } from '@prisma/client'
 import { Response } from 'express'
 import { createReadStream } from 'fs'
+import { EventAttributes, createEvent } from 'ics'
 import { diskStorage } from 'multer'
 import { extname, join } from 'path'
 import { Permissions } from 'src/auth/casl-ability.factory'
@@ -38,7 +40,6 @@ import { RequestsService } from 'src/requests/requests.service'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { FileExtensionValidator } from 'src/utils/FileExtensionValidator'
 import { FileMaxSizeValidator } from 'src/utils/FileMaxSizeValidator'
-import { GenerateIcs } from 'src/utils/IcsGenerator'
 import { ApiController } from 'src/utils/apiController.decorator'
 import { AlertService } from './alert.service'
 import { ConsultationsService } from './consultations.service'
@@ -459,14 +460,39 @@ export class ConsultationsController {
     @Res() res: Response,
   ) {
     const consultation = await this.consultationsService.findOne(id, user)
-
-    const eventText = GenerateIcs(consultation)
+    const eventOptions: EventAttributes = {
+      title: consultation.name,
+      description: consultation.descMarkdown,
+      start: [
+        consultation.startDate.getFullYear(),
+        consultation.startDate.getMonth() + 1,
+        consultation.startDate.getDate(),
+        consultation.startDate.getHours(),
+        consultation.startDate.getMinutes(),
+      ],
+      end: [
+        consultation.endDate.getFullYear(),
+        consultation.endDate.getMonth() + 1,
+        consultation.endDate.getDate(),
+        consultation.endDate.getHours(),
+        consultation.endDate.getMinutes(),
+      ],
+      location: consultation.location,
+      url: `${process.env.FRONTEND_HOST}/consultations/${consultation.id}`,
+    }
 
     res.set({
       'Content-Disposition':
         'attachment; filename="konzultacio_' + consultation.id + '.ics"',
-      'Content-type': 'text/plain',
+      'Content-type': 'text/calendar',
     })
-    res.send(eventText)
+    createEvent(eventOptions, (err, value) => {
+      if (err) {
+        throw new InternalServerErrorException(
+          'Hiba a naptár fájl generálása közben.',
+        )
+      }
+      res.send(value)
+    })
   }
 }
