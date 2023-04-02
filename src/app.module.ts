@@ -28,7 +28,7 @@ import { SchedulerService } from './utils/scheduler/scheduler.service'
     EventEmitterModule.forRoot(),
     MailingModule.forRoot({
       templates: {
-        default: 'src/mailing/templates/requestFulfilled.ejs',
+        default: process.env.MAIL_TEMPLATE_ROOT + 'requestFulfilled.ejs',
       },
       mailServerUrl: process.env.MAIL_SERVER_URL,
       apiKey: process.env.MAIL_API_KEY,
