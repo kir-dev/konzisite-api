@@ -1,3 +1,4 @@
+import { EventEmitterModule } from '@nestjs/event-emitter'
 import { Test, TestingModule } from '@nestjs/testing'
 import { AuthModule } from 'src/auth/auth.module'
 import { PrismaService } from '../prisma/prisma.service'
@@ -8,7 +9,7 @@ describe('ConsultationsService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [AuthModule],
+      imports: [AuthModule, EventEmitterModule.forRoot()],
       providers: [PrismaService, ConsultationsService],
     }).compile()
 
