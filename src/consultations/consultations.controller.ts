@@ -162,11 +162,7 @@ export class ConsultationsController {
         )
       }
     }
-    try {
-      return await this.consultationsService.create(createConsultationDto, user)
-    } catch {
-      throw new BadRequestException('Érvénytelen külső kulcs!')
-    }
+    return this.consultationsService.create(createConsultationDto, user)
   }
 
   @JwtAuth()
@@ -198,11 +194,7 @@ export class ConsultationsController {
         )
       }
     }
-    try {
-      return await this.consultationsService.update(id, updateConsultationDto)
-    } catch {
-      throw new BadRequestException('Érvénytelen külső kulcs!')
-    }
+    return this.consultationsService.update(id, updateConsultationDto)
   }
 
   @JwtAuth()

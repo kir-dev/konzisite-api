@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { accessibleBy } from '@casl/prisma'
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Major, Prisma } from '@prisma/client'
 import { unlink } from 'fs'
 import { join } from 'path'
 import { CaslAbilityFactory } from 'src/auth/casl-ability.factory'
+import {
+  RequestFulfilledEvent,
+  RequestFulfilledKey,
+} from 'src/mailing/events/RequestFulfilled'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { publicUserProjection } from 'src/utils/publicUserProjection'
 import { PrismaService } from '../prisma/prisma.service'
@@ -31,6 +32,7 @@ export class ConsultationsService {
   constructor(
     private prisma: PrismaService,
     private caslFactory: CaslAbilityFactory,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async findAll({
@@ -199,7 +201,7 @@ export class ConsultationsService {
     }
   }
 
-  create(dto: CreateConsultationDto, user: UserEntity) {
+  async create(dto: CreateConsultationDto, user: UserEntity) {
     const {
       subjectId,
       targetGroupIds,
@@ -216,30 +218,47 @@ export class ConsultationsService {
           },
         }
       : {}
-    return this.prisma.consultation.create({
-      data: {
-        ...restOfData,
-        ...requestConnection,
-        owner: {
-          connect: {
-            id: user.id,
+
+    try {
+      const consultation = await this.prisma.consultation.create({
+        data: {
+          ...restOfData,
+          ...requestConnection,
+          owner: {
+            connect: {
+              id: user.id,
+            },
+          },
+          subject: {
+            connect: {
+              id: subjectId,
+            },
+          },
+          targetGroups: {
+            connect: targetGroupIds.map((id) => ({ id })),
+          },
+          presentations: {
+            createMany: {
+              data: presenterIds.map((userId) => ({ userId })),
+            },
           },
         },
-        subject: {
-          connect: {
-            id: subjectId,
-          },
-        },
-        targetGroups: {
-          connect: targetGroupIds.map((id) => ({ id })),
-        },
-        presentations: {
-          createMany: {
-            data: presenterIds.map((userId) => ({ userId })),
-          },
-        },
-      },
-    })
+      })
+
+      if (requestId) {
+        this.eventEmitter.emit(
+          RequestFulfilledKey,
+          new RequestFulfilledEvent(requestId, consultation),
+        )
+      }
+
+      return consultation
+    } catch {
+      throw new HttpException(
+        'Érvénytelen külső kulcs!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
   }
 
   async update(id: number, dto: UpdateConsultationDto) {
@@ -261,59 +280,75 @@ export class ConsultationsService {
       requestId,
       ...restOfData
     } = dto
-    return this.prisma.consultation.update({
-      where: { id },
-      data: {
-        ...restOfData,
-        subject: {
-          connect: { id: dto.subjectId || konzi.subjectId },
-        },
-        targetGroups: {
-          disconnect: konzi.targetGroups
-            .filter((g) =>
-              targetGroupIds ? !targetGroupIds.includes(g.id) : false,
-            )
-            .map((g) => ({ id: g.id })),
-          connect: targetGroupIds
-            ?.filter(
-              (parameterGroupId) =>
-                konzi.targetGroups?.filter(
-                  (groupInDb) => groupInDb.id === parameterGroupId,
-                ).length === 0,
-            )
-            .map((id) => ({ id })),
-        },
-        presentations: {
-          deleteMany: konzi.presentations
-            .filter((p) =>
-              presenterIds ? !presenterIds.includes(p.userId) : false,
-            )
-            .map((g) => ({ id: g.id })),
-          createMany: {
-            data:
-              presenterIds
-                ?.filter(
-                  (parameterUserId) =>
-                    konzi.presentations?.filter(
-                      (presentationsInDb) =>
-                        presentationsInDb.userId === parameterUserId,
-                    ).length === 0,
-                )
-                .map((userId) => ({ userId })) || [],
+    try {
+      const consultation = await this.prisma.consultation.update({
+        where: { id },
+        data: {
+          ...restOfData,
+          subject: {
+            connect: { id: dto.subjectId || konzi.subjectId },
+          },
+          targetGroups: {
+            disconnect: konzi.targetGroups
+              .filter((g) =>
+                targetGroupIds ? !targetGroupIds.includes(g.id) : false,
+              )
+              .map((g) => ({ id: g.id })),
+            connect: targetGroupIds
+              ?.filter(
+                (parameterGroupId) =>
+                  konzi.targetGroups?.filter(
+                    (groupInDb) => groupInDb.id === parameterGroupId,
+                  ).length === 0,
+              )
+              .map((id) => ({ id })),
+          },
+          presentations: {
+            deleteMany: konzi.presentations
+              .filter((p) =>
+                presenterIds ? !presenterIds.includes(p.userId) : false,
+              )
+              .map((g) => ({ id: g.id })),
+            createMany: {
+              data:
+                presenterIds
+                  ?.filter(
+                    (parameterUserId) =>
+                      konzi.presentations?.filter(
+                        (presentationsInDb) =>
+                          presentationsInDb.userId === parameterUserId,
+                      ).length === 0,
+                  )
+                  .map((userId) => ({ userId })) || [],
+            },
+          },
+          ...{
+            request:
+              dto.requestId === null
+                ? { disconnect: true }
+                : dto.requestId || konzi.requestId
+                ? {
+                    connect: { id: dto.requestId || konzi.requestId },
+                  }
+                : {},
           },
         },
-        ...{
-          request:
-            dto.requestId === null
-              ? { disconnect: true }
-              : dto.requestId || konzi.requestId
-              ? {
-                  connect: { id: dto.requestId || konzi.requestId },
-                }
-              : {},
-        },
-      },
-    })
+      })
+
+      if (requestId && requestId !== konzi.requestId) {
+        this.eventEmitter.emit(
+          RequestFulfilledKey,
+          new RequestFulfilledEvent(requestId, consultation),
+        )
+      }
+
+      return consultation
+    } catch {
+      throw new HttpException(
+        'Érvénytelen külső kulcs!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
   }
 
   async updateFileName(id: number, fileName: string) {
