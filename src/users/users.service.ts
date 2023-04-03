@@ -1,5 +1,5 @@
 import { accessibleBy } from '@casl/prisma'
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { CaslAbilityFactory } from 'src/auth/casl-ability.factory'
 import { publicUserProjection } from 'src/utils/publicUserProjection'
@@ -125,10 +125,7 @@ export class UsersService {
       },
     })
     if (userStats === null) {
-      throw new HttpException(
-        'A felhasználó nem található!',
-        HttpStatus.NOT_FOUND,
-      )
+      throw new NotFoundException('A felhasználó nem található!')
     }
 
     const ratings = userStats.presentations.reduce<number[]>(

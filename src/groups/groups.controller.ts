@@ -1,9 +1,9 @@
 import {
+  BadRequestException,
   Body,
   Delete,
   Get,
-  HttpException,
-  HttpStatus,
+  NotFoundException,
   Param,
   ParseIntPipe,
   Patch,
@@ -19,8 +19,8 @@ import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
 import { RequiredPermission } from 'src/auth/decorator/requiredPermission'
 import { ManyUniqueUsersDto } from 'src/users/dto/ManyUniqueUsers.dto'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
-import { ApiController } from 'src/utils/apiController.decorator'
 import { CreateManyResponse } from 'src/utils/CreateManyResponse.dto'
+import { ApiController } from 'src/utils/apiController.decorator'
 import { CreateGroupDto } from './dto/CreateGroup.dto'
 import { GroupDetailsDto } from './dto/GroupDetails.dto'
 import { GroupEntity } from './dto/GroupEntity.dto'
@@ -50,10 +50,7 @@ export class GroupsController {
     @Query('limit') limit?: number,
   ): Promise<GroupPreviewDto[]> {
     if (limit < 0) {
-      throw new HttpException(
-        'Érvénytelen limit paraméter!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('Érvénytelen limit paraméter!')
     }
     return this.groupsService.findAll(user.id, nameFilter, limit)
   }
@@ -66,7 +63,7 @@ export class GroupsController {
     try {
       return await this.groupsService.findOne(id, user.id)
     } catch {
-      throw new HttpException('A csoport nem található!', HttpStatus.NOT_FOUND)
+      throw new NotFoundException('A csoport nem található!')
     }
   }
 
@@ -80,10 +77,7 @@ export class GroupsController {
       await this.groupsService.addMember(newGroup.id, user.id, GroupRole.OWNER)
       return newGroup
     } catch {
-      throw new HttpException(
-        'Már létezik csoport ilyen névvel!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('Már létezik csoport ilyen névvel!')
     }
   }
 
@@ -96,10 +90,7 @@ export class GroupsController {
     try {
       return await this.groupsService.update(id, updateGroupDto)
     } catch {
-      throw new HttpException(
-        'Már létezik csoport ilyen névvel!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('Már létezik csoport ilyen névvel!')
     }
   }
 
@@ -123,16 +114,10 @@ export class GroupsController {
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2002') {
-          throw new HttpException(
-            'Már tagja vagy a csoportnak!',
-            HttpStatus.BAD_REQUEST,
-          )
+          throw new BadRequestException('Már tagja vagy a csoportnak!')
         }
         if (e.code === 'P2003') {
-          throw new HttpException(
-            'A csoport nem található!',
-            HttpStatus.NOT_FOUND,
-          )
+          throw new NotFoundException('A csoport nem található!')
         }
       }
       throw e
@@ -149,10 +134,7 @@ export class GroupsController {
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2025') {
-          throw new HttpException(
-            'Nem tudsz kilépni ebből a csoportból!',
-            HttpStatus.BAD_REQUEST,
-          )
+          throw new BadRequestException('Nem tudsz kilépni ebből a csoportból!')
         }
       }
       throw e
@@ -174,16 +156,10 @@ export class GroupsController {
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2002') {
-          throw new HttpException(
-            'A felhasználó már tagja a csoportnak!',
-            HttpStatus.BAD_REQUEST,
-          )
+          throw new BadRequestException('A felhasználó már tagja a csoportnak!')
         }
         if (e.code === 'P2003') {
-          throw new HttpException(
-            'A felhasználó nem található!',
-            HttpStatus.NOT_FOUND,
-          )
+          throw new NotFoundException('A felhasználó nem található!')
         }
       }
       throw e
@@ -201,16 +177,10 @@ export class GroupsController {
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2002') {
-          throw new HttpException(
-            'A felhasználó már tagja a csoportnak!',
-            HttpStatus.BAD_REQUEST,
-          )
+          throw new BadRequestException('A felhasználó már tagja a csoportnak!')
         }
         if (e.code === 'P2003') {
-          throw new HttpException(
-            'A felhasználó nem található!',
-            HttpStatus.NOT_FOUND,
-          )
+          throw new NotFoundException('A felhasználó nem található!')
         }
       }
       throw e
@@ -226,16 +196,12 @@ export class GroupsController {
     const member = await this.groupsService.findMember(groupId, userId)
 
     if (!member) {
-      throw new HttpException(
-        'A felhasználó nem tagja a csoportnak!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('A felhasználó nem tagja a csoportnak!')
     }
 
     if (member.role === GroupRole.ADMIN || member.role === GroupRole.OWNER) {
-      throw new HttpException(
+      throw new BadRequestException(
         'Admint vagy tulajdonost nem lehet eltávolítani!',
-        HttpStatus.BAD_REQUEST,
       )
     }
 
@@ -251,17 +217,11 @@ export class GroupsController {
     const member = await this.groupsService.findMember(groupId, userId)
 
     if (!member) {
-      throw new HttpException(
-        'A felhasználó nem tagja a csoportnak!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('A felhasználó nem tagja a csoportnak!')
     }
 
     if (member.role !== GroupRole.PENDING && member.role !== GroupRole.NONE) {
-      throw new HttpException(
-        'A felhasználó már el lett fogadva!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('A felhasználó már el lett fogadva!')
     }
 
     return await this.groupsService.setMemberRole(
@@ -280,17 +240,11 @@ export class GroupsController {
     const member = await this.groupsService.findMember(groupId, userId)
 
     if (!member) {
-      throw new HttpException(
-        'A felhasználó nem tagja a csoportnak!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('A felhasználó nem tagja a csoportnak!')
     }
 
     if (member.role !== GroupRole.PENDING && member.role !== GroupRole.NONE) {
-      throw new HttpException(
-        'A felhasználó már el lett fogadva!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('A felhasználó már el lett fogadva!')
     }
 
     return await this.groupsService.removeMember(groupId, userId)
@@ -305,17 +259,11 @@ export class GroupsController {
     const member = await this.groupsService.findMember(groupId, userId)
 
     if (!member) {
-      throw new HttpException(
-        'A felhasználó nem tagja a csoportnak!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('A felhasználó nem tagja a csoportnak!')
     }
 
     if (member.role === GroupRole.ADMIN || member.role === GroupRole.OWNER) {
-      throw new HttpException(
-        'A felhasználó már admin!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('A felhasználó már admin!')
     }
 
     return await this.groupsService.setMemberRole(
@@ -334,17 +282,11 @@ export class GroupsController {
     const member = await this.groupsService.findMember(groupId, userId)
 
     if (!member) {
-      throw new HttpException(
-        'A felhasználó nem tagja a csoportnak!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('A felhasználó nem tagja a csoportnak!')
     }
 
     if (member.role !== GroupRole.ADMIN) {
-      throw new HttpException(
-        'A felhasználó nem admin!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('A felhasználó nem admin!')
     }
 
     return await this.groupsService.setMemberRole(
@@ -362,7 +304,7 @@ export class GroupsController {
     const member = await this.groupsService.findMember(groupId, user.id)
 
     if (!member) {
-      throw new HttpException('Hiba a feliratkozásban!', HttpStatus.BAD_REQUEST)
+      throw new BadRequestException('Hiba a feliratkozásban!')
     }
 
     return await this.groupsService.setSubscribe(user.id, groupId, true)
@@ -376,7 +318,7 @@ export class GroupsController {
     const member = await this.groupsService.findMember(groupId, user.id)
 
     if (!member) {
-      throw new HttpException('Hiba a leiratkozásban!', HttpStatus.BAD_REQUEST)
+      throw new BadRequestException('Hiba a leiratkozásban!')
     }
 
     return await this.groupsService.setSubscribe(user.id, groupId, false)

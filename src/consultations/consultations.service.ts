@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { accessibleBy } from '@casl/prisma'
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { Major, Prisma } from '@prisma/client'
 import { unlink } from 'fs'
 import { join } from 'path'
@@ -102,11 +106,11 @@ export class ConsultationsService {
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2009' && (startDate || endDate)) {
-          throw new HttpException('Hibás dátum!', HttpStatus.BAD_REQUEST)
+          throw new BadRequestException('Hibás dátum!')
         }
       }
       if (major) {
-        throw new HttpException('Nincs ilyen szak!', HttpStatus.BAD_REQUEST)
+        throw new BadRequestException('Nincs ilyen szak!')
       }
       throw e
     }
@@ -121,10 +125,7 @@ export class ConsultationsService {
     })
     if (consultation.length === 0) {
       // it's possible that the user just doesn't have permission to view it, but they don't have to know that
-      throw new HttpException(
-        'Nem található a konzultáció',
-        HttpStatus.NOT_FOUND,
-      )
+      throw new NotFoundException('Nem található a konzultáció')
     }
     return consultation[0]
   }
@@ -167,10 +168,7 @@ export class ConsultationsService {
     })
     if (consultation.length === 0) {
       // it's possible that the user just doesn't have permission to view it, but they don't have to know that
-      throw new HttpException(
-        'Nem található a konzultáció',
-        HttpStatus.NOT_FOUND,
-      )
+      throw new NotFoundException('Nem található a konzultáció')
     }
     const { ownerId, subjectId, requestId, ...details } = consultation[0]
 

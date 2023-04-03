@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { publicUserProjection } from 'src/utils/publicUserProjection'
@@ -73,10 +73,7 @@ export class RequestsService {
     })
 
     if (request === null) {
-      throw new HttpException(
-        'A konzi kérés nem található!',
-        HttpStatus.NOT_FOUND,
-      )
+      throw new NotFoundException('A konzi kérés nem található!')
     }
 
     const { consultations, ...restOfRequest } = request
