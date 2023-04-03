@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Delete,
   Get,
@@ -143,7 +144,7 @@ export class ConsultationsController {
       new Date(createConsultationDto.startDate) >=
       new Date(createConsultationDto.endDate)
     ) {
-      throw new HttpException('Érvénytelen dátum!', HttpStatus.BAD_REQUEST)
+      throw new BadRequestException('Érvénytelen dátum!')
     }
     if (createConsultationDto.requestId) {
       const request = await this.requestsService.findOne(
@@ -153,25 +154,18 @@ export class ConsultationsController {
         request === null ||
         request.subject.id !== createConsultationDto.subjectId
       ) {
-        throw new HttpException(
-          'Érvénytelen konzi kérés!',
-          HttpStatus.BAD_REQUEST,
-        )
+        throw new BadRequestException('Érvénytelen konzi kérés!')
       }
       if (new Date(createConsultationDto.startDate) > request.expiryDate) {
-        throw new HttpException(
+        throw new BadRequestException(
           'A konzi később kezdődne, mint a megvalósított kérés határideje!',
-          HttpStatus.BAD_REQUEST,
         )
       }
     }
     try {
       return await this.consultationsService.create(createConsultationDto, user)
     } catch {
-      throw new HttpException(
-        'Érvénytelen külső kulcs!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('Érvénytelen külső kulcs!')
     }
   }
 
@@ -196,10 +190,7 @@ export class ConsultationsController {
         request === null ||
         request.subject.id !== updateConsultationDto.subjectId
       ) {
-        throw new HttpException(
-          'Érvénytelen konzi kérés!',
-          HttpStatus.BAD_REQUEST,
-        )
+        throw new BadRequestException('Érvénytelen konzi kérés!')
       }
       if (new Date(updateConsultationDto.startDate) > request.expiryDate) {
         throw new HttpException(
