@@ -3,9 +3,9 @@ version: '3.5'
 services:
   db:
     image: postgres:13.10
-    restart: always
     env_file:
       - .env
+    restart: ${DOCKER_RESTART_POLICY}
     volumes:
       - konzisite_db_folder:/var/lib/postgresql/data
     networks:
@@ -23,7 +23,7 @@ services:
       - konzisite_static_folder:/usr/src/app/static
     networks:
       - konzisite-network
-    restart: always
+    restart: ${DOCKER_RESTART_POLICY}
 networks:
   konzisite-network:
 volumes:
