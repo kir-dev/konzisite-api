@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 
+import { AuthModule } from 'src/auth/auth.module'
 import { PrismaModule } from 'src/prisma/prisma.module'
 import { MailingService, Setup } from './mailing.service'
 
@@ -11,7 +12,7 @@ export class MailingModule {
       module: MailingModule,
       providers: [MailingService],
       exports: [MailingService],
-      imports: [PrismaModule],
+      imports: [PrismaModule, AuthModule],
     }
   }
 }

@@ -3,7 +3,9 @@ import axios from 'axios'
 import * as ejs from 'ejs'
 import { existsSync, readFileSync } from 'fs'
 
+import { subject } from '@casl/ability'
 import { OnEvent } from '@nestjs/event-emitter'
+import { CaslAbilityFactory, Permissions } from 'src/auth/casl-ability.factory'
 import { PrismaService } from 'src/prisma/prisma.service'
 import {
   RequestFulfilledEvent,
@@ -44,7 +46,10 @@ export class MailingService {
   static setupComplete = false
   private readonly logger = new Logger(MailingService.name)
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private caslFactory: CaslAbilityFactory,
+  ) {}
 
   /**
    * Sets up everything for MailingService. This reads in all the templates in order to speed up sending and to check if the files exist.
@@ -125,25 +130,53 @@ export class MailingService {
 
   @OnEvent(RequestFulfilledKey)
   async handleRequestFulfilled(payload: RequestFulfilledEvent) {
-    const request = await this.prisma.consultationRequest.findUnique({
+    // we already had the request and consultation objects in this execution, but we need different projections and joins compared to the objects the API returns
+    // we need the supporters, including their email address
+    const requestQuery = this.prisma.consultationRequest.findUnique({
       where: { id: payload.requestId },
       include: { initializer: true, supporters: true, subject: true },
     })
+    // and we need the target groups and their members of the consultation so that we only send the email to those who can view it
+    const consultationQuery = this.prisma.consultation.findUnique({
+      where: { id: payload.consultationId },
+      include: {
+        targetGroups: {
+          include: {
+            members: true,
+          },
+        },
+        presentations: true,
+        owner: true,
+      },
+    })
+
+    const [request, consultation] = await Promise.all([
+      requestQuery,
+      consultationQuery,
+    ])
 
     this.sendMail(
-      [...request.supporters, request.initializer].map((u) => {
-        const html = this.generateMail({
-          firstName: u.firstName,
-          subjectName: request.subject.name,
-          consultationUrl: `${process.env.FRONTEND_HOST}/consultations/${payload.consultation.id}`,
+      [...request.supporters, request.initializer]
+        .filter((u) => {
+          const ability = this.caslFactory.createForConsultationRead(u)
+          return ability.can(
+            Permissions.Read,
+            subject('Consultation', consultation),
+          )
         })
-        return {
-          from: 'Konzisite',
-          to: u.email,
-          subject: 'Megvalósul egy konzi kérésed!',
-          html,
-        }
-      }),
+        .map((u) => {
+          const html = this.generateMail({
+            firstName: u.firstName,
+            subjectName: request.subject.name,
+            consultationUrl: `${process.env.FRONTEND_HOST}/consultations/${consultation.id}`,
+          })
+          return {
+            from: 'Konzisite',
+            to: u.email,
+            subject: 'Megvalósul egy konzi kérésed!',
+            html,
+          }
+        }),
     )
   }
 }

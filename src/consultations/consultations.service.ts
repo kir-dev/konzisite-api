@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { accessibleBy } from '@casl/prisma'
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Major, Prisma } from '@prisma/client'
 import { unlink } from 'fs'
@@ -248,16 +252,13 @@ export class ConsultationsService {
       if (requestId) {
         this.eventEmitter.emit(
           RequestFulfilledKey,
-          new RequestFulfilledEvent(requestId, consultation),
+          new RequestFulfilledEvent(requestId, consultation.id),
         )
       }
 
       return consultation
     } catch {
-      throw new HttpException(
-        'Érvénytelen külső kulcs!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('Érvénytelen külső kulcs!')
     }
   }
 
@@ -338,16 +339,13 @@ export class ConsultationsService {
       if (requestId && requestId !== konzi.requestId) {
         this.eventEmitter.emit(
           RequestFulfilledKey,
-          new RequestFulfilledEvent(requestId, consultation),
+          new RequestFulfilledEvent(requestId, consultation.id),
         )
       }
 
       return consultation
     } catch {
-      throw new HttpException(
-        'Érvénytelen külső kulcs!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('Érvénytelen külső kulcs!')
     }
   }
 
