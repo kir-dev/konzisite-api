@@ -1,8 +1,7 @@
 import {
+  BadRequestException,
   CanActivate,
   ExecutionContext,
-  HttpException,
-  HttpStatus,
   Injectable,
 } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
@@ -32,7 +31,7 @@ export class AuthorizationGuard implements CanActivate {
     const request = context.switchToHttp().getRequest()
     const paramId: number = +request.params.id
     if (Number.isNaN(paramId) && request.params.id) {
-      throw new HttpException('Érvénytelen azonosító', HttpStatus.BAD_REQUEST)
+      throw new BadRequestException('Érvénytelen azonosító')
     }
 
     switch (requestSubject) {

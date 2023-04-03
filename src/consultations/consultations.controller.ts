@@ -1,10 +1,11 @@
 import {
+  BadRequestException,
   Body,
   Delete,
   Get,
-  HttpException,
   HttpStatus,
   InternalServerErrorException,
+  NotFoundException,
   Param,
   ParseFilePipe,
   ParseIntPipe,
@@ -143,7 +144,7 @@ export class ConsultationsController {
       new Date(createConsultationDto.startDate) >=
       new Date(createConsultationDto.endDate)
     ) {
-      throw new HttpException('Érvénytelen dátum!', HttpStatus.BAD_REQUEST)
+      throw new BadRequestException('Érvénytelen dátum!')
     }
     if (createConsultationDto.requestId) {
       const request = await this.requestsService.findOne(
@@ -153,25 +154,18 @@ export class ConsultationsController {
         request === null ||
         request.subject.id !== createConsultationDto.subjectId
       ) {
-        throw new HttpException(
-          'Érvénytelen konzi kérés!',
-          HttpStatus.BAD_REQUEST,
-        )
+        throw new BadRequestException('Érvénytelen konzi kérés!')
       }
       if (new Date(createConsultationDto.startDate) > request.expiryDate) {
-        throw new HttpException(
+        throw new BadRequestException(
           'A konzi később kezdődne, mint a megvalósított kérés határideje!',
-          HttpStatus.BAD_REQUEST,
         )
       }
     }
     try {
       return await this.consultationsService.create(createConsultationDto, user)
     } catch {
-      throw new HttpException(
-        'Érvénytelen külső kulcs!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('Érvénytelen külső kulcs!')
     }
   }
 
@@ -186,7 +180,7 @@ export class ConsultationsController {
       new Date(updateConsultationDto.startDate) >=
       new Date(updateConsultationDto.endDate)
     ) {
-      throw new HttpException('Érvénytelen dátum!', HttpStatus.BAD_REQUEST)
+      throw new BadRequestException('Érvénytelen dátum!')
     }
     if (updateConsultationDto.requestId) {
       const request = await this.requestsService.findOne(
@@ -196,25 +190,18 @@ export class ConsultationsController {
         request === null ||
         request.subject.id !== updateConsultationDto.subjectId
       ) {
-        throw new HttpException(
-          'Érvénytelen konzi kérés!',
-          HttpStatus.BAD_REQUEST,
-        )
+        throw new BadRequestException('Érvénytelen konzi kérés!')
       }
       if (new Date(updateConsultationDto.startDate) > request.expiryDate) {
-        throw new HttpException(
+        throw new BadRequestException(
           'A konzi később kezdődne, mint a megvalósított kérés határideje!',
-          HttpStatus.BAD_REQUEST,
         )
       }
     }
     try {
       return await this.consultationsService.update(id, updateConsultationDto)
     } catch {
-      throw new HttpException(
-        'Érvénytelen külső kulcs!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('Érvénytelen külső kulcs!')
     }
   }
 
@@ -242,9 +229,8 @@ export class ConsultationsController {
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2002') {
-          throw new HttpException(
+          throw new BadRequestException(
             'A felhasználó már jelentkezett a konzultációra!',
-            HttpStatus.BAD_REQUEST,
           )
         }
       }
@@ -260,9 +246,8 @@ export class ConsultationsController {
   ): Promise<ParticipationEntity> {
     const participation = await this.participationService.findOne(id, user.id)
     if (participation === null) {
-      throw new HttpException(
+      throw new BadRequestException(
         'Nem vagy résztvevője ennek a konzultációnak!',
-        HttpStatus.BAD_REQUEST,
       )
     }
 
@@ -281,25 +266,20 @@ export class ConsultationsController {
 
     const participation = await this.participationService.findOne(id, user.id)
     if (participation === null) {
-      throw new HttpException(
+      throw new BadRequestException(
         'Nem vagy résztvevője ennek a konzultációnak!',
-        HttpStatus.BAD_REQUEST,
       )
     }
 
     const presentation = await this.presentationService.findOne(id, ratedUserId)
     if (presentation === null) {
-      throw new HttpException(
+      throw new BadRequestException(
         'Ez a felhasználó nem előadója ennek a konzultációnak!',
-        HttpStatus.BAD_REQUEST,
       )
     }
 
     if (consultation.startDate > new Date()) {
-      throw new HttpException(
-        'A konzultáció még nem kezdődött el!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('A konzultáció még nem kezdődött el!')
     }
 
     try {
@@ -311,10 +291,7 @@ export class ConsultationsController {
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2002') {
-          throw new HttpException(
-            'Ezt az előadót már értékelted!',
-            HttpStatus.BAD_REQUEST,
-          )
+          throw new BadRequestException('Ezt az előadót már értékelted!')
         }
       }
       throw e
@@ -331,17 +308,15 @@ export class ConsultationsController {
   ): Promise<RatingEntity> {
     const participation = await this.participationService.findOne(id, user.id)
     if (participation === null) {
-      throw new HttpException(
+      throw new BadRequestException(
         'Nem vagy résztvevője ennek a konzultációnak!',
-        HttpStatus.BAD_REQUEST,
       )
     }
 
     const presentation = await this.presentationService.findOne(id, ratedUserId)
     if (presentation === null) {
-      throw new HttpException(
+      throw new BadRequestException(
         'Ez a felhasználó nem előadója ennek a konzultációnak!',
-        HttpStatus.BAD_REQUEST,
       )
     }
 
@@ -350,10 +325,7 @@ export class ConsultationsController {
       participation.id,
     )
     if (rating === null) {
-      throw new HttpException(
-        'Ez az értékelés nem létezik!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('Ez az értékelés nem létezik!')
     }
 
     return this.ratingService.update(rating.id, {
@@ -371,10 +343,7 @@ export class ConsultationsController {
         filename: (req, file, callback) => {
           callback(
             isNaN(parseInt(req.params.id))
-              ? new HttpException(
-                  'Érvénytelen azonosító',
-                  HttpStatus.BAD_REQUEST,
-                )
+              ? new BadRequestException('Érvénytelen azonosító')
               : null,
             `konzi_${req.params.id}_jegyzet${extname(file.originalname)}`,
           )
@@ -423,9 +392,8 @@ export class ConsultationsController {
   ): Promise<StreamableFile> {
     const consultation = await this.consultationsService.findOne(id, user)
     if (consultation.archived) {
-      throw new HttpException(
+      throw new NotFoundException(
         'Ez a fájl törölve lett, mert a konzultáció amihez tartozott, archiválásra került.',
-        HttpStatus.NOT_FOUND,
       )
     }
     if (consultation.fileName) {
@@ -446,10 +414,7 @@ export class ConsultationsController {
       })
       return steamableFile
     }
-    throw new HttpException(
-      'Ehhez a konzultációhoz nincs feltöltve fájl!',
-      HttpStatus.NOT_FOUND,
-    )
+    throw new NotFoundException('Ehhez a konzultációhoz nincs feltöltve fájl!')
   }
 
   @JwtAuth()

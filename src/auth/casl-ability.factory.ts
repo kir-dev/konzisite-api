@@ -1,6 +1,6 @@
 import { AbilityBuilder, PureAbility } from '@casl/ability'
-import { createPrismaAbility, PrismaQuery, Subjects } from '@casl/prisma'
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { PrismaQuery, Subjects, createPrismaAbility } from '@casl/prisma'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import {
   Consultation,
   ConsultationRequest,
@@ -57,7 +57,7 @@ export class CaslAbilityFactory {
     })
 
     if (group === null) {
-      throw new HttpException('A csoport nem található!', HttpStatus.NOT_FOUND)
+      throw new NotFoundException('A csoport nem található!')
     }
 
     if (group?.ownerId === user.id) {
@@ -125,10 +125,7 @@ export class CaslAbilityFactory {
     })
 
     if (consultation === null) {
-      throw new HttpException(
-        'A konzultáció nem található!',
-        HttpStatus.NOT_FOUND,
-      )
+      throw new NotFoundException('A konzultáció nem található!')
     }
 
     if (user.isAdmin) {
@@ -217,10 +214,7 @@ export class CaslAbilityFactory {
     })
 
     if (request === null) {
-      throw new HttpException(
-        'A konzi kérés nem található!',
-        HttpStatus.NOT_FOUND,
-      )
+      throw new NotFoundException('A konzi kérés nem található!')
     }
 
     if (user.isAdmin) {

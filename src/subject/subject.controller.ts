@@ -1,9 +1,9 @@
 import {
+  BadRequestException,
   Body,
   Delete,
   Get,
-  HttpException,
-  HttpStatus,
+  NotFoundException,
   Param,
   ParseFilePipe,
   ParseIntPipe,
@@ -26,10 +26,10 @@ import { CurrentUser } from 'src/auth/decorator/current-user.decorator'
 import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
 import { RequiredPermission } from 'src/auth/decorator/requiredPermission'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
-import { ApiController } from 'src/utils/apiController.decorator'
 import { CreateManyResponse } from 'src/utils/CreateManyResponse.dto'
 import { FileExtensionValidator } from 'src/utils/FileExtensionValidator'
 import { FileMaxSizeValidator } from 'src/utils/FileMaxSizeValidator'
+import { ApiController } from 'src/utils/apiController.decorator'
 import { CreateSubjectDto } from './dto/CreateSubject.dto'
 import { Major, SubjectEntity } from './dto/SubjectEntity.dto'
 import { UpdateSubjectDto } from './dto/UpdateSubject.dto'
@@ -55,10 +55,7 @@ export class SubjectController {
     @Query('limit') limit?: number,
   ): Promise<SubjectEntity[]> {
     if (limit < 0) {
-      throw new HttpException(
-        'Érvénytelen limit paraméter!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('Érvénytelen limit paraméter!')
     }
     return this.subjectService.findAll(nameFilter, limit)
   }
@@ -67,7 +64,7 @@ export class SubjectController {
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const res = await this.subjectService.findOne(id)
     if (res === null) {
-      throw new HttpException('A tárgy nem található!', HttpStatus.NOT_FOUND)
+      throw new NotFoundException('A tárgy nem található!')
     }
     return res
   }
@@ -78,10 +75,7 @@ export class SubjectController {
     try {
       return await this.subjectService.create(createSubjectDto)
     } catch {
-      throw new HttpException(
-        'Ez a tárgykód már létezik!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('Ez a tárgykód már létezik!')
     }
   }
 
@@ -119,19 +113,13 @@ export class SubjectController {
       skipEmptyLines: true,
       transform: (value, field: string) => {
         if (!['code', 'name', 'majors'].includes(field)) {
-          throw new HttpException(
-            `Érvénytelen mező: ${field}!`,
-            HttpStatus.BAD_REQUEST,
-          )
+          throw new BadRequestException(`Érvénytelen mező: ${field}!`)
         }
         if (field === 'majors') {
           return value.split(',').map((m) => {
             const major = Major[m]
             if (!major) {
-              throw new HttpException(
-                `Érvénytelen szak: ${m}`,
-                HttpStatus.BAD_REQUEST,
-              )
+              throw new BadRequestException(`Érvénytelen szak: ${m}`)
             }
             return major
           })
@@ -143,9 +131,8 @@ export class SubjectController {
     try {
       return await this.subjectService.createMany(subjects.data)
     } catch {
-      throw new HttpException(
+      throw new BadRequestException(
         'Érvénytelen formátum vagy már létező tárgykód!',
-        HttpStatus.BAD_REQUEST,
       )
     } finally {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -164,16 +151,10 @@ export class SubjectController {
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2025') {
-          throw new HttpException(
-            'A tárgy nem található!',
-            HttpStatus.NOT_FOUND,
-          )
+          throw new NotFoundException('A tárgy nem található!')
         }
         if (e.code === 'P2002') {
-          throw new HttpException(
-            'Ez a tárgykód már létezik!',
-            HttpStatus.BAD_REQUEST,
-          )
+          throw new BadRequestException('Ez a tárgykód már létezik!')
         }
       }
     }
@@ -185,7 +166,7 @@ export class SubjectController {
     try {
       return await this.subjectService.remove(id)
     } catch {
-      throw new HttpException('A tárgy nem található!', HttpStatus.NOT_FOUND)
+      throw new NotFoundException('A tárgy nem található!')
     }
   }
 
@@ -197,7 +178,7 @@ export class SubjectController {
     try {
       return await this.subjectService.subscribe(user, subjectId)
     } catch {
-      throw new HttpException('Hiba a feliratkozásban!', HttpStatus.BAD_REQUEST)
+      throw new BadRequestException('Hiba a feliratkozásban!')
     }
   }
 
@@ -209,7 +190,7 @@ export class SubjectController {
     try {
       return await this.subjectService.unsubscribe(user, subjectId)
     } catch {
-      throw new HttpException('Hiba a leiratkozásban!', HttpStatus.BAD_REQUEST)
+      throw new BadRequestException('Hiba a leiratkozásban!')
     }
   }
 }

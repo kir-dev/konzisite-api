@@ -1,8 +1,8 @@
 import {
+  BadRequestException,
   Delete,
   Get,
-  HttpException,
-  HttpStatus,
+  NotFoundException,
   Param,
   ParseIntPipe,
   Post,
@@ -46,10 +46,7 @@ export class UsersController {
     @Query('pageSize') pageSize?: number,
   ): Promise<UserList> {
     if (page < 0 || pageSize < 0) {
-      throw new HttpException(
-        'Érvénytelen lapozási paraméterek!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('Érvénytelen lapozási paraméterek!')
     }
     return this.usersService.findAll(nameFilter, page, pageSize)
   }
@@ -73,10 +70,7 @@ export class UsersController {
     try {
       return await this.usersService.promoteUser(id)
     } catch {
-      throw new HttpException(
-        'A felhasználó nem található!',
-        HttpStatus.NOT_FOUND,
-      )
+      throw new NotFoundException('A felhasználó nem található!')
     }
   }
 
@@ -86,10 +80,7 @@ export class UsersController {
     try {
       return await this.usersService.remove(id)
     } catch {
-      throw new HttpException(
-        'A felhasználó nem található!',
-        HttpStatus.NOT_FOUND,
-      )
+      throw new NotFoundException('A felhasználó nem található!')
     }
   }
 }

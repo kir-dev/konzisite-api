@@ -1,9 +1,8 @@
 import {
+  BadRequestException,
   Body,
   Delete,
   Get,
-  HttpException,
-  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
@@ -52,10 +51,7 @@ export class RequestsController {
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2003' || e.code === 'P2025') {
-          throw new HttpException(
-            'Nincs ilyen azonosítójú tárgy!',
-            HttpStatus.BAD_REQUEST,
-          )
+          throw new BadRequestException('Nincs ilyen azonosítójú tárgy!')
         }
       }
       throw e
@@ -73,10 +69,7 @@ export class RequestsController {
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2003' || e.code === 'P2025') {
-          throw new HttpException(
-            'Nincs ilyen azonosítójú tárgy!',
-            HttpStatus.BAD_REQUEST,
-          )
+          throw new BadRequestException('Nincs ilyen azonosítójú tárgy!')
         }
       }
       throw e
@@ -97,17 +90,11 @@ export class RequestsController {
     const request = await this.requestsService.findOne(id)
 
     if (request.initializer.id === user.id) {
-      throw new HttpException(
-        'A saját konzi kérésedet nem támogathatod!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('A saját konzi kérésedet nem támogathatod!')
     }
 
     if (request.supporters.some((s) => s.id === user.id)) {
-      throw new HttpException(
-        'Ezt a kérést már támogatod!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('Ezt a kérést már támogatod!')
     }
 
     return this.requestsService.addSupporter(id, user)
@@ -121,17 +108,11 @@ export class RequestsController {
     const request = await this.requestsService.findOne(id)
 
     if (request.initializer.id === user.id) {
-      throw new HttpException(
-        'A saját konzi kérésedet nem támogathatod!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('A saját konzi kérésedet nem támogathatod!')
     }
 
     if (!request.supporters.some((s) => s.id === user.id)) {
-      throw new HttpException(
-        'Ezt a kérést már nem támogatod!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new BadRequestException('Ezt a kérést már nem támogatod!')
     }
 
     return this.requestsService.removeSupporter(id, user)
