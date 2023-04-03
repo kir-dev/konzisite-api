@@ -21,7 +21,7 @@ export const Major: {
   SE_MSC: 'SE_MSC',
 }
 
-export type Major = typeof Major[keyof typeof Major]
+export type Major = (typeof Major)[keyof typeof Major]
 
 export class SubjectEntity {
   @IsInt()

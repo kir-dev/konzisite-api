@@ -14,4 +14,4 @@ export const GroupRoles: {
   NONE: 'NONE',
 }
 
-export type GroupRoles = typeof GroupRoles[keyof typeof GroupRoles]
+export type GroupRoles = (typeof GroupRoles)[keyof typeof GroupRoles]
