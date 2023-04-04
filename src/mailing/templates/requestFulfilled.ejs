@@ -1,0 +1,252 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="hu">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kir-Dev</title>
+    <style type="text/css">
+      * {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        text-align: justify;
+      }
+
+      table {
+        border-spacing: 0;
+      }
+
+      img {
+        border: 0;
+      }
+
+      .wrapper {
+        width: 100%;
+        table-layout: fixed;
+        padding-bottom: 60px;
+        padding-top: 60px;
+      }
+
+      .main {
+        font-size: 16px;
+        background-color: #ffffff;
+        margin: 0 auto;
+        width: 100%;
+        max-width: 600px;
+        border-spacing: 0;
+        font-family: Inter, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        border-radius: 12px;
+      }
+
+      .main p {
+        font-size: 16px;
+        margin: 20px 0;
+      }
+
+      p.greet {
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      span.name {
+        font-size: 18px;
+        font-weight: bold;
+        line-height: 20px;
+      }
+
+      span.org,
+      span.contact {
+        font-size: 12px;
+        line-height: 25px;
+      }
+
+      a {
+        color: #389ef1;
+        text-decoration: underline;
+      }
+
+      h3 {
+        font-size: 1.1em;
+      }
+
+      ul,
+      ol {
+        margin-left: 30px;
+        margin-bottom: 20px;
+        text-align: left;
+      }
+
+      li > ul {
+        margin-bottom: 0;
+      }
+
+      li {
+        line-height: 25px;
+      }
+
+      hr {
+        border-color: #389ef1;
+        margin: 10px 5px;
+      }
+
+      .social a {
+        font-size: 16px;
+        margin-left: 20px;
+        margin-right: 20px;
+      }
+
+      .footer {
+        background-color: #efefef;
+        border-radius: 0 0 10px 10px;
+        padding: 30px 10px;
+      }
+
+      .footer-sub {
+        margin-top: 30px;
+      }
+
+      .footer-sub p {
+        text-align: center;
+        font-size: 12px;
+        margin: 10px 0;
+      }
+
+      .footer-logo-section {
+        text-align: center;
+      }
+
+      .footer-logo-section img {
+        vertical-align: middle;
+      }
+
+      .footer-logo-section div {
+        display: inline-block;
+        margin-left: 20px;
+        vertical-align: middle;
+      }
+
+      .footer-logo-section div p {
+        text-align: left;
+        font-size: 14px;
+        margin: 5px 0;
+      }
+
+      .center {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 50%;
+      }
+
+      h2.fancy {
+        color: #029139;
+        text-align: center;
+      }
+      .call-to-action-wrapper {
+        text-align: center;
+        margin: 30px 0 15px 0;
+      }
+
+      .smaller p {
+        font-size: 14px;
+      }
+      .mt {
+        margin-top: 20px;
+      }
+      .heart {
+        color: red;
+        font-size: 16px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="wrapper">
+      <table class="main" width="100%">
+        <tr style="border-radius: 10px 10px 0 0">
+          <td>
+            <a class="link" href="https://konzisite.kir-dev.hu/">
+              <img
+                src="https://warp.sch.bme.hu/images/konzisite_email_header"
+                alt=""
+                width="600"
+                style="max-width: 100%; border-radius: 10px 10px 0 0"
+              />
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 20px">
+            <h1 style="text-align: center">Új konzit regisztráltak!</h1>
+            <p class="greet">Kedves <%=firstName%>!</p>
+            <p style="text-align: justify">
+              Konzit fognak tartani egy általad is támogatott kérésre
+              <b><%=subjectName%></b> tárgyból. Jelentkezés és további
+              részletek:
+            </p>
+            <div class="call-to-action-wrapper">
+              <a
+                style="
+                  background-color: #062c4c;
+                  color: white;
+                  text-decoration: none;
+                  padding: 9px 16px 9px 16px;
+                  line-height: 1.2;
+                  border-radius: 0.375rem;
+                  font-weight: 600;
+                  font-size: 1rem;
+                "
+                href="<%=consultationUrl%>"
+                >Konzi megtekintése</a
+              >
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="footer">
+            <div class="footer-logo-section">
+              <img
+                src="https://warp.sch.bme.hu/images/vikhk"
+                alt=""
+                height="60"
+              />
+              <div>
+                <p>
+                  <a href="https://vik.hk/" target="_blank"
+                    >VIK Hallgatói Képviselet</a
+                  >
+                </p>
+                <p><a href="mailto:technikai@vik.hk">technikai@vik.hk</a></p>
+              </div>
+            </div>
+            <div class="footer-logo-section mt">
+              <img
+                src="https://warp.sch.bme.hu/images/kir-dev_new-png"
+                alt=""
+                height="60"
+              />
+              <div>
+                <p>Made with <span class="heart">&#10084;</span> by Kir-Dev</p>
+                <p>
+                  <a href="https://kir-dev.hu/" target="_blank"
+                    >https://kir-dev.hu</a
+                  >
+                </p>
+              </div>
+            </div>
+            <div class="footer-sub">
+              <p>
+                Ezt az emailt azért kaptad, mert támogattál egy konzi kérést. Ez
+                egy automatikusan küldött email, kérlek ne válaszolj rá!
+                Kérdéseidet a HK email címére küldd!
+              </p>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </main>
+  </body>
+</html>
