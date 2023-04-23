@@ -379,7 +379,14 @@ export class ConsultationsService {
     })
   }
 
-  remove(id: number) {
+  async remove(id: number) {
+    const consultation = await this.prisma.consultation.findUnique({
+      where: { id },
+    })
+    if (consultation.fileName) {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      unlink(join(process.cwd(), '/static', consultation.fileName), () => {})
+    }
     return this.prisma.consultation.delete({ where: { id } })
   }
 }
