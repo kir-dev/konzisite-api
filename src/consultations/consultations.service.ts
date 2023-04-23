@@ -3,6 +3,7 @@ import { accessibleBy } from '@casl/prisma'
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
@@ -33,6 +34,8 @@ type findAllParams = {
 
 @Injectable()
 export class ConsultationsService {
+  private readonly logger = new Logger(ConsultationsService.name)
+
   constructor(
     private prisma: PrismaService,
     private caslFactory: CaslAbilityFactory,
@@ -255,6 +258,9 @@ export class ConsultationsService {
           new RequestFulfilledEvent(requestId, consultation.id),
         )
       }
+      this.logger.log(
+        `Consultation #${consultation.id} created by user #${user.id}`,
+      )
 
       return consultation
     } catch {
@@ -387,6 +393,7 @@ export class ConsultationsService {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       unlink(join(process.cwd(), '/static', consultation.fileName), () => {})
     }
+    this.logger.log(`Consultation #${consultation.id} deleted`)
     return this.prisma.consultation.delete({ where: { id } })
   }
 }
