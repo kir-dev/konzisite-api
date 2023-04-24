@@ -2,7 +2,7 @@
 # BUILD FOR LOCAL DEVELOPMENT
 ###################
 
-FROM node:16 As development
+FROM node:18 As development
 
 # Create app directory
 WORKDIR /usr/src/app
@@ -22,7 +22,7 @@ COPY . .
 # BUILD FOR PRODUCTION
 ###################
 
-FROM node:16 As build
+FROM node:18 As build
 
 WORKDIR /usr/src/app
 
@@ -47,7 +47,7 @@ RUN npm prune --production && npm cache clean --force
 # PRODUCTION
 ###################
 
-FROM node:16 As production
+FROM node:18 As production
 
 WORKDIR /usr/src/app
 
