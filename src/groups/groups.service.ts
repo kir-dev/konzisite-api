@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { GroupRole, Prisma } from '@prisma/client'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
@@ -9,6 +9,8 @@ import { GroupRoles } from './dto/GroupEntity.dto'
 
 @Injectable()
 export class GroupsService {
+  private readonly logger = new Logger(GroupsService.name)
+
   constructor(private prisma: PrismaService) {}
 
   async findAll(userId: number, nameFilter?: string, limit?: number) {
@@ -80,16 +82,22 @@ export class GroupsService {
     }
   }
 
-  create(dto: CreateGroupDto, user: UserEntity) {
-    return this.prisma.group.create({ data: { ...dto, ownerId: user.id } })
+  async create(dto: CreateGroupDto, user: UserEntity) {
+    const group = await this.prisma.group.create({
+      data: { ...dto, ownerId: user.id },
+    })
+    this.logger.log(`Group #${group.id} created by user #${user.id}`)
+    return group
   }
 
   update(id: number, data: Prisma.GroupUncheckedUpdateInput) {
     return this.prisma.group.update({ where: { id }, data })
   }
 
-  remove(id: number) {
-    return this.prisma.group.delete({ where: { id } })
+  async remove(id: number) {
+    const group = await this.prisma.group.delete({ where: { id } })
+    this.logger.log(`Group #${group.id} deleted`)
+    return group
   }
 
   addMember(groupId: number, userId: number, role: GroupRole) {

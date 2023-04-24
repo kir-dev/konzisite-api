@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { publicUserProjection } from 'src/utils/publicUserProjection'
@@ -9,6 +9,8 @@ import { UpdateRequestDto } from './dto/UpdateRequest.dto'
 
 @Injectable()
 export class RequestsService {
+  private readonly logger = new Logger(RequestsService.name)
+
   constructor(private prisma: PrismaService) {}
 
   async findAll(
@@ -95,15 +97,18 @@ export class RequestsService {
     return { consultations: consultationsWithSubject, ...restOfRequest }
   }
 
-  create(dto: CreateRequestDto, user: UserEntity) {
+  async create(dto: CreateRequestDto, user: UserEntity) {
     const { subjectId, ...restOfData } = dto
-    return this.prisma.consultationRequest.create({
+    const request = await this.prisma.consultationRequest.create({
       data: {
         ...restOfData,
         initializer: { connect: { id: user.id } },
         subject: { connect: { id: subjectId } },
       },
     })
+
+    this.logger.log(`Request #${request.id} created by user #${user.id}`)
+    return request
   }
 
   update(id: number, dto: UpdateRequestDto) {
@@ -113,8 +118,12 @@ export class RequestsService {
     })
   }
 
-  remove(id: number) {
-    return this.prisma.consultationRequest.delete({ where: { id } })
+  async remove(id: number) {
+    const request = await this.prisma.consultationRequest.delete({
+      where: { id },
+    })
+    this.logger.log(`Request #${request.id} deleted`)
+    return request
   }
 
   addSupporter(requestId: number, user: UserEntity) {
