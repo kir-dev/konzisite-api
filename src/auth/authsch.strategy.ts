@@ -21,7 +21,6 @@ export class AuthschStrategy extends PassportStrategy(Strategy, 'authsch') {
       tokenURL: `${AUTHSCH_HOST}/oauth2/token`,
       clientID: process.env.AUTHSCH_CLIENT_ID,
       clientSecret: process.env.AUTHSCH_CLIENT_SECRET,
-      callbackURL: '/auth/callback',
       scope: ['basic', 'givenName', 'displayName', 'mail'], // ?? niifEduPersonAttendedCourse = hallgatott tárgyak
       // Hallgató által jelenleg hallgatott kurzusok kódjai. Példa: "BMEVIAUA218;BMEVIIIA316"
     })
