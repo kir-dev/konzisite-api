@@ -1,6 +1,9 @@
 import { accessibleBy } from '@casl/prisma'
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
+import * as ejs from 'ejs'
+import { readFileSync } from 'fs'
+import puppeteer from 'puppeteer'
 import { CaslAbilityFactory } from 'src/auth/casl-ability.factory'
 import { publicUserProjection } from 'src/utils/publicUserProjection'
 import { PrismaService } from '../prisma/prisma.service'
@@ -265,5 +268,69 @@ export class UsersService {
 
   async remove(id: number): Promise<UserEntity> {
     return this.prisma.user.delete({ where: { id: id } })
+  }
+
+  async generateReport(user: UserEntity, startDate: Date, endDate: Date) {
+    const consultations = await this.prisma.consultation.findMany({
+      where: {
+        presentations: {
+          some: {
+            userId: user.id,
+          },
+        },
+        startDate: { gte: startDate },
+        endDate: { lte: endDate },
+      },
+      include: {
+        subject: true,
+        participants: true,
+        presentations: {
+          where: {
+            userId: user.id,
+          },
+          include: {
+            ratings: true,
+          },
+        },
+      },
+    })
+    const formattedConsultations = consultations.map((c) => ({
+      ...c,
+      participants: c.participants.length,
+      averageRating:
+        c.presentations[0].ratings.reduce((acc, val) => acc + val.value, 0) /
+          c.presentations[0].ratings.length || 0,
+    }))
+    console.log(formattedConsultations)
+    return this.generatePDF('userReport.ejs', {
+      user,
+      consultations: formattedConsultations,
+      startDate,
+      endDate,
+    })
+  }
+
+  private async generatePDF(
+    templateFileName: string,
+    data: any,
+  ): Promise<Buffer> {
+    // As of implementation, this uses the old headless mode of chrome, which is far quicker than the new one
+    // At some point the default will be to use new one, if there is an option we should stick to the old one, unless the speed difference disappears
+    // More info: https://github.com/puppeteer/puppeteer/issues/10071
+    const browser = await puppeteer.launch()
+    const page = await browser.newPage()
+    const file = readFileSync(
+      process.env.MAIL_TEMPLATE_ROOT + templateFileName,
+    ).toString()
+    const html = ejs.render(file, data)
+    await page.setContent(html, { waitUntil: 'domcontentloaded' })
+    await page.emulateMediaType('screen')
+    const pdf = await page.pdf({
+      margin: { top: '100px', right: '50px', bottom: '100px', left: '50px' },
+      printBackground: true,
+      format: 'A4',
+    })
+    await browser.close()
+    return pdf
   }
 }

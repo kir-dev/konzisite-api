@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Post,
   Query,
+  StreamableFile,
 } from '@nestjs/common'
 import { ApiQuery } from '@nestjs/swagger'
 import { Permissions } from 'src/auth/casl-ability.factory'
@@ -54,6 +55,21 @@ export class UsersController {
   @Get('profile')
   findProfile(@CurrentUser() user: UserEntity): Promise<UserProfileDto> {
     return this.usersService.profile(user)
+  }
+
+  @Get('report')
+  async getReport(
+    @CurrentUser() user: UserEntity,
+    @Query('startDate') startDate: number,
+    @Query('endDate') endDate: number,
+  ): Promise<StreamableFile> {
+    return new StreamableFile(
+      await this.usersService.generateReport(
+        user,
+        new Date(startDate),
+        new Date(endDate),
+      ),
+    )
   }
 
   @Get(':id')
