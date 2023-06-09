@@ -8,20 +8,28 @@
 
   <body>
     <h1>Konzisite</h1>
-    <h2><%= user.fullName %> által tartott konzultációk</h2>
+    <% if (typeof user !== 'undefined') { %>
+      <h2><%= user.fullName %> által tartott konzultációk</h2>
+    <% } else { %>
+      <h2>Konzultációk listája</h2>
+    <% } %>
     <h3><%= startDate %> és <%= endDate %> között</h3>
+    <h3>Generálva: <%= currentDateTime %></h3>
 
-    <% for (let i = 0; i < consultations.length ; i++) { %>
+    <% for (let i = 0; i < consultations.length; i++) { %>
     <h3><%= consultations[i].name %></h3>
-    <h4><%= consultations[i].startDate %> - <%= consultations[i].endDate %></h4>
+    <h4><%= consultations[i].date %> <%= consultations[i].startTime %> - <%= consultations[i].endTime %></h4>
     <h4>Tárgy: <%= consultations[i].subject.name %></h4>
     <h4>Helyszín: <%= consultations[i].location %></h4>
-    <h4>Előadók: TODO</h4>
+    <h4>Előadók:</h4>
+      <% for (let j = 0; j < consultations[i].presentations.length; j++) { %>
+        <% if (typeof user !== 'undefined' && consultations[i].presentations[j].id === user.id) { %>
+          <p><b><%= consultations[i].presentations[j].fullName %>: <%= consultations[i].presentations[j].averageRating %></b></p>
+        <% } else { %>
+          <p><%= consultations[i].presentations[j].fullName %>: <%= consultations[i].presentations[j].averageRating %></p>
+        <% } %>
+      <% } %>
     <h4>Résztvevők száma: <%= consultations[i].participants %></h4>
-    <h4>
-      <%= user.fullName %> átlagos értékelése: <%=
-      consultations[i].averageRating %>
-    </h4>
     <% } %>
   </body>
 </html>

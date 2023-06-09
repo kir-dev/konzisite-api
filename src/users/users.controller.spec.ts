@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { User } from '@prisma/client'
 import { AuthModule } from 'src/auth/auth.module'
+import { ReportService } from './report.service'
 import { UsersController } from './users.controller'
 import { UsersService } from './users.service'
 
@@ -28,6 +29,7 @@ describe('UsersController', () => {
           provide: UsersService,
           useValue: fakeUsersService,
         },
+        ReportService,
       ],
     }).compile()
 

@@ -38,6 +38,7 @@ export enum Permissions {
   PromoteUser = 'promote_user',
   DownloadFile = 'download_file',
   JoinConsultation = 'join_consultation',
+  GenerateAdminReport = 'generate_admin_report',
 }
 
 @Injectable()
@@ -98,6 +99,7 @@ export class CaslAbilityFactory {
       can(Permissions.Manage, 'User')
     } else {
       cannot(Permissions.PromoteUser, 'User')
+      cannot(Permissions.GenerateAdminReport, 'User')
     }
     return build()
   }

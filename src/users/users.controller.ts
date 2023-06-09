@@ -20,13 +20,17 @@ import { UserDetails } from './dto/UserDetails'
 import { UserEntity } from './dto/UserEntity.dto'
 import { UserList } from './dto/UserList.dto'
 import { UserProfileDto } from './dto/UserProfile.dto'
+import { ReportService } from './report.service'
 import { UsersService } from './users.service'
 
 @JwtAuth()
 @AuthorizationSubject('User')
 @ApiController('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly reportService: ReportService,
+  ) {}
 
   @ApiQuery({
     name: 'search',
@@ -63,9 +67,33 @@ export class UsersController {
     @Query('startDate') startDate: number,
     @Query('endDate') endDate: number,
   ): Promise<StreamableFile> {
+    if (startDate > Date.now() || endDate > Date.now()) {
+      throw new BadRequestException(
+        'Invalid date range! You can only generate reports based on consultations in the past.',
+      )
+    }
     return new StreamableFile(
-      await this.usersService.generateReport(
+      await this.reportService.generateUserReport(
         user,
+        new Date(startDate),
+        new Date(endDate),
+      ),
+    )
+  }
+
+  @Get('admin-report')
+  @RequiredPermission(Permissions.GenerateAdminReport)
+  async getAdminReport(
+    @Query('startDate') startDate: number,
+    @Query('endDate') endDate: number,
+  ): Promise<StreamableFile> {
+    if (startDate > Date.now() || endDate > Date.now()) {
+      throw new BadRequestException(
+        'Invalid date range! You can only generate reports based on consultations in the past.',
+      )
+    }
+    return new StreamableFile(
+      await this.reportService.generateAdminReport(
         new Date(startDate),
         new Date(endDate),
       ),

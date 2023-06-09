@@ -2,6 +2,7 @@ import { forwardRef, Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
 import { AuthModule } from 'src/auth/auth.module'
 import { PrismaModule } from 'src/prisma/prisma.module'
+import { ReportService } from './report.service'
 import { UsersController } from './users.controller'
 import { UsersService } from './users.service'
 
@@ -15,7 +16,7 @@ import { UsersService } from './users.service'
     }),
   ],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [UsersService, ReportService],
   exports: [UsersService],
 })
 export class UsersModule {}
