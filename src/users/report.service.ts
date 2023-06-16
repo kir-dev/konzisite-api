@@ -13,8 +13,8 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import {
   ConsultationForReport,
   ConsultationReportDateInfo,
-  UserReport,
-} from 'src/templates/types/UserReport.dto'
+  Report,
+} from 'src/templates/types/Report'
 import { publicUserProjection } from 'src/utils/publicUserProjection'
 import { UserEntity } from './dto/UserEntity.dto'
 
@@ -45,11 +45,12 @@ export class ReportService {
       },
     })
 
-    return this.generateReportPDF('userReport.ejs', {
+    return this.generateReportPDF({
       user,
       consultations: consultations.map(this.formatConsultationForReport),
       ...this.generateDateInfo(startDate, endDate),
-    } as UserReport)
+      konzisiteUrl: process.env.FRONTEND_HOST,
+    })
   }
 
   async generateAdminReport(startDate: Date, endDate: Date) {
@@ -70,29 +71,26 @@ export class ReportService {
       },
     })
 
-    return this.generateReportPDF('userReport.ejs', {
+    return this.generateReportPDF({
       consultations: consultations.map(this.formatConsultationForReport),
       ...this.generateDateInfo(startDate, endDate),
+      konzisiteUrl: process.env.FRONTEND_HOST,
     })
   }
 
-  private async generateReportPDF(
-    templateFileName: string,
-    data: UserReport,
-  ): Promise<Buffer> {
+  private async generateReportPDF(data: Report): Promise<Buffer> {
     // As of implementation, this uses the old headless mode of chrome, which is far quicker than the new one
     // At some point, by default the new one will be to used, if there is an option we should stick to the old one, unless the speed difference disappears
     // More info: https://github.com/puppeteer/puppeteer/issues/10071
     const browser = await puppeteer.launch()
     const page = await browser.newPage()
     const file = readFileSync(
-      process.env.MAIL_TEMPLATE_ROOT + templateFileName,
+      process.env.MAIL_TEMPLATE_ROOT + 'report.ejs',
     ).toString()
     const html = ejs.render(file, data)
-    await page.setContent(html, { waitUntil: 'domcontentloaded' })
+    await page.setContent(html, { waitUntil: 'networkidle0' })
     await page.emulateMediaType('screen')
     const pdf = await page.pdf({
-      margin: { top: '100px', right: '50px', bottom: '100px', left: '50px' },
       printBackground: true,
       format: 'A4',
     })
@@ -117,12 +115,16 @@ export class ReportService {
         timeStyle: 'short',
       }),
       participants: c.participants.length,
-      presentations: c.presentations.map((p) => ({
-        ...p.user,
-        averageRating:
+      presentations: c.presentations.map((p) => {
+        const avgRating =
           p.ratings.reduce((acc, val) => acc + val.value, 0) /
-            c.presentations[0].ratings.length || 0,
-      })),
+            c.presentations[0].ratings.length || 0
+        return {
+          ...p.user,
+          averageRating:
+            avgRating > 0 ? avgRating.toFixed(2) : 'nincs értékelve',
+        }
+      }),
     }
   }
 

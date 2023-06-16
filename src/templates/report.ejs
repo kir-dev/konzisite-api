@@ -1,0 +1,151 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="hu">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Aclonica&display=swap" rel="stylesheet">
+    <style type="text/css">
+      * {
+        margin: 0;
+        padding: 0;
+      }
+
+      .banner {
+        color: #062c4c;
+        font-size: 1.875rem;
+        font-family: 'Aclonica', sans-serif;  /* TODO */
+        margin-left: 20px;
+        text-decoration: none;
+        font-weight: 700;
+      }
+      .banner-container {
+        padding: 0.5rem 0 0.5rem 0;
+        box-shadow: 0 -0.1rem 1.0rem #062a4c;
+      }
+      .container {
+        margin: 20px;
+      }
+
+      .title {
+        font-size: 1.8rem;
+        text-align: center;
+      }
+
+      .subtitle {
+        text-align: center;
+        font-size: 1rem;
+      }
+      .centered {
+        text-align: center;
+
+      }
+      .bottom {
+        margin-bottom: 20px;
+      }
+
+      .konzi-container {
+        margin-top: 0.5rem;
+        padding: 1rem;
+        border-color: #e2e8f0;
+        border-style: solid;
+        border-radius: 1rem;
+        border-width: 1px;
+        page-break-inside: avoid;
+      }
+      .presenters-container {
+        margin-left: 10px;
+      }
+
+      .konzi-title {
+        font-size: 1.3rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .konzi-section {
+        margin-bottom: 0.15rem;
+      }
+
+      .no-konzi {
+        margin-top: 50px;
+      }
+
+      .italic {
+        font-style: italic;
+        text-align: center;
+      }
+
+      .kirdev {
+        max-width: 6rem;
+        max-height: 6rem;
+      }
+
+      footer {
+        margin-top: 30px;
+        text-align: center;
+      }
+
+      .love {
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="banner-container">
+      <a href="<%= konzisiteUrl %>" target="_blank" class="banner">Konzisite</a>
+    </div>
+    <div class="container">
+      <% if (typeof user !== 'undefined') { %>
+        <h2 class="title"><%= user.fullName %> által tartott konzultációk</h2>
+      <% } else { %>
+        <h2 class="title">Konzultációk listája</h2>
+      <% } %>
+      <p class="centered"><%= startDate %> és <%= endDate %> között</p>
+      <p class="centered bottom">Generálva: <%= currentDateTime %></p>
+
+      <% for (let i = 0; i < consultations.length; i++) { %>
+        <div class="konzi-container">
+          <h3 class="konzi-title"><%= consultations[i].name %></h3>
+          <p class="konzi-section"><%= consultations[i].date %> <%= consultations[i].startTime %> - <%= consultations[i].endTime %></p>
+          <p class="konzi-section">Tárgy: <%= consultations[i].subject.name %> (<%= consultations[i].subject.code %>)</p>
+          <p class="konzi-section">Helyszín: <%= consultations[i].location %></p>
+          <div  class="konzi-section">
+            <h4>Előadók és átlagos értékeléseik</h4>
+            <div class="presenters-container">
+              <% for (let j = 0; j < consultations[i].presentations.length; j++) { %>
+                <% if (typeof user !== 'undefined' && consultations[i].presentations[j].id === user.id) { %>
+                  <p><b><%= consultations[i].presentations[j].fullName %> - <%= consultations[i].presentations[j].averageRating %></b></p>
+                <% } else { %>
+                  <p><%= consultations[i].presentations[j].fullName %> - <%= consultations[i].presentations[j].averageRating %></p>
+                <% } %>
+              <% } %>
+            </div>
+          </div>
+
+          <h4>Résztvevők száma: <%= consultations[i].participants %></h4>
+        </div>
+      <% } %>
+
+      <% if (consultations.length === 0) { %>
+        <div class="no-konzi">
+          <% if (typeof user !== 'undefined') { %>
+            <p class="italic">Ez a felhasználó nem tartott konzultációkat ebben az időszakban.</p>
+          <% } else { %>
+            <p class="italic">Nem voltak konzultációk ebben az időszakban.</p>
+          <% } %>
+        </div>
+      <% } %>
+    </div>
+
+    <footer>
+      <p class="love"> Made with ❤️ by</p>
+      <a href="https://kir-dev.hu">
+        <img src="https://warp.sch.bme.hu/images/kir-dev_new-png" class="kirdev">
+      </a>
+     </footer>
+
+  </body>
+</html>

@@ -1,9 +1,10 @@
 import { SubjectEntity } from 'src/subject/dto/SubjectEntity.dto'
 import { PublicUser } from 'src/users/dto/PublicUser.dto'
 
-export interface UserReport extends ConsultationReportDateInfo {
+export interface Report extends ConsultationReportDateInfo {
   user?: PublicUser
   consultations: ConsultationForReport[]
+  konzisiteUrl: string
 }
 
 export interface ConsultationReportDateInfo {
@@ -22,6 +23,6 @@ export interface ConsultationForReport {
   subject: SubjectEntity
   participants: number
   presentations: (PublicUser & {
-    averageRating: number
+    averageRating: string
   })[]
 }

@@ -64,10 +64,13 @@ export class UsersController {
   @Get('report')
   async getReport(
     @CurrentUser() user: UserEntity,
-    @Query('startDate') startDate: number,
-    @Query('endDate') endDate: number,
+    @Query('startDate', ParseIntPipe) startDate: number,
+    @Query('endDate', ParseIntPipe) endDate: number,
   ): Promise<StreamableFile> {
-    if (startDate > Date.now() || endDate > Date.now()) {
+    if (startDate >= endDate) {
+      throw new BadRequestException('Invalid date range!')
+    }
+    if (endDate > Date.now()) {
       throw new BadRequestException(
         'Invalid date range! You can only generate reports based on consultations in the past.',
       )
@@ -84,10 +87,13 @@ export class UsersController {
   @Get('admin-report')
   @RequiredPermission(Permissions.GenerateAdminReport)
   async getAdminReport(
-    @Query('startDate') startDate: number,
-    @Query('endDate') endDate: number,
+    @Query('startDate', ParseIntPipe) startDate: number,
+    @Query('endDate', ParseIntPipe) endDate: number,
   ): Promise<StreamableFile> {
-    if (startDate > Date.now() || endDate > Date.now()) {
+    if (startDate >= endDate) {
+      throw new BadRequestException('Invalid date range!')
+    }
+    if (endDate > Date.now()) {
       throw new BadRequestException(
         'Invalid date range! You can only generate reports based on consultations in the past.',
       )
