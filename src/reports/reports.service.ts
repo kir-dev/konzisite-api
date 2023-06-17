@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import {
   Consultation,
   Participation,
@@ -88,11 +88,7 @@ export class ReportsService {
   }
 
   async getReport(id: string) {
-    const report = await this.prisma.report.findUnique({ where: { id } })
-    if (report === null) {
-      throw new NotFoundException('Érvénytelen riport azonosító!')
-    }
-    return JSON.parse(report.jsonData)
+    return this.prisma.report.findUnique({ where: { id } })
   }
 
   generateReportHTML(data: Report): string {
@@ -102,6 +98,15 @@ export class ReportsService {
     return ejs.render(file, {
       ...data,
       validated: true,
+    })
+  }
+
+  generateInvalidReportHTML(): string {
+    const file = readFileSync(
+      process.env.MAIL_TEMPLATE_ROOT + 'invalidReport.ejs',
+    ).toString()
+    return ejs.render(file, {
+      konzisiteUrl: process.env.FRONTEND_HOST,
     })
   }
 

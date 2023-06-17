@@ -22,8 +22,11 @@ export class ReportsController {
 
   @Get('/validate/:id')
   async validateReport(@Param('id') id: string) {
-    const reportData = await this.reportsService.getReport(id)
-    return this.reportsService.generateReportHTML(reportData)
+    const report = await this.reportsService.getReport(id)
+    if (report === null) {
+      return this.reportsService.generateInvalidReportHTML()
+    }
+    return this.reportsService.generateReportHTML(JSON.parse(report.jsonData))
   }
 
   @JwtAuth()
