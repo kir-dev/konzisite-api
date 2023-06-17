@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import {
   Consultation,
   Participation,
@@ -6,6 +6,7 @@ import {
   Rating,
   Subject,
 } from '@prisma/client'
+import { createHash } from 'crypto'
 import * as ejs from 'ejs'
 import { readFileSync } from 'fs'
 import puppeteer from 'puppeteer'
@@ -15,11 +16,11 @@ import {
   ConsultationReportDateInfo,
   Report,
 } from 'src/templates/types/Report'
+import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { publicUserProjection } from 'src/utils/publicUserProjection'
-import { UserEntity } from './dto/UserEntity.dto'
 
 @Injectable()
-export class ReportService {
+export class ReportsService {
   constructor(private prisma: PrismaService) {}
 
   async generateUserReport(user: UserEntity, startDate: Date, endDate: Date) {
@@ -43,6 +44,9 @@ export class ReportService {
           },
         },
       },
+      orderBy: {
+        startDate: 'asc',
+      },
     })
 
     return this.generateReportPDF({
@@ -50,6 +54,7 @@ export class ReportService {
       consultations: consultations.map(this.formatConsultationForReport),
       ...this.generateDateInfo(startDate, endDate),
       konzisiteUrl: process.env.FRONTEND_HOST,
+      validated: false,
     })
   }
 
@@ -69,25 +74,58 @@ export class ReportService {
           },
         },
       },
+      orderBy: {
+        startDate: 'asc',
+      },
     })
 
     return this.generateReportPDF({
       consultations: consultations.map(this.formatConsultationForReport),
       ...this.generateDateInfo(startDate, endDate),
       konzisiteUrl: process.env.FRONTEND_HOST,
+      validated: false,
+    })
+  }
+
+  async getReport(id: string) {
+    const report = await this.prisma.report.findUnique({ where: { id } })
+    if (report === null) {
+      throw new NotFoundException('Érvénytelen riport azonosító!')
+    }
+    return JSON.parse(report.jsonData)
+  }
+
+  generateReportHTML(data: Report): string {
+    const file = readFileSync(
+      process.env.MAIL_TEMPLATE_ROOT + 'report.ejs',
+    ).toString()
+    return ejs.render(file, {
+      ...data,
+      validated: true,
     })
   }
 
   private async generateReportPDF(data: Report): Promise<Buffer> {
-    // As of implementation, this uses the old headless mode of chrome, which is far quicker than the new one
-    // At some point, by default the new one will be to used, if there is an option we should stick to the old one, unless the speed difference disappears
-    // More info: https://github.com/puppeteer/puppeteer/issues/10071
-    const browser = await puppeteer.launch()
+    const jsonString = JSON.stringify(data)
+    const hash = createHash('md5').update(jsonString).digest('hex')
+    const [, browser] = await Promise.all([
+      this.prisma.report.create({
+        data: { id: hash, jsonData: jsonString },
+      }),
+      // As of implementation, this uses the old headless mode of chrome, which is far quicker than the new one
+      // At some point, by default the new one will be to used, if there is an option we should stick to the old one, unless the speed difference disappears
+      // More info: https://github.com/puppeteer/puppeteer/issues/10071
+      puppeteer.launch(),
+    ])
     const page = await browser.newPage()
     const file = readFileSync(
       process.env.MAIL_TEMPLATE_ROOT + 'report.ejs',
     ).toString()
-    const html = ejs.render(file, data)
+    const html = ejs.render(file, {
+      ...data,
+      validateUrl: `${process.env.BACKEND_HOST}/reports/validate/${hash}`,
+    })
+
     await page.setContent(html, { waitUntil: 'networkidle0' })
     await page.emulateMediaType('screen')
     const pdf = await page.pdf({
@@ -132,6 +170,7 @@ export class ReportService {
     startDate: Date,
     endDate: Date,
   ): ConsultationReportDateInfo {
+    const now = new Date()
     return {
       startDate: startDate.toLocaleDateString('hu-HU', {
         dateStyle: 'short',
@@ -139,10 +178,11 @@ export class ReportService {
       endDate: endDate.toLocaleDateString('hu-HU', {
         dateStyle: 'short',
       }),
-      currentDateTime: new Date().toLocaleString('hu-HU', {
-        timeStyle: 'short',
+      currentDateTime: now.toLocaleString('hu-HU', {
+        timeStyle: 'medium',
         dateStyle: 'short',
       }),
+      currentTimestamp: now.getTime(), // to make sure that two reports won't get the same hash
     }
   }
 }

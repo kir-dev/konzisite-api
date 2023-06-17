@@ -7,7 +7,6 @@ import {
   ParseIntPipe,
   Post,
   Query,
-  StreamableFile,
 } from '@nestjs/common'
 import { ApiQuery } from '@nestjs/swagger'
 import { Permissions } from 'src/auth/casl-ability.factory'
@@ -20,17 +19,13 @@ import { UserDetails } from './dto/UserDetails'
 import { UserEntity } from './dto/UserEntity.dto'
 import { UserList } from './dto/UserList.dto'
 import { UserProfileDto } from './dto/UserProfile.dto'
-import { ReportService } from './report.service'
 import { UsersService } from './users.service'
 
 @JwtAuth()
 @AuthorizationSubject('User')
 @ApiController('users')
 export class UsersController {
-  constructor(
-    private readonly usersService: UsersService,
-    private readonly reportService: ReportService,
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
   @ApiQuery({
     name: 'search',
@@ -59,51 +54,6 @@ export class UsersController {
   @Get('profile')
   findProfile(@CurrentUser() user: UserEntity): Promise<UserProfileDto> {
     return this.usersService.profile(user)
-  }
-
-  @Get('report')
-  async getReport(
-    @CurrentUser() user: UserEntity,
-    @Query('startDate', ParseIntPipe) startDate: number,
-    @Query('endDate', ParseIntPipe) endDate: number,
-  ): Promise<StreamableFile> {
-    if (startDate >= endDate) {
-      throw new BadRequestException('Invalid date range!')
-    }
-    if (endDate > Date.now()) {
-      throw new BadRequestException(
-        'Invalid date range! You can only generate reports based on consultations in the past.',
-      )
-    }
-    return new StreamableFile(
-      await this.reportService.generateUserReport(
-        user,
-        new Date(startDate),
-        new Date(endDate),
-      ),
-    )
-  }
-
-  @Get('admin-report')
-  @RequiredPermission(Permissions.GenerateAdminReport)
-  async getAdminReport(
-    @Query('startDate', ParseIntPipe) startDate: number,
-    @Query('endDate', ParseIntPipe) endDate: number,
-  ): Promise<StreamableFile> {
-    if (startDate >= endDate) {
-      throw new BadRequestException('Invalid date range!')
-    }
-    if (endDate > Date.now()) {
-      throw new BadRequestException(
-        'Invalid date range! You can only generate reports based on consultations in the past.',
-      )
-    }
-    return new StreamableFile(
-      await this.reportService.generateAdminReport(
-        new Date(startDate),
-        new Date(endDate),
-      ),
-    )
   }
 
   @Get(':id')

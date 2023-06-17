@@ -170,3 +170,8 @@ model Alert {
 
   createdAt DateTime @default(now())
 }
+
+model Report {
+  id       String @id
+  jsonData String
+}
