@@ -37,18 +37,18 @@ export class ReportsController {
     @Query('endDate', ParseIntPipe) endDate: number,
   ): Promise<StreamableFile> {
     if (startDate >= endDate) {
-      throw new BadRequestException('Invalid date range!')
+      throw new BadRequestException('Érvénytelen időtartam!')
     }
     if (endDate > Date.now()) {
       throw new BadRequestException(
-        'Invalid date range! You can only generate reports based on consultations in the past.',
+        'Érvénytelen időtartam! Csak múltbeli konzikról lehet riportot generálni!',
       )
     }
     return new StreamableFile(
-      await this.reportsService.generateUserReport(
-        user,
+      await this.reportsService.generateReport(
         new Date(startDate),
         new Date(endDate),
+        user,
       ),
     )
   }
@@ -69,7 +69,7 @@ export class ReportsController {
       )
     }
     return new StreamableFile(
-      await this.reportsService.generateAdminReport(
+      await this.reportsService.generateReport(
         new Date(startDate),
         new Date(endDate),
       ),

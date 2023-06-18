@@ -23,12 +23,12 @@ import { publicUserProjection } from 'src/utils/publicUserProjection'
 export class ReportsService {
   constructor(private prisma: PrismaService) {}
 
-  async generateUserReport(user: UserEntity, startDate: Date, endDate: Date) {
+  async generateReport(startDate: Date, endDate: Date, user?: UserEntity) {
     const consultations = await this.prisma.consultation.findMany({
       where: {
         presentations: {
           some: {
-            userId: user.id,
+            userId: user?.id,
           },
         },
         startDate: { gte: startDate },
@@ -51,35 +51,6 @@ export class ReportsService {
 
     return this.generateReportPDF({
       user,
-      consultations: consultations.map(this.formatConsultationForReport),
-      ...this.generateDateInfo(startDate, endDate),
-      konzisiteUrl: process.env.FRONTEND_HOST,
-      validated: false,
-    })
-  }
-
-  async generateAdminReport(startDate: Date, endDate: Date) {
-    const consultations = await this.prisma.consultation.findMany({
-      where: {
-        startDate: { gte: startDate },
-        endDate: { lte: endDate },
-      },
-      include: {
-        subject: true,
-        participants: true,
-        presentations: {
-          include: {
-            ratings: true,
-            user: publicUserProjection,
-          },
-        },
-      },
-      orderBy: {
-        startDate: 'asc',
-      },
-    })
-
-    return this.generateReportPDF({
       consultations: consultations.map(this.formatConsultationForReport),
       ...this.generateDateInfo(startDate, endDate),
       konzisiteUrl: process.env.FRONTEND_HOST,
