@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="hu">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Aclonica&display=swap" rel="stylesheet">
+    <style type="text/css">
+      * {
+        margin: 0;
+        padding: 0;
+        font-family: Helvetica,Arial,sans-serif;
+      }
+
+      .banner {
+        color: #062c4c;
+        font-size: 1.875rem;
+        font-family: 'Aclonica', sans-serif;  /* TODO */
+        margin-left: 20px;
+        text-decoration: none;
+        font-weight: 700;
+      }
+
+      .banner-container {
+        padding: 0.5rem 0 0.5rem 0;
+        box-shadow: 0 -0.1rem 1.0rem #062a4c;
+      }
+      .container {
+        margin: 20px;
+      }
+
+      .kirdev {
+        max-width: 6rem;
+        max-height: 6rem;
+      }
+
+      footer {
+        margin-top: 30px;
+        text-align: center;
+      }
+
+      .love {
+        margin-bottom: 10px;
+      }
+
+      .alert-cont {
+        display: flex;
+        align-items: center;
+        background-color: #FED7D7;
+        padding-inline-start: 1rem;
+        padding-inline-end: 1rem;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-radius: 0.375rem;
+        margin-bottom: 0.5rem
+      }
+
+      .alert-icon {
+        color: #E53E3E;
+        flex-shrink: 0;
+        margin-inline-end: 0.75rem;
+        width: 1.25rem;
+        height: 1.5rem
+      }
+
+      .alert-svg {
+        display: inline-block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .alert-text-div {
+        margin-top: 0.5rem;
+      }
+
+      .alert-text {
+        margin-bottom: 0.5rem;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="banner-container">
+      <a href="<%= konzisiteUrl %>" target="_blank" class="banner">Konzisite</a>
+    </div>
+
+    <div class="container">
+      <div class="alert-cont">
+        <span class="alert-icon">
+          <svg viewBox="0 0 24 24" focusable="false" class="alert-svg">
+            <path fill="currentColor" d="M11.983,0a12.206,12.206,0,0,0-8.51,3.653A11.8,11.8,0,0,0,0,12.207,11.779,11.779,0,0,0,11.8,24h.214A12.111,12.111,0,0,0,24,11.791h0A11.766,11.766,0,0,0,11.983,0ZM10.5,16.542a1.476,1.476,0,0,1,1.449-1.53h.027a1.527,1.527,0,0,1,1.523,1.47,1.475,1.475,0,0,1-1.449,1.53h-.027A1.529,1.529,0,0,1,10.5,16.542ZM11,12.5v-6a1,1,0,0,1,2,0v6a1,1,0,1,1-2,0Z"></path>
+          </svg>
+        </span>
+        <div class="alert-text-div">
+          <p class="alert-text">Ez a riport érvénytelen, nem a Konzisite rendszere által lett generálva!</p>
+        </div>
+      </div>
+
+    <footer>
+      <p class="love"> Made with ❤️ by</p>
+      <a target="_blank" href="https://kir-dev.hu">
+        <img src="https://warp.sch.bme.hu/images/kir-dev_new-png" class="kirdev">
+      </a>
+     </footer>
+
+  </body>
+</html>
