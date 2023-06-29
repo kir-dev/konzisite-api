@@ -91,7 +91,13 @@ export class ReportsService {
       // As of implementation, this uses the old headless mode of chrome, which is far quicker than the new one
       // At some point, by default the new one will be to used, if there is an option we should stick to the old one, unless the speed difference disappears
       // More info: https://github.com/puppeteer/puppeteer/issues/10071
-      puppeteer.launch(),
+      puppeteer.launch({
+        executablePath: ['production', 'staging', 'docker'].includes(
+          process.env.NODE_ENV,
+        )
+          ? '/usr/bin/google-chrome'
+          : undefined,
+      }),
     ])
     const page = await browser.newPage()
     const file = readFileSync(
