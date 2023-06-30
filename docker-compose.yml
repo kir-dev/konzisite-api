@@ -24,8 +24,8 @@ services:
     networks:
       - konzisite-network
     restart: ${DOCKER_RESTART_POLICY}
-    security_opt:
-      - seccomp:chrome.json
+    cap_add:
+      - SYS_ADMIN
 networks:
   konzisite-network:
 volumes:

@@ -95,7 +95,7 @@ export class ReportsService {
         executablePath: ['production', 'staging', 'docker'].includes(
           process.env.NODE_ENV,
         )
-          ? '/usr/bin/google-chrome'
+          ? 'google-chrome-stable'
           : undefined,
       }),
     ])
