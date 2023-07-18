@@ -3,9 +3,7 @@ import { unlink } from 'fs'
 import { join } from 'path'
 
 export class FileMaxSizeValidator extends FileValidator<{ maxSize: number }> {
-  //isValid(file?: Express.Multer.File): boolean | Promise<boolean> {
-  // TODO this worked with the Express type until nest v10
-  isValid(file?: any): boolean | Promise<boolean> {
+  isValid(file?: Express.Multer.File): boolean {
     return file.size <= this.validationOptions.maxSize
   }
 
