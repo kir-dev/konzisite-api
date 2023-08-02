@@ -37,6 +37,7 @@ async function bootstrap() {
   app.enableCors({
     origin: process.env.FRONTEND_HOST,
   })
+  app.enableShutdownHooks()
 
   await app.listen(process.env.BACKEND_PORT || 3000)
 }
