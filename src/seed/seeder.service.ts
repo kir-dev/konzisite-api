@@ -8,7 +8,10 @@ import { seededUsers } from './data/users'
 
 @Injectable()
 export class SeederService {
-  constructor(private readonly logger: Logger, private prisma: PrismaService) {}
+  constructor(
+    private readonly logger: Logger,
+    private prisma: PrismaService,
+  ) {}
 
   async createBasics() {
     let data = await this.prisma.user.createMany({ data: seededUsers })

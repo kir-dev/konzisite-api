@@ -1,548 +1,433 @@
 {
-	"info": {
-		"_postman_id": "f8ebf121-7e5d-4edc-8580-6c99ebadc837",
-		"name": "Konzisite",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "16816431"
-	},
-	"item": [
-		{
-			"name": "auth",
-			"item": [
-				{
-					"name": "me",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/auth/me",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"auth",
-								"me"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "users",
-			"item": [
-				{
-					"name": "findall",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/users",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "promote",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/users/1000002/promote",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users",
-								"1000002",
-								"promote"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "delete",
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/users/1",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users",
-								"1"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "group",
-			"item": [
-				{
-					"name": "create",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"endsfdsyem\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/groups",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"groups"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "list",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/groups/?search=lma%20körte",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"groups",
-								""
-							],
-							"query": [
-								{
-									"key": "search",
-									"value": "lma%20körte"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "addMember",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"userId\": 1000002\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/groups/1000001/add",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"groups",
-								"1000001",
-								"add"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "delete",
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/groups/4/",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"groups",
-								"4",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "join",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/groups/1000001/join",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"groups",
-								"1000001",
-								"join"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "removeMember",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"userId\": 1000002\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/groups/1000001/remove",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"groups",
-								"1000001",
-								"remove"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "subject",
-			"item": [
-				{
-					"name": "create",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"code\": \"VIAUAB1223\",\r\n    \"name\": \"Tárgy\",\r\n    \"majors\": [\"CE_BSC\"]\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/subjects",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"subjects"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "import",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "file",
-									"type": "file",
-									"src": "/C:/Users/feket/Documents/konzi.csv"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{baseUrl}}/subjects/import",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"subjects",
-								"import"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "example",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/subjects/example",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"subjects",
-								"example"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "consultations",
-			"item": [
-				{
-					"name": "findAll",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/consultations/",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"consultations",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "upload file",
-					"request": {
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "file",
-									"type": "file",
-									"src": "/C:/Users/feket/Pictures/120252049_4406134966127952_6665651444862754930_o.jpg"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{baseUrl}}/consultations/3/file",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"consultations",
-								"3",
-								"file"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "create",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Elso konzi\",\r\n    \"subjectId\": 1000001,\r\n    \"location\": \"IB01\",\r\n    \"startDate\": \"1997-07-16T19:20:30.451Z\",\r\n    \"endDate\": \"1997-07-16T20:20:30.451Z\",\r\n    \"descMarkdown\": \"eeee\",\r\n    \"presenterIds\": [1, 1000001],\r\n    \"targetGroupIds\": [1],\r\n    \"requestId\": 1\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/consultations/",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"consultations",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "update",
-					"request": {
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Masodik konzi\",\r\n    \"subjectId\": 1000002,\r\n    \"presenterIds\": [1000002],\r\n    \"targetGroupIds\": [1000001]\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/consultations/3",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"consultations",
-								"3"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "join",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/consultations/5/join",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"consultations",
-								"5",
-								"join"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "findOne",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/consultations/3",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"consultations",
-								"3"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "rate",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"text\": \"Jó volt\",\r\n    \"value\": 4,\r\n    \"ratedUserId\": 1000002,\r\n    \"anonymous\": false\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/consultations/3/rate",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"consultations",
-								"3",
-								"rate"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "delete",
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/consultations/3/",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"consultations",
-								"3",
-								""
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		}
-	],
-	"auth": {
-		"type": "bearer",
-		"bearer": [
-			{
-				"key": "token",
-				"value": "{{token}}",
-				"type": "string"
-			}
-		]
-	},
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		}
-	]
+  "info": {
+    "_postman_id": "f8ebf121-7e5d-4edc-8580-6c99ebadc837",
+    "name": "Konzisite",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "16816431"
+  },
+  "item": [
+    {
+      "name": "auth",
+      "item": [
+        {
+          "name": "me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "users",
+      "item": [
+        {
+          "name": "findall",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "promote",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/1000002/promote",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "1000002", "promote"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "1"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "group",
+      "item": [
+        {
+          "name": "create",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"endsfdsyem\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/groups",
+              "host": ["{{baseUrl}}"],
+              "path": ["groups"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "list",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/groups/?search=lma%20körte",
+              "host": ["{{baseUrl}}"],
+              "path": ["groups", ""],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "lma%20körte"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "addMember",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"userId\": 1000002\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/groups/1000001/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["groups", "1000001", "add"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/groups/4/",
+              "host": ["{{baseUrl}}"],
+              "path": ["groups", "4", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "join",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/groups/1000001/join",
+              "host": ["{{baseUrl}}"],
+              "path": ["groups", "1000001", "join"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "removeMember",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"userId\": 1000002\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/groups/1000001/remove",
+              "host": ["{{baseUrl}}"],
+              "path": ["groups", "1000001", "remove"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "subject",
+      "item": [
+        {
+          "name": "create",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"code\": \"VIAUAB1223\",\r\n    \"name\": \"Tárgy\",\r\n    \"majors\": [\"CE_BSC\"]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/subjects",
+              "host": ["{{baseUrl}}"],
+              "path": ["subjects"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "import",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/C:/Users/feket/Documents/konzi.csv"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/subjects/import",
+              "host": ["{{baseUrl}}"],
+              "path": ["subjects", "import"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "example",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/subjects/example",
+              "host": ["{{baseUrl}}"],
+              "path": ["subjects", "example"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "consultations",
+      "item": [
+        {
+          "name": "findAll",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/consultations/",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultations", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "upload file",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/C:/Users/feket/Pictures/120252049_4406134966127952_6665651444862754930_o.jpg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/consultations/3/file",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultations", "3", "file"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Elso konzi\",\r\n    \"subjectId\": 1000001,\r\n    \"location\": \"IB01\",\r\n    \"startDate\": \"1997-07-16T19:20:30.451Z\",\r\n    \"endDate\": \"1997-07-16T20:20:30.451Z\",\r\n    \"descMarkdown\": \"eeee\",\r\n    \"presenterIds\": [1, 1000001],\r\n    \"targetGroupIds\": [1],\r\n    \"requestId\": 1\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/consultations/",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultations", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Masodik konzi\",\r\n    \"subjectId\": 1000002,\r\n    \"presenterIds\": [1000002],\r\n    \"targetGroupIds\": [1000001]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/consultations/3",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultations", "3"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "join",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/consultations/5/join",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultations", "5", "join"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "findOne",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/consultations/3",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultations", "3"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "rate",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"text\": \"Jó volt\",\r\n    \"value\": 4,\r\n    \"ratedUserId\": 1000002,\r\n    \"anonymous\": false\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/consultations/3/rate",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultations", "3", "rate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/consultations/3/",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultations", "3", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ]
 }
