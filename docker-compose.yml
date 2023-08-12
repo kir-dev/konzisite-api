@@ -2,7 +2,7 @@ version: '3.5'
 
 services:
   db:
-    image: postgres:13.10
+    image: postgres:13.12
     env_file:
       - .env
     restart: ${DOCKER_RESTART_POLICY}
