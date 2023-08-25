@@ -44,7 +44,7 @@
     "papaparse": "^5.3.2",
     "passport-jwt": "^4.0.0",
     "passport-oauth2": "^1.6.1",
-    "puppeteer": "^20.7.4",
+    "puppeteer": "^21.0.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^5.0.0",
     "rxjs": "^7.5.6"
