@@ -39,4 +39,5 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 
-/static
+static/*
+!static/.gitkeep

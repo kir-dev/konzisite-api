@@ -67,7 +67,9 @@ WORKDIR /usr/src/app
 RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
     && mkdir -p /home/pptruser \
     && chown -R pptruser:pptruser /home/pptruser \
-    && chown -R pptruser:pptruser .
+    && chown -R pptruser:pptruser . \
+    && mkdir static \
+    && chmod 777 static
 
 # Run everything after as non-privileged user.
 USER pptruser
