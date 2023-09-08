@@ -69,7 +69,7 @@ RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
     && chown -R pptruser:pptruser /home/pptruser \
     && chown -R pptruser:pptruser . \
     && mkdir static \
-    && chmod 777 static
+    && chmod -R 777 static
 
 # Run everything after as non-privileged user.
 USER pptruser
