@@ -138,7 +138,7 @@ export class ReportsService {
       presentations: c.presentations.map((p) => {
         const avgRating =
           p.ratings.reduce((acc, val) => acc + val.value, 0) /
-            c.presentations[0].ratings.length || 0
+            p.ratings.length || 0
         return {
           ...p.user,
           averageRating:
