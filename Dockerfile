@@ -2,7 +2,7 @@
 # BUILD FOR LOCAL DEVELOPMENT
 ###################
 
-FROM node:18 As development
+FROM node:21 As development
 
 # Create app directory
 WORKDIR /usr/src/app
@@ -24,7 +24,7 @@ COPY . .
 # BUILD FOR PRODUCTION
 ###################
 
-FROM node:18 As build
+FROM node:21 As build
 
 WORKDIR /usr/src/app
 
@@ -49,7 +49,7 @@ RUN npm prune --production && npm cache clean --force
 # PRODUCTION
 ###################
 
-FROM node:18 As production
+FROM node:21 As production
 
 # Donwload chromium and its dependecies
 RUN apt-get update \
