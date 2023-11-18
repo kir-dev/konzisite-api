@@ -334,10 +334,10 @@ export class ConsultationsService {
               dto.requestId === null
                 ? { disconnect: true }
                 : dto.requestId || konzi.requestId
-                ? {
-                    connect: { id: dto.requestId || konzi.requestId },
-                  }
-                : {},
+                  ? {
+                      connect: { id: dto.requestId || konzi.requestId },
+                    }
+                  : {},
           },
         },
       })
@@ -363,7 +363,9 @@ export class ConsultationsService {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       unlink(join(process.cwd(), '/static', consultation.fileName), () => {})
     }
-
+    this.logger.log(
+      `Attachment (filename: ${fileName} was uploaded to Consultation #${id})`,
+    )
     return await this.prisma.consultation.update({
       where: { id },
       data: { fileName },
@@ -378,7 +380,9 @@ export class ConsultationsService {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       unlink(join(process.cwd(), '/static', consultation.fileName), () => {})
     }
-
+    this.logger.log(
+      `Attacment (filename: ${consultation.fileName}) of Consultation #${id}  was deleted`,
+    )
     return await this.prisma.consultation.update({
       where: { id },
       data: { fileName: null },
