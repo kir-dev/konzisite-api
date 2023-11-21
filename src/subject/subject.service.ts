@@ -10,10 +10,14 @@ import { UpdateSubjectDto } from './dto/UpdateSubject.dto'
 export class SubjectService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(nameFilter?: string, limit?: number): Promise<SubjectEntity[]> {
+  async findAll(
+    nameFilter?: string,
+    limit?: number,
+    locale?: string,
+  ): Promise<SubjectEntity[]> {
     return this.prisma.subject.findMany({
       where: {
-        name: {
+        [locale === 'en' ? 'englishName' : 'name']: {
           contains: nameFilter ?? '',
           mode: 'insensitive',
         },
@@ -37,6 +41,14 @@ export class SubjectService {
 
   async createMany(data: CreateSubjectDto[]): Promise<CreateManyResponse> {
     return this.prisma.subject.createMany({ data })
+  }
+
+  async upsert(data: CreateSubjectDto) {
+    return await this.prisma.subject.upsert({
+      where: { code: data.code },
+      create: { ...data },
+      update: { ...data },
+    })
   }
 
   async update(id: number, data: UpdateSubjectDto): Promise<SubjectEntity> {

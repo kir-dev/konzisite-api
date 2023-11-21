@@ -3,6 +3,7 @@ import {
   Body,
   Delete,
   Get,
+  Logger,
   NotFoundException,
   Param,
   ParseFilePipe,
@@ -26,7 +27,6 @@ import { CurrentUser } from 'src/auth/decorator/current-user.decorator'
 import { JwtAuth } from 'src/auth/decorator/jwtAuth.decorator'
 import { RequiredPermission } from 'src/auth/decorator/requiredPermission'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
-import { CreateManyResponse } from 'src/utils/CreateManyResponse.dto'
 import { FileExtensionValidator } from 'src/utils/FileExtensionValidator'
 import { FileMaxSizeValidator } from 'src/utils/FileMaxSizeValidator'
 import { ApiController } from 'src/utils/apiController.decorator'
@@ -39,6 +39,7 @@ import { SubjectService } from './subject.service'
 @ApiController('subjects')
 @AuthorizationSubject('Subject')
 export class SubjectController {
+  private readonly logger = new Logger(SubjectController.name)
   constructor(private readonly subjectService: SubjectService) {}
 
   @ApiQuery({
@@ -49,15 +50,20 @@ export class SubjectController {
     name: 'limit',
     required: false,
   })
+  @ApiQuery({
+    name: 'locale',
+    required: false,
+  })
   @Get()
   findAll(
     @Query('search') nameFilter?: string,
     @Query('limit') limit?: number,
+    @Query('locale') locale?: string,
   ): Promise<SubjectEntity[]> {
     if (limit < 0) {
       throw new BadRequestException('Érvénytelen limit paraméter!')
     }
-    return this.subjectService.findAll(nameFilter, limit)
+    return this.subjectService.findAll(nameFilter, limit, locale)
   }
 
   @Get(':id')
@@ -103,7 +109,7 @@ export class SubjectController {
       }),
     ) // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _file: Express.Multer.File,
-  ): Promise<CreateManyResponse> {
+  ): Promise<SubjectEntity[]> {
     const file_contents = readFileSync(
       join(process.cwd(), '/static/importdata.csv'),
     ).toString()
@@ -112,7 +118,7 @@ export class SubjectController {
       header: true,
       skipEmptyLines: true,
       transform: (value, field: string) => {
-        if (!['code', 'name', 'majors'].includes(field)) {
+        if (!['code', 'name', 'englishName', 'majors'].includes(field)) {
           throw new BadRequestException(`Érvénytelen mező: ${field}!`)
         }
         if (field === 'majors') {
@@ -129,11 +135,11 @@ export class SubjectController {
     })
 
     try {
-      return await this.subjectService.createMany(subjects.data)
-    } catch {
-      throw new BadRequestException(
-        'Érvénytelen formátum vagy már létező tárgykód!',
-      )
+      const promises = subjects.data.map((s) => this.subjectService.upsert(s))
+      return await Promise.all(promises)
+    } catch (e) {
+      this.logger.error(e)
+      throw new BadRequestException('Érvénytelen formátum!')
     } finally {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       unlink(join(process.cwd(), '/static/importdata.csv'), () => {})

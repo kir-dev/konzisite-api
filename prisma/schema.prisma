@@ -75,6 +75,7 @@ model Subject {
   id            Int                   @id @default(autoincrement())
   code          String                @unique
   name          String
+  englishName   String?
   majors        Major[]
   consultations Consultation[]
   requests      ConsultationRequest[]
