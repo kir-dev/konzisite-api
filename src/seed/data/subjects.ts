@@ -5,6 +5,7 @@ export const seededSubjects: SubjectEntity[] = [
     id: 1000001,
     code: 'VITMAB04',
     name: 'Adatbázisok',
+    englishName: 'Databases',
     majors: ['CE_BSC'],
   },
   {
@@ -23,6 +24,7 @@ export const seededSubjects: SubjectEntity[] = [
     id: 1000004,
     code: 'VIIIAB07',
     name: 'Számítógépes grafika',
+    englishName: 'Computer graphics',
     majors: ['CE_BSC'],
   },
 ]

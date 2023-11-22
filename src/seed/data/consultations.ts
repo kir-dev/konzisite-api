@@ -1,3 +1,4 @@
+import { Language } from '@prisma/client'
 import { ConsultationEntity } from 'src/consultations/dto/ConsultationEntity.dto'
 
 export const seededConsultations: ConsultationEntity[] = [
@@ -9,6 +10,7 @@ export const seededConsultations: ConsultationEntity[] = [
     endDate: new Date(Date.now() - 60 * 60 * 1000),
     descMarkdown: 'Eskü jó lesz',
     archived: false,
+    language: Language.hu,
   },
   {
     id: 1000002,
@@ -18,6 +20,7 @@ export const seededConsultations: ConsultationEntity[] = [
     endDate: new Date(Date.now() + 60 * 60 * 1000),
     descMarkdown: 'Nem kapsz plágiumot eskü',
     archived: false,
+    language: Language.hu,
   },
   {
     id: 1000003,
@@ -27,5 +30,6 @@ export const seededConsultations: ConsultationEntity[] = [
     endDate: new Date(Date.now() + 50 * 26 * 60 * 60 * 1000),
     descMarkdown: 'mondjuk ezen nem tudom mit',
     archived: false,
+    language: Language.hu,
   },
 ]

@@ -19,13 +19,14 @@ import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { publicUserProjection } from 'src/utils/publicUserProjection'
 import { PrismaService } from '../prisma/prisma.service'
 import { ConsultationDetailsDto } from './dto/ConsultationDetails.dto'
-import { ConsultationEntity } from './dto/ConsultationEntity.dto'
+import { ConsultationEntity, Language } from './dto/ConsultationEntity.dto'
 import { CreateConsultationDto } from './dto/CreateConsultation.dto'
 import { UpdateConsultationDto } from './dto/UpdateConsultation.dto'
 
 type findAllParams = {
   user: UserEntity
   major?: Major
+  language?: Language
   startDate?: Date
   endDate?: Date
   limit?: number
@@ -45,6 +46,7 @@ export class ConsultationsService {
   async findAll({
     user,
     major,
+    language,
     startDate,
     endDate,
     limit,
@@ -58,6 +60,7 @@ export class ConsultationsService {
             accessibleBy(ability).Consultation,
             {
               ...(major ? { subject: { majors: { has: major } } } : {}),
+              ...(language ? { language } : {}),
               ...(startDate ? { startDate: { gte: startDate } } : {}),
               ...(endDate
                 ? {
@@ -118,9 +121,9 @@ export class ConsultationsService {
           throw new BadRequestException('Hibás dátum!')
         }
       }
-      if (major) {
-        throw new BadRequestException('Nincs ilyen szak!')
-      }
+      //if (major) {
+      //  throw new BadRequestException('Nincs ilyen szak!')
+      //}
       throw e
     }
   }

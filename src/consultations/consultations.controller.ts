@@ -45,7 +45,7 @@ import { ApiController } from 'src/utils/apiController.decorator'
 import { AlertService } from './alert.service'
 import { ConsultationsService } from './consultations.service'
 import { ConsultationDetailsDto } from './dto/ConsultationDetails.dto'
-import { ConsultationEntity } from './dto/ConsultationEntity.dto'
+import { ConsultationEntity, Language } from './dto/ConsultationEntity.dto'
 import { ConsultationPreviewDto } from './dto/ConsultationPreview.dto'
 import { CreateConsultationDto } from './dto/CreateConsultation.dto'
 import { CreateRatingDto } from './dto/CreateRating.dto'
@@ -75,6 +75,10 @@ export class ConsultationsController {
     required: false,
   })
   @ApiQuery({
+    name: 'language',
+    required: false,
+  })
+  @ApiQuery({
     name: 'startDate',
     required: false,
   })
@@ -85,6 +89,7 @@ export class ConsultationsController {
   @Get()
   findAll(
     @Query('major') major?: Major,
+    @Query('language') language?: Language,
     @Query('startDate') startDate?: number,
     @Query('endDate') endDate?: number,
     @CurrentUserOptional() user?: UserEntity,
@@ -92,6 +97,7 @@ export class ConsultationsController {
     return this.consultationsService.findAll({
       user,
       major,
+      language,
       startDate: startDate ? new Date(startDate) : undefined,
       endDate: endDate ? new Date(endDate + 60 * 60 * 24 * 1000) : undefined,
     })

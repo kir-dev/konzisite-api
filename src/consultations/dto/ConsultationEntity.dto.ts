@@ -1,12 +1,21 @@
 import {
   IsBoolean,
   IsDateString,
+  IsEnum,
   IsInt,
   IsNotEmpty,
   IsOptional,
   MaxLength,
   Min,
 } from 'class-validator'
+
+export const Language: {
+  [x: string]: 'hu' | 'en'
+} = {
+  hu: 'hu',
+  en: 'en',
+}
+export type Language = (typeof Language)[keyof typeof Language]
 
 export class ConsultationEntity {
   @IsInt()
@@ -36,4 +45,7 @@ export class ConsultationEntity {
 
   @IsBoolean()
   archived: boolean
+
+  @IsEnum(Language)
+  language: Language
 }
