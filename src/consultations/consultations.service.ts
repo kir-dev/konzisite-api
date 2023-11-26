@@ -121,9 +121,9 @@ export class ConsultationsService {
           throw new BadRequestException('Hibás dátum!')
         }
       }
-      //if (major) {
-      //  throw new BadRequestException('Nincs ilyen szak!')
-      //}
+      if (major || language) {
+        throw new BadRequestException('Érvénytelen szak vagy nyelv!')
+      }
       throw e
     }
   }
