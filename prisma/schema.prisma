@@ -71,10 +71,16 @@ enum Major {
   SE_MSC
 }
 
+enum Language {
+  hu
+  en
+}
+
 model Subject {
   id            Int                   @id @default(autoincrement())
   code          String                @unique
   name          String
+  englishName   String?
   majors        Major[]
   consultations Consultation[]
   requests      ConsultationRequest[]
@@ -134,6 +140,7 @@ model Consultation {
   descMarkdown  String?
   fileName      String?
   archived      Boolean              @default(false)
+  language      Language             @default(hu)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()
