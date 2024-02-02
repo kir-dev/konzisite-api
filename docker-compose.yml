@@ -28,4 +28,6 @@ networks:
   konzisite-network:
 volumes:
   konzisite_db_folder:
+    external: true
   konzisite_static_folder:
+    external: true
