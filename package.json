@@ -45,7 +45,7 @@
     "passport-jwt": "^4.0.0",
     "passport-oauth2": "^1.6.1",
     "puppeteer": "^20.7.4",
-    "reflect-metadata": "^0.1.13",
+    "reflect-metadata": "^0.2.0",
     "rimraf": "^5.0.0",
     "rxjs": "^7.5.6"
   },
