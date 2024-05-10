@@ -1,9 +1,9 @@
 import { HttpService } from '@nestjs/axios'
 import { Injectable, Logger } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
-import { User } from '@prisma/client'
 import { Strategy } from 'passport-oauth2'
 import { firstValueFrom } from 'rxjs'
+import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { AuthService } from './auth.service'
 import { OAuthUser } from './oauthuser'
 
@@ -26,7 +26,7 @@ export class AuthschStrategy extends PassportStrategy(Strategy, 'authsch') {
     })
   }
 
-  async validate(accessToken: string): Promise<User> {
+  async validate(accessToken: string): Promise<UserEntity> {
     const { data: oAuthUser } = await firstValueFrom(
       this.httpService.get<OAuthUser>(
         `${AUTHSCH_HOST}/api/profile?access_token=${accessToken}`,

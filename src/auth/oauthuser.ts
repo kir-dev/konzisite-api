@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsUUID } from 'class-validator'
+import { IsEmail, IsNotEmpty, IsOptional, IsUUID } from 'class-validator'
 
 export class OAuthUser {
   @IsNotEmpty()
@@ -11,7 +11,8 @@ export class OAuthUser {
   internal_id: string
 
   @IsEmail()
-  mail: string
+  @IsOptional()
+  mail?: string
 
   constructor(partial: Partial<OAuthUser>) {
     Object.assign(this, partial)

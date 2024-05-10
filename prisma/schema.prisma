@@ -15,7 +15,7 @@ model User {
   authSchId              String                @unique
   fullName               String
   firstName              String
-  email                  String                @unique
+  email                  String?               @unique
   isAdmin                Boolean               @default(false)
   subscribedSubjects     Subject[]
   ownedGroups            Group[]
