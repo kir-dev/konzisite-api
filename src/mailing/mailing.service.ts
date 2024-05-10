@@ -158,6 +158,7 @@ export class MailingService {
     this.sendMail(
       [...request.supporters, request.initializer]
         .filter((u) => {
+          if (!u.email) return false
           const ability = this.caslFactory.createForConsultationRead(u)
           return ability.can(
             Permissions.Read,

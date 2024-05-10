@@ -23,9 +23,10 @@ export class UserEntity {
   @IsNotEmpty()
   fullName: string
 
+  @IsOptional()
   @IsEmail()
   @ApiProperty({ example: 'noreply@example.com' })
-  email: string
+  email?: string
 
   @IsBoolean()
   @IsOptional()
