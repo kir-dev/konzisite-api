@@ -1,3 +1,4 @@
+import { AuthSchProfile } from '@kir-dev/passport-authsch'
 import {
   Injectable,
   InternalServerErrorException,
@@ -7,8 +8,6 @@ import { JwtService } from '@nestjs/jwt'
 import { User } from '@prisma/client'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { UsersService } from '../users/users.service'
-import { OAuthUser } from './oauthuser'
-
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name)
@@ -18,20 +17,18 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async findOrCreateUser(oAuthUser: OAuthUser): Promise<UserEntity> {
+  async findOrCreateUser(oAuthUser: AuthSchProfile): Promise<UserEntity> {
     try {
-      const user = await this.usersService.findByAuthSchId(
-        oAuthUser.internal_id,
-      )
+      const user = await this.usersService.findByAuthSchId(oAuthUser.authSchId)
       if (user) {
         return user
       }
 
       const newUser = await this.usersService.create({
-        authSchId: oAuthUser.internal_id,
-        firstName: oAuthUser.givenName,
-        fullName: oAuthUser.displayName,
-        email: oAuthUser.mail,
+        authSchId: oAuthUser.authSchId,
+        firstName: oAuthUser.firstName,
+        fullName: oAuthUser.fullName,
+        email: oAuthUser.email,
       })
 
       this.logger.log(`User #${newUser.id} created`)
