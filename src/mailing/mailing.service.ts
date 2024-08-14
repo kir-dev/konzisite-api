@@ -17,9 +17,13 @@ type Templates = Record<string, string> & { default: string }
 
 interface SendMail {
   to: string
-  from: string
+  from: {
+    name: string
+    email: string
+  }
   subject: string
   html: string
+  queue?: string
 }
 
 export interface Setup {
@@ -99,7 +103,7 @@ export class MailingService {
    * Sends a mail through the mailing delivery service provided in the setup process.
    * @param {SendMail[]} data - Array of objects containing to, from, subject and html string fields.
    */
-  sendMail(data: SendMail[]) {
+  async sendMail(data: SendMail[]) {
     MailingService.checkSetup()
     if (process.env.NODE_ENV !== 'production') {
       this.logger.debug(
@@ -107,21 +111,25 @@ export class MailingService {
       )
       return Promise.resolve(false)
     }
-    return axios
-      .post(MailingService.mailServerUrl, data, {
-        headers: { 'X-Api-Key': MailingService.apiKey },
-      })
-      .then(() => {
-        this.logger.log(
-          `${data.length} email data sent to Kir-Dev email service`,
-        )
-        return true
-      })
-      .catch((e) => {
-        this.logger.log('Error during email sending')
-        this.logger.error(e)
-        return false
-      })
+    try {
+      await Promise.all(
+        data.map((email) =>
+          axios.post(
+            MailingService.mailServerUrl,
+            { ...email, queue: process.env.MAIL_QUEUE },
+            {
+              headers: { Authorization: `Api-Key ${MailingService.apiKey}` },
+            },
+          ),
+        ),
+      )
+      this.logger.log(`${data.length} email data sent to Kir-Dev email service`)
+      return true
+    } catch (e) {
+      this.logger.log('Error during email sending')
+      this.logger.error(e)
+      return false
+    }
   }
 
   private static checkSetup() {
@@ -172,7 +180,7 @@ export class MailingService {
             consultationUrl: `${process.env.FRONTEND_HOST}/consultations/${consultation.id}`,
           })
           return {
-            from: 'Konzisite',
+            from: { name: 'Konzisite', email: process.env.MAIL_FROM_EMAIL },
             to: u.email,
             subject: 'Megvalósul egy konzi kérésed!',
             html,
