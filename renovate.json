@@ -4,7 +4,7 @@
     "config:base"
   ],
   "baseBranches": [
-    "staging"
+    "master"
   ],
   "timezone": "Europe/Budapest",
   "schedule": [
