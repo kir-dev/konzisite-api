@@ -1,15 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:base"
-  ],
-  "baseBranches": [
-    "master"
-  ],
+  "extends": ["config:recommended"],
+  "baseBranchPatterns": ["master"],
   "timezone": "Europe/Budapest",
-  "schedule": [
-    "on the first day of the month"
-  ],
+  "schedule": ["on the first day of the month"],
   "prConcurrentLimit": null,
   "automerge": true,
   "major": {
