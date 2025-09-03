@@ -2,7 +2,7 @@
 # BUILD FOR LOCAL DEVELOPMENT
 ###################
 
-FROM node:22 As development
+FROM node:22 AS development
 
 # Create app directory
 WORKDIR /usr/src/app
@@ -12,7 +12,7 @@ WORKDIR /usr/src/app
 # Copying this first prevents re-running npm install on every code change.
 COPY package*.json  tsconfig*.json ./
 
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 # Install app dependencies using the `npm ci` command instead of `npm install`
 RUN npm ci
@@ -24,7 +24,7 @@ COPY . .
 # BUILD FOR PRODUCTION
 ###################
 
-FROM node:22 As build
+FROM node:22 AS build
 
 WORKDIR /usr/src/app
 
@@ -41,7 +41,7 @@ RUN npx prisma generate
 RUN npm run build
 
 # Set NODE_ENV environment variable
-ENV NODE_ENV production
+ENV NODE_ENV=production
 
 RUN npm prune --production && npm cache clean --force
 
@@ -49,7 +49,7 @@ RUN npm prune --production && npm cache clean --force
 # PRODUCTION
 ###################
 
-FROM node:22 As production
+FROM node:22 AS production
 
 # Donwload chromium and its dependecies
 RUN apt-get update \
@@ -80,4 +80,4 @@ COPY --from=build /usr/src/app/dist ./dist
 COPY --from=build /usr/src/app/package.json ./
 COPY --from=build /usr/src/app/prisma ./prisma
 
-CMD npm run start:prod
+CMD ["npm", "run", "start:prod"]

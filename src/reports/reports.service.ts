@@ -81,7 +81,9 @@ export class ReportsService {
     })
   }
 
-  private async generateReportPDF(data: Report): Promise<Buffer> {
+  private async generateReportPDF(
+    data: Report,
+  ): Promise<Uint8Array<ArrayBufferLike>> {
     const jsonString = JSON.stringify(data)
     const hash = createHash('md5').update(jsonString).digest('hex')
     const [, browser] = await Promise.all([
