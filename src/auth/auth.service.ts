@@ -1,9 +1,5 @@
 import { AuthSchProfile } from '@kir-dev/passport-authsch'
-import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { User } from '@prisma/client'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
@@ -35,10 +31,9 @@ export class AuthService {
 
       return newUser
     } catch (e) {
-      this.logger.error('Unexpected error during user creation', e)
-      throw new InternalServerErrorException(
-        'Unexpected error during user creation. Please contact Kir-Dev.',
-      )
+      this.logger.error('Unexpected error during user creation', e, oAuthUser)
+      // essentially throwing a 401
+      return null
     }
   }
 
