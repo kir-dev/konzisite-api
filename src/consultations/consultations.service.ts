@@ -22,6 +22,10 @@ import { ConsultationDetailsDto } from './dto/ConsultationDetails.dto'
 import { ConsultationEntity, Language } from './dto/ConsultationEntity.dto'
 import { CreateConsultationDto } from './dto/CreateConsultation.dto'
 import { UpdateConsultationDto } from './dto/UpdateConsultation.dto'
+import {
+  LocationChangedEvent,
+  LocationChangedKey,
+} from 'src/mailing/events/LocationChanged'
 
 type findAllParams = {
   user: UserEntity
@@ -349,6 +353,13 @@ export class ConsultationsService {
         this.eventEmitter.emit(
           RequestFulfilledKey,
           new RequestFulfilledEvent(requestId, consultation.id),
+        )
+      }
+
+      if (konzi.location !== dto.location) {
+        this.eventEmitter.emit(
+          LocationChangedKey,
+          new LocationChangedEvent(consultation.id),
         )
       }
 

@@ -11,6 +11,10 @@ import {
   RequestFulfilledEvent,
   RequestFulfilledKey,
 } from './events/RequestFulfilled'
+import {
+  LocationChangedEvent,
+  LocationChangedKey,
+} from './events/LocationChanged'
 import { MailingModule } from './mailing.module'
 
 type Templates = Record<string, string> & { default: string }
@@ -175,6 +179,49 @@ export class MailingService {
             from: 'Konzisite',
             to: u.email,
             subject: 'Megvalósul egy konzi kérésed!',
+            html,
+          }
+        }),
+    )
+  }
+
+  @OnEvent(LocationChangedKey)
+  async handleLocationChanged(payload: LocationChangedEvent) {
+    const consultation = await this.prisma.consultation.findUnique({
+      where: { id: payload.consultationId },
+      include: {
+        participants: {
+          include: { user: true },
+        },
+      },
+    })
+
+    this.sendMail(
+      consultation.participants
+        // get the actual user from the Participation
+        .map((p) => p.user)
+        .filter((u) => {
+          if (!u.email) return false
+          const ability = this.caslFactory.createForConsultationRead(u)
+          return ability.can(
+            Permissions.Read,
+            subject('Consultation', consultation),
+          )
+        })
+        .map((u) => {
+          const html = this.generateMail(
+            {
+              firstName: u.firstName,
+              consultationName: consultation.name,
+              consultationLocation: consultation.location,
+              consultationUrl: `${process.env.FRONTEND_HOST}/consultations/${consultation.id}`,
+            },
+            'locationChanged',
+          )
+          return {
+            from: 'Konzisite',
+            to: u.email,
+            subject: 'Konzi helyszine megváltozott!',
             html,
           }
         }),
