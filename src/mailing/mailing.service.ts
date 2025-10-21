@@ -6,15 +6,17 @@ import { existsSync, readFileSync } from 'fs'
 import { subject } from '@casl/ability'
 import { OnEvent } from '@nestjs/event-emitter'
 import { CaslAbilityFactory, Permissions } from 'src/auth/casl-ability.factory'
+import { ConsultationEntity } from 'src/consultations/dto/ConsultationEntity.dto'
 import { PrismaService } from 'src/prisma/prisma.service'
+import {
+  ConsultationDetailsChangedEvent,
+  ConsultationDetailsChangedKey,
+  ValueChange,
+} from './events/ConsultationDetailsChanged'
 import {
   RequestFulfilledEvent,
   RequestFulfilledKey,
 } from './events/RequestFulfilled'
-import {
-  LocationChangedEvent,
-  LocationChangedKey,
-} from './events/LocationChanged'
 import { MailingModule } from './mailing.module'
 
 type Templates = Record<string, string> & { default: string }
@@ -185,8 +187,8 @@ export class MailingService {
     )
   }
 
-  @OnEvent(LocationChangedKey)
-  async handleLocationChanged(payload: LocationChangedEvent) {
+  @OnEvent(ConsultationDetailsChangedKey)
+  async handleLocationChanged(payload: ConsultationDetailsChangedEvent) {
     const consultation = await this.prisma.consultation.findUnique({
       where: { id: payload.consultationId },
       include: {
@@ -213,18 +215,45 @@ export class MailingService {
             {
               firstName: u.firstName,
               consultationName: consultation.name,
-              consultationLocation: consultation.location,
               consultationUrl: `${process.env.FRONTEND_HOST}/consultations/${consultation.id}`,
+              dateChanged: this.formatDateChange(
+                consultation,
+                payload.startDateChanged,
+                payload.endDateChanged,
+              ),
+              locationChanged: payload.locationChanged,
             },
-            'locationChanged',
+            'konziDetailsChanged',
           )
           return {
             from: 'Konzisite',
             to: u.email,
-            subject: 'Konzi helyszine megváltozott!',
+            subject: 'Megváltozott egy konzultáció helyszíne/időpontja!',
             html,
           }
         }),
     )
+  }
+
+  private formatDateChange(
+    consultation: ConsultationEntity,
+    startDateChange?: ValueChange<Date>,
+    endDateChange?: ValueChange<Date>,
+  ): ValueChange<string> | undefined {
+    if (!startDateChange && !endDateChange) return undefined
+    return {
+      oldValue: this.formatDateRange(
+        startDateChange?.oldValue ?? consultation.startDate,
+        endDateChange?.oldValue ?? consultation.endDate,
+      ),
+      newValue: this.formatDateRange(
+        startDateChange?.newValue ?? consultation.startDate,
+        endDateChange?.newValue ?? consultation.endDate,
+      ),
+    }
+  }
+
+  private formatDateRange(startDate: Date, endDate: Date): string {
+    return `${startDate.toLocaleDateString('hu', { dateStyle: 'short' })} ${startDate.toLocaleTimeString('hu', { timeStyle: 'short' })}-${endDate.toLocaleTimeString('hu', { timeStyle: 'short' })}`
   }
 }

@@ -164,6 +164,9 @@
         color: red;
         font-size: 16px;
       }
+      .strikethrough {
+        text-decoration: line-through;
+      }
     </style>
   </head>
 
@@ -184,12 +187,17 @@
         </tr>
         <tr>
           <td style="padding: 20px">
-            <h1 style="text-align: center">Konzi helyszine megváltozott!</h1>
+            <h1 style="text-align: center">Megváltozott egy konzultáció helyszíne/időpontja!</h1>
             <p class="greet">Kedves <%=firstName%>!</p>
             <p style="text-align: justify">
-              Megváltozott a <b><%=consultationName%></b> helyszine:
-              <b><%=consultationLocation%></b>. További részletek:
+              Megváltoztak a <b><%=consultationName%></b> konzultáció egyes adatai:
             </p>
+            <% if (locationChanged) { %>
+              <p><b>Helyszín:</b> <span class="strikethrough"><%=locationChanged.oldValue %></span> <b><%=locationChanged.newValue %></b></b></p>
+            <% } %>
+            <% if (dateChanged) { %>
+              <p><b>Időpont:</b> <span class="strikethrough"><%=dateChanged.oldValue %></span> <b><%=dateChanged.newValue %></b></p>
+            <% } %>
             <div class="call-to-action-wrapper">
               <a
                 style="

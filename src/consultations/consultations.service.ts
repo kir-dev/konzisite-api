@@ -12,6 +12,10 @@ import { unlink } from 'fs'
 import { join } from 'path'
 import { CaslAbilityFactory } from 'src/auth/casl-ability.factory'
 import {
+  ConsultationDetailsChangedEvent,
+  ConsultationDetailsChangedKey,
+} from 'src/mailing/events/ConsultationDetailsChanged'
+import {
   RequestFulfilledEvent,
   RequestFulfilledKey,
 } from 'src/mailing/events/RequestFulfilled'
@@ -22,10 +26,6 @@ import { ConsultationDetailsDto } from './dto/ConsultationDetails.dto'
 import { ConsultationEntity, Language } from './dto/ConsultationEntity.dto'
 import { CreateConsultationDto } from './dto/CreateConsultation.dto'
 import { UpdateConsultationDto } from './dto/UpdateConsultation.dto'
-import {
-  LocationChangedEvent,
-  LocationChangedKey,
-} from 'src/mailing/events/LocationChanged'
 
 type findAllParams = {
   user: UserEntity
@@ -276,7 +276,7 @@ export class ConsultationsService {
   }
 
   async update(id: number, dto: UpdateConsultationDto) {
-    const konzi = await this.prisma.consultation.findUnique({
+    const originalKonzi = await this.prisma.consultation.findUnique({
       where: { id },
       include: {
         targetGroups: true,
@@ -295,15 +295,15 @@ export class ConsultationsService {
       ...restOfData
     } = dto
     try {
-      const consultation = await this.prisma.consultation.update({
+      const updatedKonzi = await this.prisma.consultation.update({
         where: { id },
         data: {
           ...restOfData,
           subject: {
-            connect: { id: dto.subjectId || konzi.subjectId },
+            connect: { id: dto.subjectId || originalKonzi.subjectId },
           },
           targetGroups: {
-            disconnect: konzi.targetGroups
+            disconnect: originalKonzi.targetGroups
               .filter((g) =>
                 targetGroupIds ? !targetGroupIds.includes(g.id) : false,
               )
@@ -311,14 +311,14 @@ export class ConsultationsService {
             connect: targetGroupIds
               ?.filter(
                 (parameterGroupId) =>
-                  konzi.targetGroups?.filter(
+                  originalKonzi.targetGroups?.filter(
                     (groupInDb) => groupInDb.id === parameterGroupId,
                   ).length === 0,
               )
               .map((id) => ({ id })),
           },
           presentations: {
-            deleteMany: konzi.presentations
+            deleteMany: originalKonzi.presentations
               .filter((p) =>
                 presenterIds ? !presenterIds.includes(p.userId) : false,
               )
@@ -328,7 +328,7 @@ export class ConsultationsService {
                 presenterIds
                   ?.filter(
                     (parameterUserId) =>
-                      konzi.presentations?.filter(
+                      originalKonzi.presentations?.filter(
                         (presentationsInDb) =>
                           presentationsInDb.userId === parameterUserId,
                       ).length === 0,
@@ -340,30 +340,24 @@ export class ConsultationsService {
             request:
               dto.requestId === null
                 ? { disconnect: true }
-                : dto.requestId || konzi.requestId
+                : dto.requestId || originalKonzi.requestId
                   ? {
-                      connect: { id: dto.requestId || konzi.requestId },
+                      connect: { id: dto.requestId || originalKonzi.requestId },
                     }
                   : {},
           },
         },
       })
 
-      if (requestId && requestId !== konzi.requestId) {
+      if (requestId && requestId !== originalKonzi.requestId) {
         this.eventEmitter.emit(
           RequestFulfilledKey,
-          new RequestFulfilledEvent(requestId, consultation.id),
+          new RequestFulfilledEvent(requestId, updatedKonzi.id),
         )
       }
+      this.buildAndEmitChangeEvent(originalKonzi, updatedKonzi, dto)
 
-      if (konzi.location !== dto.location) {
-        this.eventEmitter.emit(
-          LocationChangedKey,
-          new LocationChangedEvent(consultation.id),
-        )
-      }
-
-      return consultation
+      return updatedKonzi
     } catch {
       throw new BadRequestException('Érvénytelen külső kulcs!')
     }
@@ -413,5 +407,52 @@ export class ConsultationsService {
     }
     this.logger.log(`Consultation #${consultation.id} deleted`)
     return this.prisma.consultation.delete({ where: { id } })
+  }
+
+  private buildAndEmitChangeEvent(
+    oldConsultation: ConsultationEntity,
+    newConsultation: ConsultationEntity,
+    changeDto: UpdateConsultationDto,
+  ) {
+    // Create a change event to collect crucial detail changes
+    const changeEvent = new ConsultationDetailsChangedEvent(newConsultation.id)
+
+    if (changeDto.location && oldConsultation.location !== changeDto.location) {
+      changeEvent.locationChanged = {
+        oldValue: oldConsultation.location,
+        newValue: newConsultation.location,
+      }
+    }
+
+    if (
+      changeDto.startDate &&
+      oldConsultation.startDate.getTime() !==
+        new Date(changeDto.startDate).getTime()
+    ) {
+      changeEvent.startDateChanged = {
+        oldValue: oldConsultation.startDate,
+        newValue: newConsultation.startDate,
+      }
+    }
+
+    if (
+      changeDto.endDate &&
+      oldConsultation.endDate.getTime() !==
+        new Date(changeDto.endDate).getTime()
+    ) {
+      changeEvent.endDateChanged = {
+        oldValue: oldConsultation.endDate,
+        newValue: newConsultation.endDate,
+      }
+    }
+
+    // Emit the change event if crucial event data was changed
+    if (
+      changeEvent.endDateChanged ||
+      changeEvent.startDateChanged ||
+      changeEvent.locationChanged
+    ) {
+      this.eventEmitter.emit(ConsultationDetailsChangedKey, changeEvent)
+    }
   }
 }
