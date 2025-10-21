@@ -188,7 +188,9 @@ export class MailingService {
   }
 
   @OnEvent(ConsultationDetailsChangedKey)
-  async handleLocationChanged(payload: ConsultationDetailsChangedEvent) {
+  async handleConsultationDetailsChanged(
+    payload: ConsultationDetailsChangedEvent,
+  ) {
     const consultation = await this.prisma.consultation.findUnique({
       where: { id: payload.consultationId },
       include: {
