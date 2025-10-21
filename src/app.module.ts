@@ -30,6 +30,8 @@ import { SchedulerService } from './utils/scheduler/scheduler.service'
     MailingModule.forRoot({
       templates: {
         default: process.env.MAIL_TEMPLATE_ROOT + 'requestFulfilled.ejs',
+        konziDetailsChanged:
+          process.env.MAIL_TEMPLATE_ROOT + 'konziDetailsChanged.ejs',
       },
       mailServerUrl: process.env.MAIL_SERVER_URL,
       apiKey: process.env.MAIL_API_KEY,

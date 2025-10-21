@@ -6,7 +6,13 @@ import { existsSync, readFileSync } from 'fs'
 import { subject } from '@casl/ability'
 import { OnEvent } from '@nestjs/event-emitter'
 import { CaslAbilityFactory, Permissions } from 'src/auth/casl-ability.factory'
+import { ConsultationEntity } from 'src/consultations/dto/ConsultationEntity.dto'
 import { PrismaService } from 'src/prisma/prisma.service'
+import {
+  ConsultationDetailsChangedEvent,
+  ConsultationDetailsChangedKey,
+  ValueChange,
+} from './events/ConsultationDetailsChanged'
 import {
   RequestFulfilledEvent,
   RequestFulfilledKey,
@@ -179,5 +185,77 @@ export class MailingService {
           }
         }),
     )
+  }
+
+  @OnEvent(ConsultationDetailsChangedKey)
+  async handleConsultationDetailsChanged(
+    payload: ConsultationDetailsChangedEvent,
+  ) {
+    const consultation = await this.prisma.consultation.findUnique({
+      where: { id: payload.consultationId },
+      include: {
+        participants: {
+          include: { user: true },
+        },
+      },
+    })
+
+    this.sendMail(
+      consultation.participants
+        // get the actual user from the Participation
+        .map((p) => p.user)
+        .filter((u) => {
+          if (!u.email) return false
+          const ability = this.caslFactory.createForConsultationRead(u)
+          return ability.can(
+            Permissions.Read,
+            subject('Consultation', consultation),
+          )
+        })
+        .map((u) => {
+          const html = this.generateMail(
+            {
+              firstName: u.firstName,
+              consultationName: consultation.name,
+              consultationUrl: `${process.env.FRONTEND_HOST}/consultations/${consultation.id}`,
+              dateChanged: this.formatDateChange(
+                consultation,
+                payload.startDateChanged,
+                payload.endDateChanged,
+              ),
+              locationChanged: payload.locationChanged,
+            },
+            'konziDetailsChanged',
+          )
+          return {
+            from: 'Konzisite',
+            to: u.email,
+            subject: 'Megváltozott egy konzultáció helyszíne/időpontja!',
+            html,
+          }
+        }),
+    )
+  }
+
+  private formatDateChange(
+    consultation: ConsultationEntity,
+    startDateChange?: ValueChange<Date>,
+    endDateChange?: ValueChange<Date>,
+  ): ValueChange<string> | undefined {
+    if (!startDateChange && !endDateChange) return undefined
+    return {
+      oldValue: this.formatDateRange(
+        startDateChange?.oldValue ?? consultation.startDate,
+        endDateChange?.oldValue ?? consultation.endDate,
+      ),
+      newValue: this.formatDateRange(
+        startDateChange?.newValue ?? consultation.startDate,
+        endDateChange?.newValue ?? consultation.endDate,
+      ),
+    }
+  }
+
+  private formatDateRange(startDate: Date, endDate: Date): string {
+    return `${startDate.toLocaleDateString('hu', { dateStyle: 'short' })} ${startDate.toLocaleTimeString('hu', { timeStyle: 'short' })}-${endDate.toLocaleTimeString('hu', { timeStyle: 'short' })}`
   }
 }
