@@ -4,9 +4,15 @@ import { NestExpressApplication } from '@nestjs/platform-express'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import 'dotenv/config'
 import { AppModule } from './app.module'
+import tracer from './tracer'
 
 async function bootstrap() {
   const isProduction = process.env.NODE_ENV === 'production'
+  try {
+    await tracer.start()
+  } catch (err) {
+    console.error('Failed to start opentelemetry:', err)
+  }
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: isProduction
       ? ['log', 'error', 'warn']
