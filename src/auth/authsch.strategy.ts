@@ -16,6 +16,7 @@ export class AuthschStrategy extends PassportStrategy(Strategy) {
       clientId: process.env.AUTHSCH_CLIENT_ID,
       clientSecret: process.env.AUTHSCH_CLIENT_SECRET,
       scopes: [AuthSchScope.PROFILE, AuthSchScope.EMAIL],
+      redirectUri: `${process.env.BACKEND_HOST}/auth/callback`,
     })
   }
 

@@ -245,7 +245,21 @@ export class UsersService {
   }
 
   async findByAuthSchId(authSchId: string): Promise<UserEntity> {
-    return this.prisma.user.findUnique({ where: { authSchId: authSchId } })
+    return this.prisma.user.findUnique({ where: { authSchId } })
+  }
+
+  async findByEmail(email: string): Promise<UserEntity> {
+    return this.prisma.user.findUnique({ where: { email } })
+  }
+
+  async updateAuthSchId(
+    email: string,
+    newAuthSchId: string,
+  ): Promise<UserEntity> {
+    return this.prisma.user.update({
+      where: { email },
+      data: { authSchId: newAuthSchId },
+    })
   }
 
   async create(data: CreateUserDto): Promise<UserEntity> {

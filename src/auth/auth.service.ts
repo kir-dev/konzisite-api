@@ -15,9 +15,27 @@ export class AuthService {
 
   async findOrCreateUser(oAuthUser: AuthSchProfile): Promise<UserEntity> {
     try {
-      const user = await this.usersService.findByAuthSchId(oAuthUser.authSchId)
+      let user = await this.usersService.findByAuthSchId(oAuthUser.authSchId)
       if (user) {
         return user
+      }
+
+      // For some reason, the authSchId of some of our users got mixed up.
+      // So if we can't find their user based on the authSchId, we try looking for a user with their email.
+      // But only if they verified their email in authSch, to make sure that you can't steal the account of others
+      if (oAuthUser.emailVerfied) {
+        user = await this.usersService.findByEmail(oAuthUser.email)
+        if (user) {
+          // we also update the authSchId in the DB
+          const updatedUser = await this.usersService.updateAuthSchId(
+            oAuthUser.email,
+            oAuthUser.authSchId,
+          )
+          this.logger.warn(
+            `AuthSchId for user with email ${oAuthUser.email} has changed from ${user.authSchId} to ${updatedUser.authSchId}!`,
+          )
+          return updatedUser
+        }
       }
 
       const newUser = await this.usersService.create({
