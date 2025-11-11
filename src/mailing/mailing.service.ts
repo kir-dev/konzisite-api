@@ -25,11 +25,10 @@ interface SendMail {
   to: string
   from: {
     name: string
-    email: string
   }
   subject: string
   html: string
-  queue?: string
+  replyTo: string
 }
 
 export interface Setup {
@@ -169,7 +168,7 @@ export class MailingService {
       consultationQuery,
     ])
 
-    this.sendMail(
+    await this.sendMail(
       [...request.supporters, request.initializer]
         .filter((u) => {
           if (!u.email) return false
@@ -186,7 +185,8 @@ export class MailingService {
             consultationUrl: `${process.env.FRONTEND_HOST}/consultations/${consultation.id}`,
           })
           return {
-            from: { name: 'Konzisite', email: process.env.MAIL_FROM_EMAIL },
+            from: { name: 'Konzisite' },
+            replyTo: process.env.MAIL_FROM_EMAIL,
             to: u.email,
             subject: 'Megvalósul egy konzi kérésed!',
             html,
@@ -208,7 +208,7 @@ export class MailingService {
       },
     })
 
-    this.sendMail(
+    await this.sendMail(
       consultation.participants
         // get the actual user from the Participation
         .map((p) => p.user)
@@ -236,7 +236,8 @@ export class MailingService {
             'konziDetailsChanged',
           )
           return {
-            from: 'Konzisite',
+            from: { name: 'Konzisite' },
+            replyTo: process.env.MAIL_FROM_EMAIL,
             to: u.email,
             subject: 'Megváltozott egy konzultáció helyszíne/időpontja!',
             html,
