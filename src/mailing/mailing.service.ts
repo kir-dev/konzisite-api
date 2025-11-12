@@ -23,7 +23,9 @@ type Templates = Record<string, string> & { default: string }
 
 interface SendMail {
   to: string
-  from: string
+  from: {
+    name: string
+  }
   subject: string
   html: string
 }
@@ -105,7 +107,7 @@ export class MailingService {
    * Sends a mail through the mailing delivery service provided in the setup process.
    * @param {SendMail[]} data - Array of objects containing to, from, subject and html string fields.
    */
-  sendMail(data: SendMail[]) {
+  async sendMail(data: SendMail[]) {
     MailingService.checkSetup()
     if (process.env.NODE_ENV !== 'production') {
       this.logger.debug(
@@ -113,21 +115,27 @@ export class MailingService {
       )
       return Promise.resolve(false)
     }
-    return axios
-      .post(MailingService.mailServerUrl, data, {
-        headers: { 'X-Api-Key': MailingService.apiKey },
-      })
-      .then(() => {
-        this.logger.log(
-          `${data.length} email data sent to Kir-Dev email service`,
-        )
-        return true
-      })
-      .catch((e) => {
-        this.logger.log('Error during email sending')
-        this.logger.error(e)
-        return false
-      })
+    try {
+      await axios.post(
+        MailingService.mailServerUrl,
+        {
+          messages: data.map((email) => ({
+            ...email,
+            queue: process.env.MAIL_QUEUE,
+          })),
+          queue: process.env.MAIL_QUEUE,
+        },
+        {
+          headers: { Authorization: `Api-Key ${MailingService.apiKey}` },
+        },
+      )
+      this.logger.log(`${data.length} email data sent to Kir-Dev email service`)
+      return true
+    } catch (e) {
+      this.logger.log('Error during email sending')
+      this.logger.error(e)
+      return false
+    }
   }
 
   private static checkSetup() {
@@ -161,7 +169,7 @@ export class MailingService {
       consultationQuery,
     ])
 
-    this.sendMail(
+    await this.sendMail(
       [...request.supporters, request.initializer]
         .filter((u) => {
           if (!u.email) return false
@@ -178,7 +186,7 @@ export class MailingService {
             consultationUrl: `${process.env.FRONTEND_HOST}/consultations/${consultation.id}`,
           })
           return {
-            from: 'Konzisite',
+            from: { name: 'Konzisite' },
             to: u.email,
             subject: 'Megvalósul egy konzi kérésed!',
             html,
@@ -200,7 +208,7 @@ export class MailingService {
       },
     })
 
-    this.sendMail(
+    await this.sendMail(
       consultation.participants
         // get the actual user from the Participation
         .map((p) => p.user)
@@ -228,7 +236,7 @@ export class MailingService {
             'konziDetailsChanged',
           )
           return {
-            from: 'Konzisite',
+            from: { name: 'Konzisite' },
             to: u.email,
             subject: 'Megváltozott egy konzultáció helyszíne/időpontja!',
             html,
