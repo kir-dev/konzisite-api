@@ -28,7 +28,6 @@ interface SendMail {
   }
   subject: string
   html: string
-  replyTo: string
 }
 
 export interface Setup {
@@ -117,16 +116,18 @@ export class MailingService {
       return Promise.resolve(false)
     }
     try {
-      await Promise.all(
-        data.map((email) =>
-          axios.post(
-            MailingService.mailServerUrl,
-            { ...email, queue: process.env.MAIL_QUEUE },
-            {
-              headers: { Authorization: `Api-Key ${MailingService.apiKey}` },
-            },
-          ),
-        ),
+      await axios.post(
+        MailingService.mailServerUrl,
+        {
+          messages: data.map((email) => ({
+            ...email,
+            queue: process.env.MAIL_QUEUE,
+          })),
+          queue: process.env.MAIL_QUEUE,
+        },
+        {
+          headers: { Authorization: `Api-Key ${MailingService.apiKey}` },
+        },
       )
       this.logger.log(`${data.length} email data sent to Kir-Dev email service`)
       return true
@@ -186,7 +187,6 @@ export class MailingService {
           })
           return {
             from: { name: 'Konzisite' },
-            replyTo: process.env.MAIL_FROM_EMAIL,
             to: u.email,
             subject: 'Megvalósul egy konzi kérésed!',
             html,
@@ -237,7 +237,6 @@ export class MailingService {
           )
           return {
             from: { name: 'Konzisite' },
-            replyTo: process.env.MAIL_FROM_EMAIL,
             to: u.email,
             subject: 'Megváltozott egy konzultáció helyszíne/időpontja!',
             html,
