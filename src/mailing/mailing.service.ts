@@ -22,7 +22,7 @@ import { MailingModule } from './mailing.module'
 type Templates = Record<string, string> & { default: string }
 
 interface SendMail {
-  to: string
+  to: string[]
   from: {
     name: string
   }
@@ -107,11 +107,11 @@ export class MailingService {
    * Sends a mail through the mailing delivery service provided in the setup process.
    * @param {SendMail[]} data - Array of objects containing to, from, subject and html string fields.
    */
-  async sendMail(data: SendMail[]) {
+  async sendMail(data: SendMail) {
     MailingService.checkSetup()
     if (process.env.NODE_ENV !== 'production') {
       this.logger.debug(
-        `The app would be sending ${data.length} email(s) right now, but email sending is only enabled in production.`,
+        `The app would be sending ${data.to.length} email(s) right now, but email sending is only enabled in production.`,
       )
       return Promise.resolve(false)
     }
@@ -119,17 +119,16 @@ export class MailingService {
       await axios.post(
         MailingService.mailServerUrl,
         {
-          messages: data.map((email) => ({
-            ...email,
-            queue: process.env.MAIL_QUEUE,
-          })),
+          ...data,
           queue: process.env.MAIL_QUEUE,
         },
         {
           headers: { Authorization: `Api-Key ${MailingService.apiKey}` },
         },
       )
-      this.logger.log(`${data.length} email data sent to Kir-Dev email service`)
+      this.logger.log(
+        `${data.to.length} email data sent to Kir-Dev email service`,
+      )
       return true
     } catch (e) {
       this.logger.log('Error during email sending')
@@ -169,8 +168,9 @@ export class MailingService {
       consultationQuery,
     ])
 
-    await this.sendMail(
-      [...request.supporters, request.initializer]
+    await this.sendMail({
+      from: { name: 'Konzisite' },
+      to: [...request.supporters, request.initializer]
         .filter((u) => {
           if (!u.email) return false
           const ability = this.caslFactory.createForConsultationRead(u)
@@ -179,20 +179,13 @@ export class MailingService {
             subject('Consultation', consultation),
           )
         })
-        .map((u) => {
-          const html = this.generateMail({
-            firstName: u.firstName,
-            subjectName: request.subject.name,
-            consultationUrl: `${process.env.FRONTEND_HOST}/consultations/${consultation.id}`,
-          })
-          return {
-            from: { name: 'Konzisite' },
-            to: u.email,
-            subject: 'Megvalósul egy konzi kérésed!',
-            html,
-          }
-        }),
-    )
+        .map((u) => u.email),
+      subject: 'Megvalósul egy konzi kérésed!',
+      html: this.generateMail({
+        subjectName: request.subject.name,
+        consultationUrl: `${process.env.FRONTEND_HOST}/consultations/${consultation.id}`,
+      }),
+    })
   }
 
   @OnEvent(ConsultationDetailsChangedKey)
@@ -208,8 +201,9 @@ export class MailingService {
       },
     })
 
-    await this.sendMail(
-      consultation.participants
+    await this.sendMail({
+      from: { name: 'Konzisite' },
+      to: consultation.participants
         // get the actual user from the Participation
         .map((p) => p.user)
         .filter((u) => {
@@ -220,29 +214,22 @@ export class MailingService {
             subject('Consultation', consultation),
           )
         })
-        .map((u) => {
-          const html = this.generateMail(
-            {
-              firstName: u.firstName,
-              consultationName: consultation.name,
-              consultationUrl: `${process.env.FRONTEND_HOST}/consultations/${consultation.id}`,
-              dateChanged: this.formatDateChange(
-                consultation,
-                payload.startDateChanged,
-                payload.endDateChanged,
-              ),
-              locationChanged: payload.locationChanged,
-            },
-            'konziDetailsChanged',
-          )
-          return {
-            from: { name: 'Konzisite' },
-            to: u.email,
-            subject: 'Megváltozott egy konzultáció helyszíne/időpontja!',
-            html,
-          }
-        }),
-    )
+        .map((u) => u.email),
+      subject: 'Megváltozott egy konzultáció helyszíne/időpontja!',
+      html: this.generateMail(
+        {
+          consultationName: consultation.name,
+          consultationUrl: `${process.env.FRONTEND_HOST}/consultations/${consultation.id}`,
+          dateChanged: this.formatDateChange(
+            consultation,
+            payload.startDateChanged,
+            payload.endDateChanged,
+          ),
+          locationChanged: payload.locationChanged,
+        },
+        'konziDetailsChanged',
+      ),
+    })
   }
 
   private formatDateChange(
