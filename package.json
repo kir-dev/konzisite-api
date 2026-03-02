@@ -23,7 +23,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@casl/ability": "^6.3.3",
+    "@casl/ability": "^6.8.0",
     "@casl/prisma": "^1.4.1",
     "@kir-dev/passport-authsch": "^2.2.5",
     "@nestjs/axios": "^3.0.0",
