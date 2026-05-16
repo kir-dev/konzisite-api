@@ -16,6 +16,10 @@ import {
   ConsultationDetailsChangedKey,
 } from 'src/mailing/events/ConsultationDetailsChanged'
 import {
+  ConsultationPresentersChangedEvent,
+  ConsultationPresentersChangedKey,
+} from 'src/mailing/events/ConsultationPresentersChanged'
+import {
   RequestFulfilledEvent,
   RequestFulfilledKey,
 } from 'src/mailing/events/RequestFulfilled'
@@ -265,6 +269,10 @@ export class ConsultationsService {
           new RequestFulfilledEvent(requestId, consultation.id),
         )
       }
+      this.eventEmitter.emit(
+        ConsultationPresentersChangedKey,
+        new ConsultationPresentersChangedEvent(consultation.id, presenterIds),
+      )
       this.logger.log(
         `Consultation #${consultation.id} created by user #${user.id}`,
       )
@@ -356,6 +364,18 @@ export class ConsultationsService {
         )
       }
       this.buildAndEmitChangeEvent(originalKonzi, updatedKonzi, dto)
+
+      if (presenterIds) {
+        const newPresenterIds = presenterIds.filter(
+          (pid) => !originalKonzi.presentations.some((p) => p.userId === pid),
+        )
+        if (newPresenterIds.length > 0) {
+          this.eventEmitter.emit(
+            ConsultationPresentersChangedKey,
+            new ConsultationPresentersChangedEvent(id, newPresenterIds),
+          )
+        }
+      }
 
       return updatedKonzi
     } catch {
