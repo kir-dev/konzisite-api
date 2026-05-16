@@ -5,7 +5,7 @@ import {
   Presentation,
   Rating,
   Subject,
-} from '@prisma/client'
+} from '../generated/client'
 import { createHash } from 'crypto'
 import * as ejs from 'ejs'
 import { readFileSync } from 'fs'
@@ -110,7 +110,7 @@ export class ReportsService {
       validateUrl: `${process.env.BACKEND_HOST}/reports/validate/${hash}`,
     })
 
-    await page.setContent(html, { waitUntil: 'networkidle0' })
+    await page.setContent(html, { waitUntil: 'load' })
     await page.emulateMediaType('screen')
     const pdf = await page.pdf({
       printBackground: true,

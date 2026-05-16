@@ -19,6 +19,8 @@ Finally, copy the contents of `.env.example` to a new file named `.env`. Replace
 ```bash
 # Install the dependencies
 npm install
+# Generate files based on schema
+npx prisma generate
 # Then apply the migrations
 npx prisma migrate dev
 # Optionally seed the databse with mock data

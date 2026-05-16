@@ -8,7 +8,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common'
-import { Prisma } from '@prisma/client'
+import { Prisma } from '../generated/client'
 import { Permissions } from 'src/auth/casl-ability.factory'
 import { AuthorizationSubject } from 'src/auth/decorator/authorizationSubject.decorator'
 import { CurrentUser } from 'src/auth/decorator/current-user.decorator'

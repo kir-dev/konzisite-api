@@ -1,7 +1,7 @@
 import { AuthSchProfile } from '@kir-dev/passport-authsch'
 import { Injectable, Logger } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
-import { User } from '@prisma/client'
+import { User } from '../generated/client'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { UsersService } from '../users/users.service'
 @Injectable()
