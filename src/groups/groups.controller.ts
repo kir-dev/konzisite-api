@@ -11,7 +11,7 @@ import {
   Query,
 } from '@nestjs/common'
 import { ApiQuery } from '@nestjs/swagger'
-import { GroupRole, Prisma } from '@prisma/client'
+import { GroupRole, Prisma } from '../generated/client'
 import { Permissions } from 'src/auth/casl-ability.factory'
 import { AuthorizationSubject } from 'src/auth/decorator/authorizationSubject.decorator'
 import { CurrentUser } from 'src/auth/decorator/current-user.decorator'

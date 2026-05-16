@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { GroupRole, Prisma } from '@prisma/client'
+import { GroupRole, Prisma } from '../generated/client'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'
 import { publicUserProjection } from 'src/utils/publicUserProjection'

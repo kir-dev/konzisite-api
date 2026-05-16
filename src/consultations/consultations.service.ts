@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
-import { Major, Prisma } from '@prisma/client'
+import { Major, Prisma } from '../generated/client'
 import { unlink } from 'fs/promises'
 import { join } from 'path'
 import { CaslAbilityFactory } from 'src/auth/casl-ability.factory'
