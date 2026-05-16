@@ -32,6 +32,8 @@ import { SchedulerService } from './utils/scheduler/scheduler.service'
         default: process.env.MAIL_TEMPLATE_ROOT + 'requestFulfilled.ejs',
         konziDetailsChanged:
           process.env.MAIL_TEMPLATE_ROOT + 'konziDetailsChanged.ejs',
+        consultationInvitation:
+          process.env.MAIL_TEMPLATE_ROOT + 'consultationInvitation.ejs',
       },
       mailServerUrl: process.env.MAIL_SERVER_URL,
       apiKey: process.env.MAIL_API_KEY,

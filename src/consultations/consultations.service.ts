@@ -12,9 +12,17 @@ import { unlink } from 'fs/promises'
 import { join } from 'path'
 import { CaslAbilityFactory } from 'src/auth/casl-ability.factory'
 import {
+  ConsultationCreatedEvent,
+  ConsultationCreatedKey,
+} from 'src/mailing/events/ConsultationCreated'
+import {
   ConsultationDetailsChangedEvent,
   ConsultationDetailsChangedKey,
 } from 'src/mailing/events/ConsultationDetailsChanged'
+import {
+  ConsultationPresentersChangedEvent,
+  ConsultationPresentersChangedKey,
+} from 'src/mailing/events/ConsultationPresentersChanged'
 import {
   RequestFulfilledEvent,
   RequestFulfilledKey,
@@ -265,6 +273,10 @@ export class ConsultationsService {
           new RequestFulfilledEvent(requestId, consultation.id),
         )
       }
+      this.eventEmitter.emit(
+        ConsultationCreatedKey,
+        new ConsultationCreatedEvent(consultation.id),
+      )
       this.logger.log(
         `Consultation #${consultation.id} created by user #${user.id}`,
       )
@@ -356,6 +368,18 @@ export class ConsultationsService {
         )
       }
       this.buildAndEmitChangeEvent(originalKonzi, updatedKonzi, dto)
+
+      if (presenterIds) {
+        const newPresenterIds = presenterIds.filter(
+          (pid) => !originalKonzi.presentations.some((p) => p.userId === pid),
+        )
+        if (newPresenterIds.length > 0) {
+          this.eventEmitter.emit(
+            ConsultationPresentersChangedKey,
+            new ConsultationPresentersChangedEvent(id, newPresenterIds),
+          )
+        }
+      }
 
       return updatedKonzi
     } catch {
