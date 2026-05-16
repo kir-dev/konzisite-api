@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Major, Prisma } from '@prisma/client'
-import { unlink } from 'fs'
+import { unlink } from 'fs/promises'
 import { join } from 'path'
 import { CaslAbilityFactory } from 'src/auth/casl-ability.factory'
 import {
@@ -368,13 +368,12 @@ export class ConsultationsService {
       where: { id },
     })
     if (consultation.fileName && fileName !== consultation.fileName) {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      unlink(join(process.cwd(), '/static', consultation.fileName), () => {})
+      void unlink(join(process.cwd(), '/static', consultation.fileName))
     }
     this.logger.log(
       `Attachment (filename: ${fileName} was uploaded to Consultation #${id})`,
     )
-    return await this.prisma.consultation.update({
+    return this.prisma.consultation.update({
       where: { id },
       data: { fileName },
     })
@@ -385,13 +384,12 @@ export class ConsultationsService {
       where: { id },
     })
     if (consultation.fileName) {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      unlink(join(process.cwd(), '/static', consultation.fileName), () => {})
+      void unlink(join(process.cwd(), '/static', consultation.fileName))
     }
     this.logger.log(
       `Attacment (filename: ${consultation.fileName}) of Consultation #${id}  was deleted`,
     )
-    return await this.prisma.consultation.update({
+    return this.prisma.consultation.update({
       where: { id },
       data: { fileName: null },
     })
@@ -402,8 +400,7 @@ export class ConsultationsService {
       where: { id },
     })
     if (consultation.fileName) {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      unlink(join(process.cwd(), '/static', consultation.fileName), () => {})
+      void unlink(join(process.cwd(), '/static', consultation.fileName))
     }
     this.logger.log(`Consultation #${consultation.id} deleted`)
     return this.prisma.consultation.delete({ where: { id } })
