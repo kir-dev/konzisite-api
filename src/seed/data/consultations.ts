@@ -1,4 +1,4 @@
-import { Language } from '@prisma/client'
+import { Language } from '../../generated/client'
 import { ConsultationEntity } from 'src/consultations/dto/ConsultationEntity.dto'
 
 export const seededConsultations: ConsultationEntity[] = [

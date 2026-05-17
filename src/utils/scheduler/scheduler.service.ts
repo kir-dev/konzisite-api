@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import { unlink } from 'fs'
+import { unlink } from 'fs/promises'
 import { join } from 'path'
 import { PrismaService } from 'src/prisma/prisma.service'
 
@@ -18,8 +18,7 @@ export class SchedulerService {
       },
     })
     consultations.forEach((c) => {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      unlink(join(process.cwd(), '/static', c.fileName), () => {})
+      void unlink(join(process.cwd(), '/static', c.fileName))
     })
     const result = await this.prisma.consultation.updateMany({
       where: {

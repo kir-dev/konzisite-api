@@ -16,8 +16,9 @@ import {
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ApiQuery } from '@nestjs/swagger'
-import { Prisma } from '@prisma/client'
-import { readFileSync, unlink } from 'fs'
+import { Prisma } from '../generated/client'
+import { readFileSync } from 'fs'
+import { unlink } from 'fs/promises'
 import { diskStorage } from 'multer'
 import { parse } from 'papaparse'
 import { join } from 'path'
@@ -114,7 +115,7 @@ export class SubjectController {
       join(process.cwd(), '/static/importdata.csv'),
     ).toString()
 
-    const subjects = await parse<CreateSubjectDto>(file_contents, {
+    const subjects = parse<CreateSubjectDto>(file_contents, {
       header: true,
       skipEmptyLines: true,
       transform: (value, field: string) => {
@@ -141,8 +142,7 @@ export class SubjectController {
       this.logger.error(e)
       throw new BadRequestException('Érvénytelen formátum!')
     } finally {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      unlink(join(process.cwd(), '/static/importdata.csv'), () => {})
+      void unlink(join(process.cwd(), '/static/importdata.csv'))
     }
   }
 

@@ -1,6 +1,6 @@
 import { JwtService } from '@nestjs/jwt'
 import { Test, TestingModule } from '@nestjs/testing'
-import { User } from '@prisma/client'
+import { User } from '../generated/client'
 import { PrismaModule } from 'src/prisma/prisma.module'
 import { UsersService } from '../users/users.service'
 import { AuthController } from './auth.controller'

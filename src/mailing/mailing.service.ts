@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import axios from 'axios'
 import * as ejs from 'ejs'
 import { existsSync, readFileSync } from 'fs'
+import { createEvent, EventAttributes } from 'ics'
 
 import { subject } from '@casl/ability'
 import { OnEvent } from '@nestjs/event-emitter'
@@ -9,10 +10,18 @@ import { CaslAbilityFactory, Permissions } from 'src/auth/casl-ability.factory'
 import { ConsultationEntity } from 'src/consultations/dto/ConsultationEntity.dto'
 import { PrismaService } from 'src/prisma/prisma.service'
 import {
+  ConsultationCreatedEvent,
+  ConsultationCreatedKey,
+} from './events/ConsultationCreated'
+import {
   ConsultationDetailsChangedEvent,
   ConsultationDetailsChangedKey,
   ValueChange,
 } from './events/ConsultationDetailsChanged'
+import {
+  ConsultationPresentersChangedEvent,
+  ConsultationPresentersChangedKey,
+} from './events/ConsultationPresentersChanged'
 import {
   RequestFulfilledEvent,
   RequestFulfilledKey,
@@ -21,6 +30,12 @@ import { MailingModule } from './mailing.module'
 
 type Templates = Record<string, string> & { default: string }
 
+interface Attachment {
+  filename: string
+  content: string
+  contentType: string
+}
+
 interface SendMail {
   to: string[]
   from: {
@@ -28,6 +43,7 @@ interface SendMail {
   }
   subject: string
   html: string
+  attachments?: Attachment[]
 }
 
 export interface Setup {
@@ -229,6 +245,184 @@ export class MailingService {
         },
         'konziDetailsChanged',
       ),
+    })
+  }
+
+  private generateIcsString(
+    name: string,
+    descMarkdown: string | null,
+    startDate: Date,
+    endDate: Date,
+    location: string,
+    consultationId: number,
+  ): Promise<string> {
+    const eventOptions: EventAttributes = {
+      title: name,
+      description: descMarkdown || undefined,
+      start: [
+        startDate.getFullYear(),
+        startDate.getMonth() + 1,
+        startDate.getDate(),
+        startDate.getHours(),
+        startDate.getMinutes(),
+      ],
+      end: [
+        endDate.getFullYear(),
+        endDate.getMonth() + 1,
+        endDate.getDate(),
+        endDate.getHours(),
+        endDate.getMinutes(),
+      ],
+      location,
+      url: `${process.env.FRONTEND_HOST}/consultations/${consultationId}`,
+    }
+
+    return new Promise((resolve, reject) => {
+      createEvent(eventOptions, (err, value) => {
+        if (err) reject(err)
+        else resolve(value)
+      })
+    })
+  }
+
+  @OnEvent(ConsultationCreatedKey)
+  async handleConsultationCreated(payload: ConsultationCreatedEvent) {
+    const consultation = await this.prisma.consultation.findUnique({
+      where: { id: payload.consultationId },
+      include: {
+        presentations: {
+          include: { user: true },
+        },
+        targetGroups: {
+          include: {
+            members: true,
+          },
+        },
+        subject: true,
+        owner: true,
+      },
+    })
+
+    const icsContent = await this.generateIcsString(
+      consultation.name,
+      consultation.descMarkdown,
+      consultation.startDate,
+      consultation.endDate,
+      consultation.location,
+      consultation.id,
+    )
+
+    const recipients = consultation.presentations
+      .map((p) => p.user)
+      .filter((u) => {
+        if (!u.email) return false
+        const ability = this.caslFactory.createForConsultationRead(u)
+        return ability.can(
+          Permissions.Read,
+          subject('Consultation', consultation),
+        )
+      })
+
+    await this.sendMail({
+      from: { name: 'Konzisite' },
+      to: recipients.map((u) => u.email),
+      subject: 'Meghívó konzultációra!',
+      html: this.generateMail(
+        {
+          consultationName: consultation.name,
+          subjectName: consultation.subject.name,
+          location: consultation.location,
+          startDate: consultation.startDate.toLocaleString('hu', {
+            dateStyle: 'short',
+            timeStyle: 'short',
+          }),
+          endDate: consultation.endDate.toLocaleTimeString('hu', {
+            timeStyle: 'short',
+          }),
+          consultationUrl: `${process.env.FRONTEND_HOST}/consultations/${consultation.id}`,
+        },
+        'consultationInvitation',
+      ),
+      attachments: [
+        {
+          filename: `konzultacio_${consultation.id}.ics`,
+          content: Buffer.from(icsContent).toString('base64'),
+          contentType: 'text/calendar',
+        },
+      ],
+    })
+  }
+
+  @OnEvent(ConsultationPresentersChangedKey)
+  async handleConsultationPresentersChanged(
+    payload: ConsultationPresentersChangedEvent,
+  ) {
+    const consultation = await this.prisma.consultation.findUnique({
+      where: { id: payload.consultationId },
+      include: {
+        presentations: {
+          include: { user: true },
+        },
+        targetGroups: {
+          include: {
+            members: true,
+          },
+        },
+        subject: true,
+        owner: true,
+      },
+    })
+
+    const icsContent = await this.generateIcsString(
+      consultation.name,
+      consultation.descMarkdown,
+      consultation.startDate,
+      consultation.endDate,
+      consultation.location,
+      consultation.id,
+    )
+
+    const newPresenters = consultation.presentations
+      .filter((p) => payload.newPresenterIds.includes(p.userId))
+      .map((p) => p.user)
+      .filter((u) => {
+        if (!u.email) return false
+        const ability = this.caslFactory.createForConsultationRead(u)
+        return ability.can(
+          Permissions.Read,
+          subject('Consultation', consultation),
+        )
+      })
+
+    if (newPresenters.length === 0) return
+
+    await this.sendMail({
+      from: { name: 'Konzisite' },
+      to: newPresenters.map((u) => u.email),
+      subject: 'Meghívó konzultációra!',
+      html: this.generateMail(
+        {
+          consultationName: consultation.name,
+          subjectName: consultation.subject.name,
+          location: consultation.location,
+          startDate: consultation.startDate.toLocaleString('hu', {
+            dateStyle: 'short',
+            timeStyle: 'short',
+          }),
+          endDate: consultation.endDate.toLocaleTimeString('hu', {
+            timeStyle: 'short',
+          }),
+          consultationUrl: `${process.env.FRONTEND_HOST}/consultations/${consultation.id}`,
+        },
+        'consultationInvitation',
+      ),
+      attachments: [
+        {
+          filename: `konzultacio_${consultation.id}.ics`,
+          content: Buffer.from(icsContent).toString('base64'),
+          contentType: 'text/calendar',
+        },
+      ],
     })
   }
 
