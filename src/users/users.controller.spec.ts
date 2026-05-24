@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { User } from '@prisma/client'
+import { User } from '../generated/client'
 import { AuthModule } from 'src/auth/auth.module'
 import { UsersController } from './users.controller'
 import { UsersService } from './users.service'

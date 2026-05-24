@@ -9,7 +9,7 @@ import {
   Presentation,
   Subject,
   User,
-} from '@prisma/client'
+} from '../generated/client'
 import { GroupRoles } from 'src/groups/dto/GroupEntity.dto'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { UserEntity } from 'src/users/dto/UserEntity.dto'

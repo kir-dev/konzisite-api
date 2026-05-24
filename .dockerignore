@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+.github
+.idea
+.vscode
+*.md
+.env.example
+coverage
+docs
+mocks
+postman_collection.json
+test

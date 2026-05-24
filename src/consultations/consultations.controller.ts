@@ -20,10 +20,10 @@ import {
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ApiQuery } from '@nestjs/swagger'
-import { Major, Prisma } from '@prisma/client'
+import { Major, Prisma } from '../generated/client'
 import { Response } from 'express'
 import { createReadStream } from 'fs'
-import { EventAttributes, createEvent } from 'ics'
+import { createEvent, EventAttributes } from 'ics'
 import { diskStorage } from 'multer'
 import { extname, join } from 'path'
 import { Permissions } from 'src/auth/casl-ability.factory'
@@ -339,11 +339,13 @@ export class ConsultationsController {
       storage: diskStorage({
         destination: './static/',
         filename: (req, file, callback) => {
+          const idParam = req.params.id
+          const id = Array.isArray(idParam) ? idParam[0] : idParam
           callback(
-            isNaN(parseInt(req.params.id))
+            isNaN(parseInt(id))
               ? new BadRequestException('Érvénytelen azonosító')
               : null,
-            `konzi_${req.params.id}_jegyzet${extname(file.originalname)}`,
+            `konzi_${id}_jegyzet${extname(file.originalname)}`,
           )
         },
       }),

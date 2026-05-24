@@ -7,14 +7,18 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
-import { Major, Prisma } from '@prisma/client'
-import { unlink } from 'fs'
+import { Major, Prisma } from '../generated/client'
+import { unlink } from 'fs/promises'
 import { join } from 'path'
 import { CaslAbilityFactory } from 'src/auth/casl-ability.factory'
 import {
   ConsultationDetailsChangedEvent,
   ConsultationDetailsChangedKey,
 } from 'src/mailing/events/ConsultationDetailsChanged'
+import {
+  ConsultationPresentersChangedEvent,
+  ConsultationPresentersChangedKey,
+} from 'src/mailing/events/ConsultationPresentersChanged'
 import {
   RequestFulfilledEvent,
   RequestFulfilledKey,
@@ -265,6 +269,10 @@ export class ConsultationsService {
           new RequestFulfilledEvent(requestId, consultation.id),
         )
       }
+      this.eventEmitter.emit(
+        ConsultationPresentersChangedKey,
+        new ConsultationPresentersChangedEvent(consultation.id, presenterIds),
+      )
       this.logger.log(
         `Consultation #${consultation.id} created by user #${user.id}`,
       )
@@ -357,6 +365,18 @@ export class ConsultationsService {
       }
       this.buildAndEmitChangeEvent(originalKonzi, updatedKonzi, dto)
 
+      if (presenterIds) {
+        const newPresenterIds = presenterIds.filter(
+          (pid) => !originalKonzi.presentations.some((p) => p.userId === pid),
+        )
+        if (newPresenterIds.length > 0) {
+          this.eventEmitter.emit(
+            ConsultationPresentersChangedKey,
+            new ConsultationPresentersChangedEvent(id, newPresenterIds),
+          )
+        }
+      }
+
       return updatedKonzi
     } catch {
       throw new BadRequestException('Érvénytelen külső kulcs!')
@@ -368,13 +388,12 @@ export class ConsultationsService {
       where: { id },
     })
     if (consultation.fileName && fileName !== consultation.fileName) {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      unlink(join(process.cwd(), '/static', consultation.fileName), () => {})
+      void unlink(join(process.cwd(), '/static', consultation.fileName))
     }
     this.logger.log(
       `Attachment (filename: ${fileName} was uploaded to Consultation #${id})`,
     )
-    return await this.prisma.consultation.update({
+    return this.prisma.consultation.update({
       where: { id },
       data: { fileName },
     })
@@ -385,13 +404,12 @@ export class ConsultationsService {
       where: { id },
     })
     if (consultation.fileName) {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      unlink(join(process.cwd(), '/static', consultation.fileName), () => {})
+      void unlink(join(process.cwd(), '/static', consultation.fileName))
     }
     this.logger.log(
       `Attacment (filename: ${consultation.fileName}) of Consultation #${id}  was deleted`,
     )
-    return await this.prisma.consultation.update({
+    return this.prisma.consultation.update({
       where: { id },
       data: { fileName: null },
     })
@@ -402,8 +420,7 @@ export class ConsultationsService {
       where: { id },
     })
     if (consultation.fileName) {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      unlink(join(process.cwd(), '/static', consultation.fileName), () => {})
+      void unlink(join(process.cwd(), '/static', consultation.fileName))
     }
     this.logger.log(`Consultation #${consultation.id} deleted`)
     return this.prisma.consultation.delete({ where: { id } })

@@ -1,5 +1,5 @@
 import { FileValidator } from '@nestjs/common'
-import { unlink } from 'fs'
+import { unlink } from 'fs/promises'
 import { extname, join } from 'path'
 
 export class FileExtensionValidator extends FileValidator<{
@@ -11,8 +11,7 @@ export class FileExtensionValidator extends FileValidator<{
     )
   }
   buildErrorMessage(file: Express.Multer.File): string {
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    unlink(join(process.cwd(), '/static', file.filename), () => {})
+    void unlink(join(process.cwd(), '/static', file.filename))
     return `Érvénytelen kiterjesztés: ${extname(
       file.originalname,
     )}! Megengedett kiterjesztések: ${this.validationOptions.allowedExtensions.join(

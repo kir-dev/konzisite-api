@@ -1,6 +1,6 @@
 import { Get, Redirect, UseGuards } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
-import { User } from '@prisma/client'
+import { User } from '../generated/client'
 import { ApiController } from 'src/utils/apiController.decorator'
 import { AuthService } from './auth.service'
 import { CurrentUser } from './decorator/current-user.decorator'

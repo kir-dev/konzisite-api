@@ -2,7 +2,7 @@
 # BUILD FOR LOCAL DEVELOPMENT
 ###################
 
-FROM node:22 AS development
+FROM node:24-trixie-slim AS development
 
 # Create app directory
 WORKDIR /usr/src/app
@@ -24,7 +24,7 @@ COPY . .
 # BUILD FOR PRODUCTION
 ###################
 
-FROM node:22 AS build
+FROM node:24-trixie-slim AS build
 
 WORKDIR /usr/src/app
 
@@ -49,17 +49,16 @@ RUN npm prune --production && npm cache clean --force
 # PRODUCTION
 ###################
 
-FROM node:22 AS production
+FROM node:24-trixie-slim AS production
 
-# Donwload chromium and its dependecies
-RUN apt-get update \
-    && apt-get install -y wget gnupg \
-    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
-    && apt-get update \
-    && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 \
-      --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/*
+# Download chromium and its dependencies
+RUN apt-get update
+RUN apt-get install -y wget gnupg ca-certificates
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /usr/share/keyrings/google-chrome.gpg
+RUN sh -c 'echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+RUN apt-get update
+RUN apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-freefont-ttf libxss1 --no-install-recommends
+RUN rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/src/app
 
@@ -79,5 +78,6 @@ COPY --from=build /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/dist ./dist
 COPY --from=build /usr/src/app/package.json ./
 COPY --from=build /usr/src/app/prisma ./prisma
+COPY --from=build /usr/src/app/prisma.config.js ./
 
 CMD ["npm", "run", "start:prod"]
